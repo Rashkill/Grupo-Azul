@@ -19,6 +19,8 @@ function createWindow () {
 
   // Open the DevTools.
   win.webContents.openDevTools()
+  win.maximize()
+
 }
 
 // This method will be called when Electron has finished

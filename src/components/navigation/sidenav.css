@@ -1,0 +1,60 @@
+
+.sidenav{
+    height: 100vh;
+    width: 260px;
+    background: #FFFFFF;
+    position: fixed;
+
+    border: 1px solid #D4D4D4;
+    box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.1);
+}
+
+.sidenav-imgwrap{
+    height: 220px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.sidenav-img{
+    height: 155px;
+}
+
+.nav-btn {
+    height: 68px;
+    /* background: #FFFFFF; */
+    border: 1px solid #EBEBEB;
+    /* padding: 6px 0 6px 16px; */
+    padding-left: 12px;
+    width: 258px;
+    font-size: 15px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    color: #6B6B6B;
+    transition: all 0.3s ease-out;
+    display: flex;
+    align-items: center;
+}
+
+.nav-btn:hover{
+    background: #E6F7FF;
+    color: #18ACFF;
+}
+
+.nav-btn:hover .nav-item-img{
+    filter: brightness(0%);
+    filter: invert(54%) sepia(96%) saturate(2558%) hue-rotate(177deg) brightness(103%) contrast(101%);
+}
+
+.nav-btn > p {
+    margin: 0;
+}
+
+.active-nav-btn{
+    background: #F4F4F4;
+}
+
+.nav-imgwrap{
+    margin-right: 4px;
+}
