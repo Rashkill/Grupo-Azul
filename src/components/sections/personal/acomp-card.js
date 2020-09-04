@@ -20,7 +20,9 @@ class AcompCard extends React.Component{
                         </Row>
                     </Col>
                     <Col span={4}>
-
+                        <h4>
+                        id: {this.props.id} ${this.props.price}
+                        </h4>
                     </Col>
                 </Row>
             </div>

@@ -1,88 +1,106 @@
-import React from 'react';
+import React,{ useState, useEffect } from 'react';
 import { Divider, Row, Col, Input, Modal } from 'antd';
 import { PlusOutlined, FileDoneOutlined } from '@ant-design/icons';
 import AcompCard from './acomp-card.js';
 
 const { Search } = Input;
 
+function Acompañantes() {
 
-class Acompañantes extends React.Component{
+    const [state, setState] = useState({    //Estados
+        visible : false,
+        isLoading:true
+    });
+    const [data, setData] = useState([]);
 
-    state = { visible: false };
+    const getData = async () =>{
+        const res = await fetch('http://localhost:4000/acomp');
+        const datos = await res.json();
+        setData(datos);
+    }
 
-    showModal = () => {     //Mostrar modal
-        this.setState({
-        visible: true,
+    useEffect(()=>{
+        getData();
+    },[]);
+
+    const showModal = () => {     //Mostrar modal
+        setState({
+            visible: true,
         });
     };
 
-    handleOk = e => {       //maneja boton ok del modal
+    const handleOk = e => {       //maneja boton ok del modal
         console.log(e);
-        this.setState({
+        setState({
         visible: false,
         });
     };
 
-    handleCancel = e => {   //cancelar modal
+    const handleCancel = e => {   //cancelar modal
         console.log(e);
-        this.setState({
+        setState({
         visible: false,
         });
     };
 
-    handleSearch = (v) => { //Presionar enter al buscador
+    const handleSearch = (v) => { //Presionar enter al buscador
         console.log(v)
     }
-    
-    render(){
-        return(
-            <div className="content-cont">
-                <Row>
-                    <Col span={18}>
-                        <Divider orientation="left" plain>
-                            <h1 className="big-title">
-                                Acompañantes
-                            </h1>
-                        </Divider>
-                        <div className="cards-container">
-                            {/* Display de acompañantes */}
-                            <AcompCard title={"Juan Perez"}/>
-                            <AcompCard title={"John Doe"}/>
-                            <AcompCard title={"María María"}/>
+
+    // if(state.isLoading){
+    //     <h4>Loading</h4>
+    // }    
+
+    return(
+        <div className="content-cont">
+            <Row>
+                <Col span={18}>
+                    <Divider orientation="left" plain>
+                        <h1 className="big-title">
+                            Acompañantes
+                        </h1>
+                    </Divider>
+                    <div className="cards-container">
+                    {/* Display de acompañantes */}
+                    {data.map((i , index)=>{
+                        return(
+                            <AcompCard title={i.Nombre} price={i.PrecioHora} id={i.Id} key={index}/>
+                        )
+                    })}                   
+                    </div>
+                </Col>
+                <Col span={6}>
+                    <Search placeholder="Buscar..." style={{width: '238px', margin: 8}} onSearch={value => handleSearch(value)} allowClear={true}/>
+                    <div className="right-menu">
+                        <div className="right-btn" onClick={showModal}>
+                            <PlusOutlined />
+                            <span className="right-btn-text">Nuevo</span>
                         </div>
-                    </Col>
-                    <Col span={6}>
-                        <Search placeholder="Buscar..." style={{width: '238px', margin: 8}} onSearch={value => this.handleSearch(value)} allowClear={true}/>
-                        <div className="right-menu">
-                            <div className="right-btn" onClick={this.showModal}>
-                                <PlusOutlined />
-                                <span className="right-btn-text">Nuevo</span>
-                            </div>
-                            <div className="right-btn">
-                                <FileDoneOutlined />
-                                <span className="right-btn-text">Monotributo</span>
-                            </div>
+                        <div className="right-btn">
+                            <FileDoneOutlined />
+                            <span className="right-btn-text">Monotributo</span>
                         </div>
-                    </Col>
-                </Row>
+                    </div>
+                </Col>
+            </Row>
 
 
-                <Modal
+            <Modal
                 title="Nuevo Acompañante"
-                visible={this.state.visible}
-                onOk={this.handleOk}
-                onCancel={this.handleCancel}
+                visible={state.visible}
+                onOk={handleOk}
+                onCancel={handleCancel}
                 cancelText="Cancelar"
                 okText="Ok"
-                >
-                    <p>//Aquí iría el formulario//...</p>
-                    <p>contenido...</p>
-                    <p>contenido...</p>
-                </Modal>
-                
-            </div>
-        )
-    }
+            >
+                <p>//Aquí iría el formulario//...</p>
+                <p>contenido...</p>
+                <p>contenido...</p>
+            </Modal>
+            
+        </div>
+    )
+    
 }
 
 export default Acompañantes
