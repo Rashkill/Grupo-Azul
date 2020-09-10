@@ -13,15 +13,15 @@ function Acompañantes() {
     });
     const [data, setData] = useState([]);
 
-    const getData = async () =>{
-        const res = await fetch('http://localhost:4000/acomp');
-        const datos = await res.json();
-        setData(datos);
-    }
+    // const getData = async () =>{
+    //     const res = await fetch('http://localhost:4000/acomp');
+    //     const datos = await res.json();
+    //     setData(datos);
+    // }
 
-    useEffect(()=>{
-        getData();
-    },[]);
+    // useEffect(()=>{
+    //     getData();
+    // },[]);
 
     const showModal = () => {     //Mostrar modal
         setState({
@@ -61,12 +61,24 @@ function Acompañantes() {
                         </h1>
                     </Divider>
                     <div className="cards-container">
+                        
+                        <AcompCard 
+                            title="Juan Perez" 
+                            price="80" 
+                            udc="Calle XXX"
+                            domicilio="Avenida Siempre Viva 123"
+                            email="juanperez26@gmail.com"
+                            telefono="+545325000"
+                            id="1" 
+                            key={1}
+                        />
+                        
                     {/* Display de acompañantes */}
-                    {data.map((i , index)=>{
+                    {/* {data.map((i , index)=>{
                         return(
                             <AcompCard title={i.Nombre} price={i.PrecioHora} id={i.Id} key={index}/>
                         )
-                    })}                   
+                    })}                    */}
                     </div>
                 </Col>
                 <Col span={6}>
