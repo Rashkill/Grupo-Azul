@@ -1,6 +1,6 @@
 import React,{ useState, useEffect } from 'react';
-import { Divider, Row, Col, Input, Modal } from 'antd';
-import { PlusOutlined, FileDoneOutlined } from '@ant-design/icons';
+import { Divider, Row, Col, Input, Modal, notification } from 'antd';
+import { PlusOutlined, FileDoneOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import AcompCard from './acomp-card.js';
 
 const { Search } = Input;
@@ -13,15 +13,15 @@ function Acompañantes() {
     });
     const [data, setData] = useState([]);
 
-    // const getData = async () =>{
-    //     const res = await fetch('http://localhost:4000/acomp');
-    //     const datos = await res.json();
-    //     setData(datos);
-    // }
+    const getData = async () =>{
+        const res = await fetch('http://localhost:4000/acomp');
+        const datos = await res.json();
+        setData(datos);
+    }
 
-    // useEffect(()=>{
-    //     getData();
-    // },[]);
+    useEffect(()=>{
+        getData();
+    },[]);
 
     const showModal = () => {     //Mostrar modal
         setState({
@@ -51,6 +51,20 @@ function Acompañantes() {
     //     <h4>Loading</h4>
     // }    
 
+    const openNotification = () => {
+
+        setState({
+            visible: false,
+        });
+
+        notification.open({
+            message: 'Creado con éxito',
+            description:
+            'El Acompañante [nombre] ya se encuentra en la lista.',
+            icon: <CheckCircleOutlined style={{ color: '#52C41A' }} />,
+        });
+    };
+
     return(
         <div className="content-cont">
             <Row>
@@ -74,15 +88,15 @@ function Acompañantes() {
                         />
                         
                     {/* Display de acompañantes */}
-                    {/* {data.map((i , index)=>{
+                    {data.map((i , index)=>{
                         return(
                             <AcompCard title={i.Nombre} price={i.PrecioHora} id={i.Id} key={index}/>
                         )
-                    })}                    */}
+                    })}                   
                     </div>
                 </Col>
                 <Col span={6}>
-                    <Search placeholder="Buscar..." style={{width: '238px', margin: 8}} onSearch={value => handleSearch(value)} allowClear={true}/>
+                    <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onSearch={value => this.handleSearch(value)} allowClear={true}/>
                     <div className="right-menu">
                         <div className="right-btn" onClick={showModal}>
                             <PlusOutlined />
@@ -104,6 +118,7 @@ function Acompañantes() {
                 onCancel={handleCancel}
                 cancelText="Cancelar"
                 okText="Ok"
+                onOk={openNotification}
             >
                 <p>//Aquí iría el formulario//...</p>
                 <p>contenido...</p>

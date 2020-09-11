@@ -6,7 +6,7 @@ import './cards.css'
 
 const dropClick = ({ key }) => {
     //Key de <Menu.Item>
-    if (key == 'edit') {
+    if (key === 'edit') {
         alert('edit')
     } else {
         alert('delete')
@@ -62,9 +62,9 @@ class AcompCard extends React.Component{
                             <Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
                                 <SettingFilled style={{fontSize: 20, color: '#9EA2A7'}}/>
                             </Dropdown>
-                            <h4>
+                            <h4 style={{fontFamily: 'Inter'}}>
                             {/* ids: {this.props.id}  */}
-                            ${this.props.price} / Hora
+                            Hora: ${this.props.price}
                             </h4>
                         </div>
                     </Col>
