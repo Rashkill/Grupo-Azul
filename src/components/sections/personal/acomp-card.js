@@ -4,7 +4,6 @@ import UserImg from '../../../images/image3.png'
 import './cards.css'
 
 class AcompCard extends React.Component{
-
     render(){
         return(
             <div className="card">
