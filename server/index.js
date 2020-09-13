@@ -2,11 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const port = 4000
 const {getAcomp} = require('./routes/getAcomp');
+const {addAcomp} = require('./routes/addAcomp');
 const {getConnection} = require('./db/conn');
 const app = express()
-app.use(express.json());
-app.use(cors());
 
+app.use(cors());
+app.use(express.json());
 
 app.get('/acomp', async (req, res, next) => {
     // const acomp = await getAcomp(req, res, next);
@@ -27,6 +28,10 @@ app.get('/acomp', async (req, res, next) => {
         });
         res.json(rows)
     });
+})
+
+app.post('/addacomp', async (req,res)=>{
+    await addAcomp(req,res);
 })
 
 app.listen(port, () => {

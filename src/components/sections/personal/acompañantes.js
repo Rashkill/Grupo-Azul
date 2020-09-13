@@ -1,5 +1,5 @@
 import React,{ useState, useEffect } from 'react';
-import { Divider, Row, Col, Input, Modal } from 'antd';
+import { Divider, Row, Col, Input, Modal, Button } from 'antd';
 import { PlusOutlined, FileDoneOutlined } from '@ant-design/icons';
 import AcompCard from './acomp-card.js';
 
@@ -9,9 +9,12 @@ function Acompañantes() {
 
     const [state, setState] = useState({    //Estados
         visible : false,
-        isLoading:true
+        isLoading:true,
+        nombre:""
     });
     const [data, setData] = useState([]);
+    const [nombre, setNombre] = useState("");
+    const [precioHora, setPrecioHora] = useState(0);
 
     const getData = async () =>{
         const res = await fetch('http://localhost:4000/acomp');
@@ -50,7 +53,28 @@ function Acompañantes() {
     // if(state.isLoading){
     //     <h4>Loading</h4>
     // }    
-
+    const onChangeInput = e =>{
+        if(e.target.id=="nombre"){
+            console.log("nombre: ",e.target.value);
+            setNombre(e.target.value)
+        }
+        if(e.target.id=="precioHora"){
+            console.log("precioHora: ",e.target.value);
+            setPrecioHora(e.target.value)
+        }
+    }
+    const addAcomp = async  () =>{
+        var data = [nombre,precioHora];
+        const res = await fetch('http://localhost:4000/addacomp',{
+            method: "POST",
+            headers:{
+                'Content-Type' : 'application/json'
+            },
+            body:JSON.stringify({ data })
+        })
+       var response =  await res.json()
+        // console.log(response);
+    }
     return(
         <div className="content-cont">
             <Row>
@@ -84,7 +108,6 @@ function Acompañantes() {
                 </Col>
             </Row>
 
-
             <Modal
                 title="Nuevo Acompañante"
                 visible={state.visible}
@@ -96,6 +119,10 @@ function Acompañantes() {
                 <p>//Aquí iría el formulario//...</p>
                 <p>contenido...</p>
                 <p>contenido...</p>
+                <Input placeholder="Nombre" id="nombre" onChange={onChangeInput}/>
+                <Input placeholder="Precio Hora" id="precioHora" onChange={onChangeInput}/>
+                <hr/>
+                <Button type="secondary" onClick={addAcomp}>Enviar</Button>
             </Modal>
             
         </div>
