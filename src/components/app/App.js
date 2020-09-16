@@ -6,6 +6,7 @@ import Sidenav from '../navigation/sidenav.js'
 import Inicio from '../sections/inicio/inicio.js'
 import Personal from '../sections/personal/personal.js'
 import Beneficiarios from '../sections/beneficiarios/beneficiarios.js'
+import BenefProfile from '../sections/beneficiarios/benef-profile.js'
 import Jornadas from '../sections/jornadas/jornadas.js'
 import Liquidaciones from '../sections/liquidaciones/liquidaciones.js'
 
@@ -21,6 +22,7 @@ function App() {
             <Route path="/inicio" component={Inicio} />
             <Route path="/personal" component={Personal} />
             <Route path="/beneficiarios" component={Beneficiarios} />
+            <Route path="/benefprofile" component={BenefProfile} />
             <Route path="/jornadas" component={Jornadas} />
             <Route path="/liquidaciones" component={Liquidaciones} />
           </div>
