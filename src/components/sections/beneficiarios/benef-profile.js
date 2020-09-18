@@ -80,13 +80,45 @@ const BenefCard = (props) =>{
                         </Divider>
 
                         <div className="data">
-                            <div className="data-col">
-                                
+                            <div className="data-col-wrap">
+                                <div className="data-col">
+                                    <p className="data-attr">Domicilio</p>
+                                    <p className="data-attr">Fecha de Nacimiento</p>
+                                    <p className="data-attr">Edad</p>
+                                    <p className="data-attr">Teléfono</p>
+                                    <p className="data-attr">E-Mail</p>
+                                </div>
+                                <div className="data-col">
+                                    <p className="card-subtitle">Castellanos 1445</p>
+                                    <p className="card-subtitle">XX / XX / XXXX</p>
+                                    <p className="card-subtitle">XX</p>
+                                    <p className="card-subtitle">+543483402494</p>
+                                    <p className="card-subtitle">carloschiaruli@gmail.com</p>
+                                </div>
                             </div>
-                            <div className="data-r-col">
 
+                            <div className="data-col-wrap">
+                                <div className="data-col">
+                                    <p className="data-attr">Localidad</p>
+                                    <p className="data-attr">Código Postal</p>
+                                    <p className="data-attr">Enfermedades y Comorbilidades</p>
+
+                                </div>
+                                <div className="data-col">
+                                    <p className="card-subtitle">Santa Fe</p>
+                                    <p className="card-subtitle">3000</p>
+
+                                </div>
                             </div>
                         </div>
+
+                        <Divider/>
+
+                        <Divider orientation="left" plain>
+                            <h1 className="big-title">
+                                Notas
+                            </h1>
+                        </Divider>
                             
                     </TabPane>
                     <TabPane tab="Seguimientos" key="2" style={TabStyles}>

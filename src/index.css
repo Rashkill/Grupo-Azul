@@ -19,6 +19,7 @@ code {
   border-top: 1px solid rgba(53, 53, 53, 0.774);
 }
 
+
 .header-bg{
   background: #FFFFFF;
   padding-left: 8px;
@@ -48,6 +49,35 @@ code {
   font-size: 26px;
   color: #666666;
   margin: 4px;
+}
+
+.data{
+  width: 100%;
+  padding: 0 32px 0 32px;
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 16px;
+}
+
+.data-col-wrap{
+  width: 45%;
+  display: flex;
+}
+
+.data-col{
+  margin: 0 4px 0 4px;
+  max-width: 200px;
+  font-size: 15px;
+  margin-right: 64px;
+}
+
+.data-attr{
+  color: #5c5c5c;
+  font-family: 'Inter';
+  font-weight: 500;
+  font-size: 12px;
+  margin-top: 4px;
+
 }
 
 .prot-shadow{
