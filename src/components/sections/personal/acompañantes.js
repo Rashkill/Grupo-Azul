@@ -28,6 +28,7 @@ function Acompañantes() {
         const res = await fetch('http://localhost:4000/acomp');
         const datos = await res.json();
         setData(datos);
+        console.log(datos);
     }
 
     useEffect(()=>{
@@ -235,7 +236,7 @@ function Acompañantes() {
                     {/* Display de acompañantes */}
                     {data.map((i , index)=>{
                         return(
-                            <AcompCard title={i.Nombre} price={i.PrecioHora} id={i.Id} key={index}/>
+                            <AcompCard refresh={getData} title={i.Nombre} price={i.ValorHora} email={i.Email} telefono={i.Telefono} domicilio={i.Domicilio} id={i.Id} key={index}/>
                         )
                     })}                   
                     </div>

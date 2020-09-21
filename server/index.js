@@ -135,7 +135,21 @@ app.get('/photo/:id', (req, res) => {
         }
       });
 })
+//Borrando Acompañante
+app.delete('/acomp/:id', (req,res)=>{
+  var id = req.params.id;
+  // delete a row based on id
+  let db = getConnection();
+  let sql = `DELETE FROM acompañante WHERE id="${id}"`;
+  db.run(sql, function(err) {
+    if (err) {
+      return console.error(err.message);
+    }
+    console.log(`Se ha borrado la fila ${id}`);
+    res.json("Se ha borrado la fila");
+  });
 
+})
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
 })

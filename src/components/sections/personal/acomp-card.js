@@ -3,73 +3,85 @@ import { Row, Col, Menu, Dropdown } from 'antd';
 import { SettingFilled, EditFilled, DeleteFilled } from '@ant-design/icons';
 import UserImg from '../../../images/image3.png'
 import './cards.css'
+import Axios from 'axios';
 
-const dropClick = ({ key }) => {
-    //Key de <Menu.Item>
-    if (key === 'edit') {
-        alert('edit')
-    } else {
-        alert('delete')
+
+function AcompCard(props) {
+    const refres = () =>{
+        props.refresh();
     }
-}
-
-const menu = (
-    <Menu onClick={dropClick}>
-        {/* la key es como se diferencian las opciones del drop, en la funcion dropClick*/}
-        <Menu.Item key="edit"> 
-            <div className="drop-btn">
-                <EditFilled />
-                <p>Editar</p>
-            </div>
-        </Menu.Item>
-        <Menu.Item key="delete">
-            <div className="drop-btn">
-                <DeleteFilled />
-                <p>Eliminar</p>
-            </div>
-        </Menu.Item>
-    </Menu>
-);
-
-class AcompCard extends React.Component{
+    const dropClick = ({ key }) => {
+        //Key de <Menu.Item>
+        if (key === 'edit') {
+            alert('edit')
+        } else {
+            var opcion = window.confirm('Estas seguro que desea borrar al acompañante '+ props.title);
+            if(opcion){
+                Axios.delete('http://localhost:4000/acomp/'+props.id ,{
+                    headers: {
+                        Accept: 'application/json'
+                    }
+                }).then(res=>{
+                    console.log("auch");
+                    props.refresh();
+                })
+            }
+        }
+    }
     
-    render(){
-        return(
-            <div className="card">
-                <div className="card-row">
-                    <div className="card-left-col">
-                        <img src={UserImg} alt=""/>
-                    </div>
-                    <div className="card-mid-col">
-                        <Row>
-                            <div className="card-title-container">
-                                <h1 className="name-title">
-                                    {this.props.title}
-                                </h1>
-                                <h3 className="card-subtitle">
-                                    UDC Asignada: {this.props.udc}
-                                </h3>
-                            </div>
-                        </Row>
-                            <div className="card-contents">
-                                <h3 className="card-subtitle">{this.props.domicilio}</h3>
-                                <h3 className="card-subtitle">{this.props.email}</h3>
-                                <h3 className="card-subtitle">{this.props.telefono}</h3>
-                            </div>
-                    </div>
-                    <div card-right-col>
-                        <Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
-                            <SettingFilled style={{fontSize: 20, color: '#9EA2A7'}}/>
-                        </Dropdown>
-                        <h4 style={{fontFamily: 'Inter'}}>
-                        {/* ids: {this.props.id}  */}
-                        Hora: ${this.props.price}
-                        </h4>
-                    </div>
+    const menu = (
+        <Menu onClick={dropClick}>
+            {/* la key es como se diferencian las opciones del drop, en la funcion dropClick*/}
+            <Menu.Item key="edit"> 
+                <div className="drop-btn">
+                    <EditFilled />
+                    <p>Editar</p>
+                </div>
+            </Menu.Item>
+            <Menu.Item key="delete">
+                <div className="drop-btn">
+                    <DeleteFilled />
+                    <p>Eliminar</p>
+                </div>
+            </Menu.Item>
+        </Menu>
+    );
+
+    return(
+        <div className="card">
+            <div className="card-row">
+                <div className="card-left-col">
+                    <img src={UserImg} alt=""/>
+                </div>
+                <div className="card-mid-col">
+                    <Row>
+                        <div className="card-title-container">
+                            <h1 className="name-title">
+                                {props.title}
+                            </h1>
+                            <h3 className="card-subtitle">
+                                UDC Asignada: {props.udc}
+                            </h3>
+                        </div>
+                    </Row>
+                        <div className="card-contents">
+                            <h3 className="card-subtitle">{props.domicilio}</h3>
+                            <h3 className="card-subtitle">{props.email}</h3>
+                            <h3 className="card-subtitle">{props.telefono}</h3>
+                        </div>
+                </div>
+                <div card-right-col>
+                    <Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
+                        <SettingFilled style={{fontSize: 20, color: '#9EA2A7'}}/>
+                    </Dropdown>
+                    <h4 style={{fontFamily: 'Inter'}}>
+                    {/* ids: {this.props.id}  */}
+                    Hora: ${props.price}
+                    </h4>
                 </div>
             </div>
-        )
-    }
+        </div>
+    )
 }
 
 
