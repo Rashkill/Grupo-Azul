@@ -36,11 +36,11 @@ class AcompCard extends React.Component{
     render(){
         return(
             <div className="card">
-                <Row>
-                    <Col span={5} className="flex-center">
+                <div className="card-row">
+                    <div className="card-left-col">
                         <img src={UserImg} alt=""/>
-                    </Col>
-                    <Col span={15}>
+                    </div>
+                    <div className="card-mid-col">
                         <Row>
                             <div className="card-title-container">
                                 <h1 className="name-title">
@@ -56,19 +56,17 @@ class AcompCard extends React.Component{
                                 <h3 className="card-subtitle">{this.props.email}</h3>
                                 <h3 className="card-subtitle">{this.props.telefono}</h3>
                             </div>
-                    </Col>
-                    <Col span={4}>
-                        <div className="card-r-col">
-                            <Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
-                                <SettingFilled style={{fontSize: 20, color: '#9EA2A7'}}/>
-                            </Dropdown>
-                            <h4 style={{fontFamily: 'Inter'}}>
-                            {/* ids: {this.props.id}  */}
-                            Hora: ${this.props.price}
-                            </h4>
-                        </div>
-                    </Col>
-                </Row>
+                    </div>
+                    <div card-right-col>
+                        <Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
+                            <SettingFilled style={{fontSize: 20, color: '#9EA2A7'}}/>
+                        </Dropdown>
+                        <h4 style={{fontFamily: 'Inter'}}>
+                        {/* ids: {this.props.id}  */}
+                        Hora: ${this.props.price}
+                        </h4>
+                    </div>
+                </div>
             </div>
         )
     }

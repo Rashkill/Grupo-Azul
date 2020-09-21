@@ -1,6 +1,7 @@
 import React from 'react';
 import { Divider, Row, Col, Input, Modal } from 'antd';
 import { PlusOutlined, FileDoneOutlined } from '@ant-design/icons';
+import BenefCard from './benef-card'
 
 const { Search } = Input;
 
@@ -42,11 +43,23 @@ class Beneficiarios extends React.Component{
             <div className="content-cont prot-shadow">
                 <Row>
                     <Col span={18}>
-                        <Divider orientation="left" plain>
+                        <Divider orientation="left">
                             <h1 className="big-title">
                                 Beneficiarios
                             </h1>
                         </Divider>
+
+                        <div className="cards-container">
+
+                            <BenefCard 
+                                title="Celina Melamedoff"
+                                domicilio="Castellanos 1445"
+                                telefono="+543483402494"
+                                linkto="/benefprofile"
+                            />
+
+                        </div>
+
                     </Col>
                     <Col span={6}>
                         <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onSearch={value => this.handleSearch(value)} allowClear={true}/>
