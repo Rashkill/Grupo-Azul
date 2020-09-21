@@ -53,7 +53,7 @@ code {
 
 .data{
   width: 100%;
-  padding: 0 32px 0 32px;
+  padding: 16px 32px 0 32px;
   display: flex;
   justify-content: space-around;
   margin-bottom: 16px;
@@ -69,6 +69,7 @@ code {
   max-width: 200px;
   font-size: 15px;
   margin-right: 64px;
+  line-height: 24px;
 }
 
 .data-attr{
@@ -83,4 +84,21 @@ code {
 .prot-shadow{
   background: #FFFFFF;
   box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.14), 0px 2px 2px rgba(0, 0, 0, 0.12), 0px 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.tablewrap{
+  width: 100%;
+  padding: 16px 32px 0 32px;
+
+}
+
+.buttons{
+  height: 80px;
+  width: 25%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  margin-top: 16px;
 }

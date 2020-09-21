@@ -1,9 +1,25 @@
 import React from 'react';
-import { Divider, Row, Col, Input, Modal } from 'antd';
+import { Divider, Row, Col, Input, Modal, AutoComplete, DatePicker } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
+import JornadaCard from './jornada-card'
 
 const { Search } = Input;
+const { RangePicker } = DatePicker;
 
+const agds = [
+    { value: 'Juan Pérez' },
+    { value: 'Beatriz Acuña' },
+    { value: 'Yanina Gutierrez' },
+];
+
+const ucds = [
+    { value: 'Celina Melamedoff' }
+];
+
+const okRange = (value, dateString) => {
+    alert(value)
+    alert(dateString)
+}
 
 class Jornadas extends React.Component{
 
@@ -47,6 +63,16 @@ class Jornadas extends React.Component{
                                 Jornadas
                             </h1>
                         </Divider>
+                        <div className="cards-container">
+                            <JornadaCard
+                                title="20 de Agosto / Melamedoff - Pérez"
+                                agd="Pérez, Juan"
+                                ucd="Melamedoff, Celina"
+                                ingreso="20/8/2020 9:00"
+                                egreso="20/8/2020 17:00"
+                            />
+                        </div>
+
                     </Col>
                     <Col span={6}>
                         <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onSearch={value => this.handleSearch(value)} allowClear={true}/>
@@ -61,16 +87,34 @@ class Jornadas extends React.Component{
 
 
                 <Modal
-                title="Nuevo Beneficiario"
-                visible={this.state.visible}
-                onOk={this.handleOk}
-                onCancel={this.handleCancel}
-                cancelText="Cancelar"
-                okText="Ok"
+                    title="Nueva Jornada"
+                    visible={this.state.visible}
+                    onOk={this.handleOk}
+                    onCancel={this.handleCancel}
+                    cancelText="Cancelar"
+                    okText="Ok"
                 >
-                    <p>//Aquí iría el formulario//...</p>
-                    <p>contenido...</p>
-                    <p>contenido...</p>
+                    <AutoComplete
+                        style={{ width: 200 }}
+                        options={ucds}
+                        placeholder="Nombre Beneficiario"
+                        filterOption={(inputValue, option) =>
+                        option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
+                        }
+                    />
+                    <AutoComplete
+                        style={{ width: 200 }}
+                        options={agds}
+                        placeholder="Nombre Cuidador"
+                        filterOption={(inputValue, option) =>
+                        option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
+                        }
+                    />
+                    <RangePicker 
+                        showTime={{ format: 'HH:mm' }} 
+                        format="YYYY-MM-DD HH:mm"
+                        onOk={okRange}    
+                    />
                 </Modal>
                 
             </div>
