@@ -23,7 +23,11 @@ const okRange = (value, dateString) => {
 
 class Jornadas extends React.Component{
 
-    state = { visible: false };
+    state = { 
+        visible: false,
+        horas: 0,
+         
+    };
 
     //Mostrar modal
     showModal = () => {     
@@ -113,7 +117,7 @@ class Jornadas extends React.Component{
                     <RangePicker 
                         showTime={{ format: 'HH:mm' }} 
                         format="YYYY-MM-DD HH:mm"
-                        onOk={okRange}    
+                        onOk={okRange}
                     />
                 </Modal>
                 
