@@ -1,17 +1,15 @@
 const sqlite3 = require('sqlite3').verbose();
 const {getConnection} = require('../db/conn');
-var fs = require('fs');
 
 const addFile = (req,res) =>{
-    console.log(req.body);
-    fs.readFile(req.body.path, (err, data) => {
-        if (err) res.status(500).send(err);
-        console.log(data);
-    });
+    console.log(req.file);
+    res.json("succed")
+    // fs.readFile(req.body.path, (err, data) => {
+    //     if (err) res.status(500).send(err);
+    //     console.log(data);
+    // });
 
 }
-  
-    
 
 module.exports={addFile}
     

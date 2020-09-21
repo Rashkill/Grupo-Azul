@@ -42,7 +42,7 @@ function Coordinadores() {
                     </Divider>
                 </Col>
                 <Col span={6}>
-                    <Search placeholder="Buscar..." style={{width: '238px', margin: 8}} onSearch={value => handleSearch(value)} allowClear={true}/>
+                    <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onSearch={value => this.handleSearch(value)} allowClear={true}/>
                     <div className="right-menu">
                         <div className="right-btn" onClick={showModal}>
                             <PlusOutlined />
