@@ -14,7 +14,7 @@ const getAcomp = (req,res,next) =>{
             return;
         }
         rows.forEach((row) => {
-            console.log(row);
+            // console.log(row);
             arrayData.push(row);
         });
         res.json({
