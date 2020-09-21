@@ -1,8 +1,15 @@
 import React from 'react';
 import { withRouter } from 'react-router-dom';
-import { Tabs, PageHeader, Menu, Dropdown, Divider } from 'antd';
-import { SettingFilled, EditFilled, DeleteFilled } from '@ant-design/icons';
+import { Tabs, PageHeader, Menu, Dropdown, Divider, Table, Timeline, Row, Col, Button } from 'antd';
+import { SettingFilled, EditFilled, DeleteFilled, PlusOutlined } from '@ant-design/icons';
 import UserImg from '../../../images/image4-5.png'
+
+const alertRow = (fecha) =>{
+    alert(fecha)
+}
+
+
+
 
 const { TabPane } = Tabs;
 const TabStyles = {
@@ -42,6 +49,60 @@ const menu = (
 
 
 const BenefCard = (props) =>{
+
+    const columns = [
+        {
+            title: 'Fecha',
+            dataIndex: 'fecha',
+            key: 'fecha'
+        },
+    
+        {
+            title: 'PDF',
+            dataIndex: 'pdf',
+            key: 'pdf'
+        },
+    
+        {
+            title: 'Acciones',
+            dataIndex: 'acciones',
+            key: 'acciones',
+            render: (text, record) => (
+                <div>
+                    <a>Abrir </a>
+                    <a>Editar </a>
+                    <a>Eliminar </a>
+                </div>
+            )
+        }
+    ];
+    
+    const data = [
+        {
+            fecha: "15/5",
+            pdf: "archivo1.pdf"
+        },
+        {
+            fecha: "16/5",
+            pdf: "archivo2.pdf"
+        },
+        {
+            fecha: "15/5",
+            pdf: "archivo1.pdf"
+        },
+        {
+            fecha: "16/5",
+            pdf: "archivo2.pdf"
+        },
+        {
+            fecha: "15/5",
+            pdf: "archivo1.pdf"
+        },
+        {
+            fecha: "16/5",
+            pdf: "archivo2.pdf"
+        }
+    ]
 
     const goBack = () =>{
         props.history.goBack()
@@ -119,10 +180,30 @@ const BenefCard = (props) =>{
                                 Notas
                             </h1>
                         </Divider>
+                        <div className="tablewrap">
+                            <Table dataSource={data} columns={columns} bordered/>
+                        </div>
                             
                     </TabPane>
                     <TabPane tab="Seguimientos" key="2" style={TabStyles}>
-                        
+                        <div className="buttons">
+                            <Button block type="secondary" icon={<EditFilled/>}>Editar</Button>
+                            <Button block type="primary" icon={<PlusOutlined/>}>Nuevo</Button>
+                        </div>
+                        <div 
+                        style={{marginTop: 24, padding: 32, marginLeft: '-25%', width: '100%'}}
+                        >
+                            <Timeline mode='left' reverse>
+                                <Timeline.Item label="2015-09-01">Seguimiento n°1</Timeline.Item>
+                                <Timeline.Item label="2015-09-03">Lorem Ipsum es un texto de marcador de posición comúnmente utilizado en las industrias gráficas, gráficas 
+                                y editoriales para previsualizar diseños y maquetas visuales.</Timeline.Item>
+                                <Timeline.Item label="2015-09-04">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+                                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+                                Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
+                                Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</Timeline.Item>
+                            </Timeline>
+
+                        </div>
                     </TabPane>
                     <TabPane tab="Mapa" key="3" style={TabStyles}>
                         

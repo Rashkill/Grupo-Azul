@@ -68,10 +68,6 @@ class Beneficiarios extends React.Component{
                                 <PlusOutlined />
                                 <span className="right-btn-text">Nuevo</span>
                             </div>
-                            <div className="right-btn">
-                                <FileDoneOutlined />
-                                <span className="right-btn-text">Monotributo</span>
-                            </div>
                         </div>
                     </Col>
                 </Row>
