@@ -72,7 +72,10 @@ function Acompañantes() {
                 Accept: 'application/json',
                 'Content-Type': 'multipart/form-data'
             }
-        })
+        }).then(res=>{
+            openNotification();
+            getData();
+        });
 
         // var response =  await res.json().then(openNotification()).then(getData());
 

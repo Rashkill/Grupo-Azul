@@ -73,6 +73,11 @@ app.post('/addfile', upload.array("files",2), (req, res) => {
     const files = req.files
     console.log("req: ",files);
     console.log("nombre: ",req.body.nombre);
+    var fileImg = req.files[0].buffer;
+    var filePdf = req.files[1].buffer;
+    if(!files.length===0){
+      console.log(hola);
+    }
     // console.log("apellido: ",req.body.apellido);
     // console.log("valorHora: ",req.body.valorHora);
     //await addAcomp(req,res);
@@ -84,7 +89,7 @@ app.post('/addfile', upload.array("files",2), (req, res) => {
     let sql = `INSERT INTO Acompañante(Nombre,Apellido,Dni,Telefono,Domicilio,Email,Banco,Cvu,ValorHora,Poliza,Afip) VALUES(?,?,?,?,?,?,?,?,?,?,?)`; 
 
     // insert one row into the langs table
-    db.run(sql, req.body.nombre,req.body.apellido,req.body.dni,req.body.telefono,req.body.domicilio,req.body.email,req.body.banco,req.body.cvu,req.body.valorHora,req.files[0].buffer,req.files[1].buffer, function(err) {
+    db.run(sql, req.body.nombre,req.body.apellido,req.body.dni,req.body.telefono,req.body.domicilio,req.body.email,req.body.banco,req.body.cvu,req.body.valorHora,fileImg,filePdf, function(err) {
       if (err) {
         res.status(400).json({"error":err.message});
         console.log(err.message);
