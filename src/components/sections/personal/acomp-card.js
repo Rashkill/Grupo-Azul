@@ -1,6 +1,6 @@
 import React from 'react';
 import { Row, Col, Menu, Dropdown } from 'antd';
-import { SettingFilled, EditFilled, DeleteFilled } from '@ant-design/icons';
+import { EllipsisOutlined, EditFilled, DeleteFilled } from '@ant-design/icons';
 import UserImg from '../../../images/image3.png'
 import './cards.css'
 import Axios from 'axios';
@@ -70,13 +70,13 @@ function AcompCard(props) {
                             <h3 className="card-subtitle">{props.telefono}</h3>
                         </div>
                 </div>
-                <div card-right-col>
+                <div className="card-right-col">
                     <Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
-                        <SettingFilled style={{fontSize: 20, color: '#9EA2A7'}}/>
+                        <EllipsisOutlined style={{fontSize: 20, color: '#9EA2A7'}}/>
                     </Dropdown>
                     <h4 style={{fontFamily: 'Inter'}}>
                     {/* ids: {this.props.id}  */}
-                    Hora: ${props.price}
+                    ${props.price} / hora
                     </h4>
                 </div>
             </div>

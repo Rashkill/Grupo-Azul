@@ -16,18 +16,25 @@ const ucds = [
     { value: 'Celina Melamedoff' }
 ];
 
-const okRange = (value, dateString) => {
-    alert(value)
-    alert(dateString)
-}
 
 class Jornadas extends React.Component{
-
+    
     state = { 
         visible: false,
-        horas: 0,
-         
+        horas: 0
     };
+    
+    okRange = (value, dateString) => {
+        //calculo de horas
+        var mins = value[1] - value[0]
+        mins = mins / 1000 / 60
+        mins = Math.round(mins)
+        var hs = mins / 60
+        console.log(hs)
+        if(hs > 0){
+            this.setState({horas: hs})
+        }
+    }
 
     //Mostrar modal
     showModal = () => {     
@@ -117,8 +124,10 @@ class Jornadas extends React.Component{
                     <RangePicker 
                         showTime={{ format: 'HH:mm' }} 
                         format="YYYY-MM-DD HH:mm"
-                        onOk={okRange}
+                        onOk={this.okRange}
+                        minuteStep={30}
                     />
+                    <h4>Horas: {this.state.horas}</h4>
                 </Modal>
                 
             </div>
