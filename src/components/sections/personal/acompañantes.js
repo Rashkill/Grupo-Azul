@@ -82,11 +82,12 @@ function Acompañantes() {
 
     };
 
-    const handleCancel = e => {   //cancelar modal
-        console.log(e);
-        setState({
-        visible: false,
-        });
+    const handleCancel = () => {   //cancelar modal
+        var confirm = window.confirm('¿Desea cerrar el formulario? Se perderán los cambios no guardados')
+        if(confirm){
+            setState({visible: false})
+
+        }
     };
 
     const handleSearch = (v) => { //Presionar enter al buscador

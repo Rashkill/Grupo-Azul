@@ -1,8 +1,11 @@
 import React from 'react';
-import { Divider, Row, Col, Input, Modal } from 'antd';
+import { Divider, Row, Col, Input, Modal, AutoComplete, DatePicker } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 
 const { Search } = Input;
+const ucds = [
+    { value: 'Celina Melamedoff' }
+];
 
 
 class Liquidaciones extends React.Component{
@@ -26,10 +29,11 @@ class Liquidaciones extends React.Component{
 
     //cancelar modal
     handleCancel = e => {   
-        console.log(e);
-        this.setState({
-        visible: false,
-        });
+        var confirm = window.confirm('¿Desea cerrar el formulario? Se perderán los cambios no guardados')
+        if(confirm){
+            this.setState({visible: false})
+
+        }
     };
 
     //Presionar enter al buscador
@@ -61,16 +65,51 @@ class Liquidaciones extends React.Component{
 
 
                 <Modal
-                title="Nuevo Beneficiario"
-                visible={this.state.visible}
-                onOk={this.handleOk}
-                onCancel={this.handleCancel}
-                cancelText="Cancelar"
-                okText="Ok"
+                    title="Nueva Liquidación"
+                    visible={this.state.visible}
+                    onOk={this.handleOk}
+                    onCancel={this.handleCancel}
+                    cancelText="Cancelar"
+                    okText="Generar"
+                    destroyOnClose
+                    style={{padding: 16}}
                 >
-                    <p>//Aquí iría el formulario//...</p>
-                    <p>contenido...</p>
-                    <p>contenido...</p>
+                    <div style={{padding:16}}>
+                        <Row justify="space-between">
+                            <Col span={24}>
+                                <h4>Beneficiario</h4>
+                                <AutoComplete
+                                    style={{ width: '100%' }}
+                                    options={ucds}
+                                    placeholder="Nombre"
+                                    filterOption={(inputValue, option) =>
+                                    option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
+                                    }
+                                    allowClear
+                                />
+                            </Col>
+
+                        </Row>
+
+                        <Row justify="space-between">
+                            <Col span={11}>
+                                <h4 style={{marginTop: 24}}>Desde</h4>
+                                <DatePicker 
+                                    placeholder="Fecha" 
+                                    style={{width: '100%'}} 
+                                    format="DD / MM / YYYY"
+                                />
+                            </Col>
+                            <Col span={11}>
+                                <h4 style={{marginTop: 24}}>Hasta</h4>
+                                <DatePicker 
+                                    placeholder="Fecha" 
+                                    style={{width: '100%'}}
+                                    format="DD / MM / YYYY"
+                                    />
+                            </Col>
+                        </Row>
+                    </div>
                 </Modal>
                 
             </div>

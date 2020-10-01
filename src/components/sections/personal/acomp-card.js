@@ -2,7 +2,7 @@ import React from 'react';
 import { Row, Col, Menu, Dropdown } from 'antd';
 import { EllipsisOutlined, EditFilled, DeleteFilled } from '@ant-design/icons';
 import UserImg from '../../../images/image3.png'
-import './cards.css'
+import '../../layout/cards.css'
 import Axios from 'axios';
 
 
@@ -15,7 +15,7 @@ function AcompCard(props) {
         if (key === 'edit') {
             alert('edit')
         } else {
-            var opcion = window.confirm('Estas seguro que desea borrar al acompañante '+ props.title);
+            var opcion = window.confirm('¿Estás seguro que deseas borrar al acompañante '+ props.title + '?');
             if(opcion){
                 Axios.delete('http://localhost:4000/acomp/'+props.id ,{
                     headers: {

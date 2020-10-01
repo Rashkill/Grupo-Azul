@@ -1,10 +1,14 @@
 import React from 'react';
 import { Divider, Row, Col, Input, Modal, AutoComplete, DatePicker } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import JornadaCard from './jornada-card'
+
 
 const { Search } = Input;
 const { RangePicker } = DatePicker;
+const dateFormat = 'DD/MM/YYYY';
+const { confirm } = Modal;
+
 
 const agds = [
     { value: 'Juan Pérez' },
@@ -24,7 +28,7 @@ class Jornadas extends React.Component{
         horas: 0
     };
     
-    okRange = (value, dateString) => {
+    rangeOk = (value, dateString) => {
         //calculo de horas
         var mins = value[1] - value[0]
         mins = mins / 1000 / 60
@@ -40,6 +44,7 @@ class Jornadas extends React.Component{
     showModal = () => {     
         this.setState({
         visible: true,
+        horas: 0
         });
     };
 
@@ -51,14 +56,15 @@ class Jornadas extends React.Component{
         });
     };
 
-    //cancelar modal
-    handleCancel = e => {   
-        console.log(e);
-        this.setState({
-        visible: false,
-        });
-    };
+    //cerrar modal
+    handleCancel = e => {
+        var confirm = window.confirm('¿Desea cerrar el formulario? Se perderán los cambios no guardados')
+        if(confirm){
+            this.setState({visible: false})
 
+        }
+    }
+    
     //Presionar enter al buscador
     handleSearch = (v) => { 
         console.log(v)
@@ -103,31 +109,57 @@ class Jornadas extends React.Component{
                     onOk={this.handleOk}
                     onCancel={this.handleCancel}
                     cancelText="Cancelar"
-                    okText="Ok"
+                    okText="Aceptar"
+                    destroyOnClose
+                    style={{padding: 16}}
                 >
-                    <AutoComplete
-                        style={{ width: 200 }}
-                        options={ucds}
-                        placeholder="Nombre Beneficiario"
-                        filterOption={(inputValue, option) =>
-                        option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
-                        }
-                    />
-                    <AutoComplete
-                        style={{ width: 200 }}
-                        options={agds}
-                        placeholder="Nombre Cuidador"
-                        filterOption={(inputValue, option) =>
-                        option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
-                        }
-                    />
-                    <RangePicker 
-                        showTime={{ format: 'HH:mm' }} 
-                        format="YYYY-MM-DD HH:mm"
-                        onOk={this.okRange}
-                        minuteStep={30}
-                    />
-                    <h4>Horas: {this.state.horas}</h4>
+                    <div style={{padding:16}}>
+                        <Row justify="space-between">
+                            <Col span={11}>
+                                <h4>Beneficiario</h4>
+                                <AutoComplete
+                                    style={{ width: '100%' }}
+                                    options={ucds}
+                                    placeholder="Nombre"
+                                    filterOption={(inputValue, option) =>
+                                    option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
+                                    }
+                                    allowClear
+                                />
+                            </Col>
+
+                            <Col span={11}>
+                                <h4>Acompañante</h4>
+                                <AutoComplete
+                                    style={{ width: '100%' }}
+                                    options={agds}
+                                    placeholder="Nombre"
+                                    filterOption={(inputValue, option) =>
+                                    option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
+                                    }
+                                    allowClear
+                                />
+                            </Col>
+
+                        </Row>
+
+                        <Row>
+                            <Col span={24}>
+                                <h4 style={{marginTop: 24}}>Ingreso y Egreso</h4>
+                                <RangePicker 
+                                    showTime={{ format: 'HH:mm' }} 
+                                    format="DD / MM / YYYY HH:mm"
+                                    onOk={this.rangeOk}
+                                    minuteStep={30}
+                                    placeholder={['Desde', 'Hasta']}
+                                    style={{width: '100%'}}
+                                    allowClear
+                                />
+                            </Col>
+                            <p className='card-subtitle' style={{marginTop: 8}}>Horas cumplidas: {this.state.horas}</p>
+                        </Row>
+                    </div>
+
                 </Modal>
                 
             </div>
