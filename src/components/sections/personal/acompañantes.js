@@ -120,13 +120,17 @@ function Acompañantes() {
         });
     }
     const handleCancel = e => {   //cancelar modales
-        console.log(e);
-        setState({
-        visible: false,
-        visibleEdit: false
-        });
-        limpiarInputs();
-        form.resetFields();
+        var confirm = window.confirm('¿Desea cerrar el formulario? Se perderán los cambios no guardados')
+        if(confirm){
+            console.log(e);
+            setState({
+            visible: false,
+            visibleEdit: false
+            });
+            limpiarInputs();
+            form.resetFields();
+            form1.resetFields();
+        }
     };
     const handleSearch = (v) => { //Presionar enter al buscador
         console.log(v)

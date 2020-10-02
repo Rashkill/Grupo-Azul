@@ -27,10 +27,11 @@ class Beneficiarios extends React.Component{
 
     //cancelar modal
     handleCancel = e => {   
-        console.log(e);
-        this.setState({
-        visible: false,
-        });
+        var confirm = window.confirm('¿Desea cerrar el formulario? Se perderán los cambios no guardados')
+        if(confirm){
+            this.setState({visible: false})
+
+        }
     };
 
     //Presionar enter al buscador
