@@ -7,13 +7,15 @@ import Axios from 'axios';
 
 
 function AcompCard(props) {
-    const refres = () =>{
-        props.refresh();
+    const edit = () =>{
+        const id = props.id
+        props.edit(id);
     }
     const dropClick = ({ key }) => {
         //Key de <Menu.Item>
         if (key === 'edit') {
-            alert('edit')
+            const id = props.id
+            props.edit(id);
         } else {
             var opcion = window.confirm('Estas seguro que desea borrar al acompañante '+ props.title);
             if(opcion){

@@ -12,36 +12,6 @@ const fs =  require('fs');
 app.use(cors());
 app.use(express.json());
 
-// const upload_dir = './uploads';
-
-// SET STORAGE
-// var storage = multer.diskStorage({
-//     destination: function (req, file, cb) {
-//       cb(null, 'uploads')
-//     },
-//     filename: function (req, file, cb) {
-//       cb(null, file.fieldname + '-' + Date.now())
-//     }
-//   })
-   
-// var upload = multer({ 
-    //storage: storage
-    // ,
-    // fileFilter: (req, file, cb) => {
-    //     if (
-    //       file.mimetype == 'image/png' ||
-    //       file.mimetype == 'image/jpg' ||
-    //       file.mimetype == 'image/jpeg' ||
-    //       file.mimetype == 'document/pdf' ||
-
-    //     ) {
-    //       cb(null, true);
-    //     } else {
-    //       cb(null, false);
-    //       return cb(new Error('Only .png, .jpg and .jpeg format allowed!'));
-    //     }
-    // } 
-//});
 var upload = multer();
 //Get Acompañante
 app.get('/acomp', async (req, res, next) => {
@@ -64,32 +34,86 @@ app.get('/acomp', async (req, res, next) => {
         res.json(rows)
     });
 })
+//Get Un Acompañante
+app.get('/acompOnly/:id', async (req, res, next) => {
+  var id = req.params.id;
+  let db = getConnection();
+  let sql = "SELECT * FROM acompañante WHERE id="+id;
+  var arrayData = [];
+  db.all(sql, [], (err, row) => {
+      if (err) {
+          res.status(400).json({"error":err.message});
+          return;
+      }
+      console.log(row);
+      res.json(row);
+  });
+})
  //Agregando Acompañante
 app.post('/addacomp', async (req,res)=>{
     await addAcomp(req,res);
 })
-//Agregando Archivo
+//Agregando Acompañante y Archivo
 app.post('/addfile', upload.array("files",2), (req, res) => {
     const files = req.files
     console.log("req: ",files);
-    console.log("nombre: ",req.body.nombre);
-    var fileImg = req.files[0].buffer;
-    var filePdf = req.files[1].buffer;
-    if(!files.length===0){
-      console.log(hola);
+    console.log("nombre: ",req.body.cvu);
+    console.log("length: ",req.files.length);
+    var nombre= "";
+    if(req.body.nombre){
+      nombre=req.body.nombre;
     }
-    // console.log("apellido: ",req.body.apellido);
-    // console.log("valorHora: ",req.body.valorHora);
-    //await addAcomp(req,res);
-    // var img = fs.readFileSync(req.file.path);
-    // var encode_image = img.toString('base64');
-    // var image = new Buffer(encode_image, 'base64');
+    var apellido= "";
+    if(req.body.apellido){
+      apellido=req.body.apellido;
+    }
+    var dni = 0;
+    if(req.body.dni){
+      dni=req.body.dni;
+    }
+    var telefono = 0;
+    if(req.body.telefono){
+      telefono=req.body.telefono;
+    }
+    var domicilio = "";
+    if(req.body.domicilio){
+      domicilio=req.body.domicilio;
+    }
+    var email = "";
+    if(req.body.email){
+      email=req.body.email;
+    }
+    var banco = "";
+    if(req.body.banco){
+      banco=req.body.banco;
+    }
+    var cvu = "";
+    if(req.body.cvu){
+      cvu=req.body.cvu;
+    }
+    var valorHora = 0;
+    if(req.body.valorHora){
+      valorHora=req.body.valorHora;
+    }
+    var filePdf;
+    var fileImg;
+    if(files){
+      files.forEach(e  =>{
+        if(e.mimetype == "application/pdf"){
+          filePdf = e.buffer;
+        };
+        if(e.mimetype == "image/jpeg" ||e.mimetype == "image/png" ){
+          fileImg = e.buffer;
+        };
+      });
+    };
+
 
     let db = getConnection();
     let sql = `INSERT INTO Acompañante(Nombre,Apellido,Dni,Telefono,Domicilio,Email,Banco,Cvu,ValorHora,Poliza,Afip) VALUES(?,?,?,?,?,?,?,?,?,?,?)`; 
 
     // insert one row into the langs table
-    db.run(sql, req.body.nombre,req.body.apellido,req.body.dni,req.body.telefono,req.body.domicilio,req.body.email,req.body.banco,req.body.cvu,req.body.valorHora,fileImg,filePdf, function(err) {
+    db.run(sql,nombre,apellido,dni,telefono,domicilio,email,req.body.banco,cvu,valorHora,fileImg,filePdf, function(err) {
       if (err) {
         res.status(400).json({"error":err.message});
         console.log(err.message);
@@ -105,11 +129,44 @@ app.post('/addfile', upload.array("files",2), (req, res) => {
     //     if (err) return console.log(err);
     //     console.log('saved to database');
     // });
+});
+//Agregando Acompañante y Archivo
+app.post('/updateAcomp/:id', upload.array("files",2), (req, res) => {
+  const files = req.files
+  console.log("req: ",files);
+  console.log("id: ",req.params.id);
+  var filePdf;
+  var fileImg;
+  if(files){
+    files.forEach(e  =>{
+      if(e.mimetype == "application/pdf"){
+        filePdf = e.buffer;
+      };
+      if(e.mimetype == "image/jpeg" ||e.mimetype == "image/png" ){
+        fileImg = e.buffer;
+      };
+    });
+  };
+
+  let db = getConnection();
+  let sql = `UPDATE Acompañante SET Nombre=?, Apellido=?, Dni=?, Telefono=?,Domicilio=?,Email=?,Banco=?,Cvu=?,ValorHora=?,Poliza=?,Afip=? WHERE id=?`; 
+
+  // insert one row into the langs table
+  db.run(sql,req.body.nombre,req.body.apellido,req.body.dni,req.body.telefono,req.body.domicilio,req.body.email,req.body.banco,req.body.cvu,req.body.valorHora,fileImg,filePdf,req.params.id, function(err) {
+    if (err) {
+      res.status(400).json({"error":err.message});
+      console.log(err.message);
+      return;
+    }
+    res.status(200).json("succed");
+    console.log("succed");
+  });
+
 })
 //Retornando Imagenes
 app.get('/photo/:id', (req, res) => {
-    var filename = req.params.id;
-    
+    var filename = req.params.id; 
+   
     let db = getConnection();
     let sql = `SELECT Poliza FROM acompañante WHERE id="${filename}"`;
 
