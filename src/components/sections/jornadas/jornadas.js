@@ -11,6 +11,7 @@ const dateFormat = 'DD/MM/YYYY';
 const mesesNombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
 ];
+const moment = require('moment');
 const { confirm } = Modal;
 
 var agds = [
@@ -83,6 +84,7 @@ class Jornadas extends React.Component{
                 horas: j.CantHoras,
                 ingreso: j.FechaIngreso,
                 egreso: j.FechaEgreso,
+                rangeVal: [moment(j.FechaIngreso, dateFormat+ " HH:mm"), moment(j.FechaEgreso, dateFormat+ " HH:mm")],
                 key: j.Id
             })));
             jornadasIn = jornadasInfoArray;
@@ -94,6 +96,7 @@ class Jornadas extends React.Component{
         //calculo de horas
         if(value[0] !== null && value[1] !== null)
         {
+            console.log(value);
             lastInfo.rangeVal = value;
             var mins = value[1] - value[0]
             mins = mins / 1000 / 60

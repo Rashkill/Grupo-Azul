@@ -20,6 +20,7 @@ const JornadasInfo = (props) => {
                 ingreso={jornadaInfo.ingreso}
                 egreso={jornadaInfo.egreso}
                 id={jornadaInfo.key}
+                rangeVal={jornadaInfo.rangeVal}
                 key={jornadaInfo.key}
                 Refresh={Refresh}
             />

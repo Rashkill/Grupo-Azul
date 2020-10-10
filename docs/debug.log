@@ -1,0 +1,6 @@
+[1010/124645.896:ERROR:filesystem_win.cc(129)] GetFileAttributes C:\Users\JeiBros\AppData\Local\Microsoft\Edge\User Data\Crashpad\attachments\1659da5f-51a9-45e2-a7f0-091319f37b80: El sistema no puede encontrar la ruta especificada. (0x3)
+[1010/124646.291:ERROR:filesystem_win.cc(129)] GetFileAttributes C:\Users\JeiBros\AppData\Local\Microsoft\Edge\User Data\Crashpad\attachments\492f4d65-dc7f-413f-90a3-a1b4ff46b17a: El sistema no puede encontrar la ruta especificada. (0x3)
+[1010/124646.308:ERROR:filesystem_win.cc(129)] GetFileAttributes C:\Users\JeiBros\AppData\Local\Microsoft\Edge\User Data\Crashpad\attachments\7d3b211e-7170-4a9f-a648-e31b75689059: El sistema no puede encontrar la ruta especificada. (0x3)
+[1010/124646.308:ERROR:filesystem_win.cc(129)] GetFileAttributes C:\Users\JeiBros\AppData\Local\Microsoft\Edge\User Data\Crashpad\attachments\8fc26093-46c2-4a1c-8e02-e19fc6e8b0ee: El sistema no puede encontrar la ruta especificada. (0x3)
+[1010/124646.310:ERROR:filesystem_win.cc(129)] GetFileAttributes C:\Users\JeiBros\AppData\Local\Microsoft\Edge\User Data\Crashpad\attachments\dbce1f88-622a-48bb-8533-51242e0a781d: El sistema no puede encontrar la ruta especificada. (0x3)
+[1010/124646.310:ERROR:directory_reader_win.cc(43)] FindFirstFile: El sistema no puede encontrar la ruta especificada. (0x3)

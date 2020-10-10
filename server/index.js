@@ -44,28 +44,6 @@ app.get('/jornadas', async (req, res, next) => {
 //Actualizando Jornada
 app.post('/updateJornada/:id', async(req, res) => {
   await updJornada(req,res);
-  // let db = getConnection();
-  // let sql = `UPDATE Jornada SET IdBeneficiario=?, IdAcompañante=?, CantHoras=?, FechaIngreso=?, FechaEgreso=? WHERE Id=?`; 
-
-  // console.log(req.body);
-
-  // // insert one row into the langs table
-  // db.run(sql,
-  //       req.body.agdID,
-  //       req.body.ucdID,
-  //       req.body.ingreso,
-  //       req.body.egreso,
-  //       req.params.id, 
-  //       function(err) {
-  //       if (err) {
-  //         res.status(400).json({"error":err.message});
-  //         console.log(err.message);
-  //         return;
-  //       }
-  //       res.status(200).json("succed");
-  //       console.log("succed");
-  // });
-
 })
 
 //Get Acompañante

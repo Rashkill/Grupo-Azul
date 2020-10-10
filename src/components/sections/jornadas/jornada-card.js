@@ -113,7 +113,8 @@ class JornadaCard extends React.Component {
             horas: this.props.horas,
             ingreso: this.props.ingreso,
             egreso: this.props.egreso,
-            id: this.props.id
+            id: this.props.id,
+            rangeVal: this.props.rangeVal
         }
 
         const dropClick = ({ key }) => {
@@ -174,7 +175,7 @@ class JornadaCard extends React.Component {
                                         //     console.log(lastInfo.ucdID);
                                         // }}
                                         value={this.props.ucdNombre}
-                                        //allowClear
+                                        allowClear
                                     />
                                 </Col>
     
@@ -195,7 +196,7 @@ class JornadaCard extends React.Component {
                                         //     console.log(lastInfo.agdID);
                                         // }}
                                         value={this.props.agdNombre}
-                                        //allowClear
+                                        allowClear
                                     />
                                 </Col>
     
@@ -211,6 +212,7 @@ class JornadaCard extends React.Component {
                                         minuteStep={30}
                                         placeholder={['Desde', 'Hasta']}
                                         style={{width: '100%'}}
+                                        value={this.value === undefined ? lastInfo.rangeVal : this.value}
                                         allowClear
                                     />
                                 </Col>
