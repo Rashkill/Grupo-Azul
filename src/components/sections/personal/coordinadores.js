@@ -24,8 +24,7 @@ function Coordinadores() {
     const handleCancel = e => {   //cancelar modal
         var confirm = window.confirm('¿Desea cerrar el formulario? Se perderán los cambios no guardados')
         if(confirm){
-            this.setState({visible: false})
-
+            setState({visible: false})
         }
     };
     const handleSearch = (v) => { //Presionar enter al buscador

@@ -3,6 +3,8 @@ const cors = require('cors');
 const port = 4000
 const {getAcomp} = require('./routes/getAcomp');
 const {addAcomp} = require('./routes/addAcomp');
+const {addBenef, getBenef} = require('./routes/addGetBenef');
+const {addJornada, updJornada} = require('./routes/jornadaDBHandle');
 const {addFile} = require('./routes/addFile');
 const {getConnection} = require('./db/conn');
 const app = express()
@@ -13,6 +15,59 @@ app.use(cors());
 app.use(express.json());
 
 var upload = multer();
+
+
+ //Agregando Jornada
+ app.post('/addjornada', async (req,res)=>{
+  await addJornada(req,res);
+})
+
+//Get Jornadas
+app.get('/jornadas', async (req, res, next) => {
+  let db = getConnection();
+  let sql = `SELECT * FROM jornada
+         ORDER BY id`;
+  var arrayData = [];
+  db.all(sql, [], (err, rows) => {
+      if (err) {
+          res.status(400).json({"error":err.message});
+          return;
+      }
+      rows.forEach((row) => {
+          // console.log(row);
+          arrayData.push(row);
+      });
+      res.json(rows)
+  });
+})
+
+//Actualizando Jornada
+app.post('/updateJornada/:id', async(req, res) => {
+  await updJornada(req,res);
+  // let db = getConnection();
+  // let sql = `UPDATE Jornada SET IdBeneficiario=?, IdAcompañante=?, CantHoras=?, FechaIngreso=?, FechaEgreso=? WHERE Id=?`; 
+
+  // console.log(req.body);
+
+  // // insert one row into the langs table
+  // db.run(sql,
+  //       req.body.agdID,
+  //       req.body.ucdID,
+  //       req.body.ingreso,
+  //       req.body.egreso,
+  //       req.params.id, 
+  //       function(err) {
+  //       if (err) {
+  //         res.status(400).json({"error":err.message});
+  //         console.log(err.message);
+  //         return;
+  //       }
+  //       res.status(200).json("succed");
+  //       console.log("succed");
+  // });
+
+})
+
 //Get Acompañante
 app.get('/acomp', async (req, res, next) => {
     // const acomp = await getAcomp(req, res, next);
@@ -34,6 +89,7 @@ app.get('/acomp', async (req, res, next) => {
         res.json(rows)
     });
 })
+
 //Get Un Acompañante
 app.get('/acompOnly/:id', async (req, res, next) => {
   var id = req.params.id;
@@ -53,6 +109,8 @@ app.get('/acompOnly/:id', async (req, res, next) => {
 app.post('/addacomp', async (req,res)=>{
     await addAcomp(req,res);
 })
+
+
 //Agregando Acompañante y Archivo
 app.post('/addfile', upload.array("files",2), (req, res) => {
     const files = req.files
@@ -207,6 +265,31 @@ app.delete('/acomp/:id', (req,res)=>{
   });
 
 })
+
+//Get Beneficiarios
+app.get('/beneficiarios', async (req, res, next) => {
+  let db = getConnection();
+  let sql = `SELECT * FROM beneficiario
+         ORDER BY id`;
+  var arrayData = [];
+  db.all(sql, [], (err, rows) => {
+      if (err) {
+          res.status(400).json({"error":err.message});
+          return;
+      }
+      rows.forEach((row) => {
+          arrayData.push(row);
+      });
+      res.json(rows)
+  });
+})
+
+ //Agregando Beneficiario
+ app.post('/addabenef', async (req,res)=>{
+  await addBenef(req,res);
+})
+
+
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
 })

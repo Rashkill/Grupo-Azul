@@ -136,52 +136,52 @@ function Acompañantes() {
         console.log(v)
     }  
     const onChangeInput = e =>{
-        if(e.target.id=="nombre"){
+        if(e.target.id==="nombre"){
             var nombre = e.target.value;
             console.log("nombre: ",nombre);
             setState(state=>({...state,nombre:nombre}));
         }
-        if(e.target.id=="apellido"){
+        if(e.target.id==="apellido"){
             var apellido = e.target.value;
             console.log("apellido: ",apellido);
             setState(state=>({...state,apellido:apellido}));
         }
-        if(e.target.id=="dni"){
+        if(e.target.id==="dni"){
             var dni = e.target.value;
             console.log("dni: ",dni);
             setState(state=>({...state,dni:dni}));
         }
-        if(e.target.id=="telefono"){
+        if(e.target.id==="telefono"){
             var telefono = e.target.value;
             console.log("telefono: ",telefono);
             setState(state=>({...state,telefono:telefono}));
         }
-        if(e.target.id=="domicilio"){
+        if(e.target.id==="domicilio"){
             var domicilio = e.target.value;
             console.log("domicilio: ",domicilio);
             setState(state=>({...state,domicilio:domicilio}));
         }
-        if(e.target.id=="email"){
+        if(e.target.id==="email"){
             var email = e.target.value;
             console.log("email: ",email);
             setState(state=>({...state,email:email}));
         }
-        if(e.target.id=="valorHora"){
+        if(e.target.id==="valorHora"){
             var valorHora = e.target.value;
             console.log("valorHora: ",valorHora);
             setState(state=>({...state,valorHora:valorHora}));
         }
-        if(e.target.id=="banco"){
+        if(e.target.id==="banco"){
             var banco = e.target.value;
             console.log("banco: ",banco);
             setState(state=>({...state,banco:banco}));
         }
-        if(e.target.id=="cvu"){
+        if(e.target.id==="cvu"){
             var cvu = e.target.value;
             console.log("cvu: ",cvu);
             setState(state=>({...state,cvu:cvu}));
         }
-        if(e.target.id=="valorHora"){
+        if(e.target.id==="valorHora"){
             var valorHora = e.target.value;
             console.log("valorHora: ",valorHora);
             setState(state=>({...state,valorHora:valorHora}));

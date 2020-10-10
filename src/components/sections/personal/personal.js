@@ -14,8 +14,6 @@ const TabStyles = {
 
 class Personal extends React.Component{
 
-
-
     render() {
         return(
             <Tabs type="card">
