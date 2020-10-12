@@ -6,7 +6,10 @@ import Axios from 'axios';
 
 const { Search } = Input;
 
-var info = [];
+var info = {
+    ucd: [],
+    datos: []
+};
 
 function Acompañantes() {
     const [state, setState] = useState({    //Estados
@@ -34,9 +37,15 @@ function Acompañantes() {
         try{
             const res = await fetch('http://localhost:4000/acomp', {signal: abortController.signal});
             const datos = await res.json();
-            setData(datos);
-            info = datos;
-        }catch(e){}
+            info.datos = datos;
+
+            const res2 = await fetch('http://localhost:4000/beneficiarios', {signal: abortController.signal});
+            const datos2 = await res2.json();
+            info.ucd = datos2;
+
+            setData(info);
+
+        }catch(e){console.log(e)}
     }
     
 
@@ -248,16 +257,16 @@ function Acompañantes() {
         setFileImg([]);
     } 
     const cargandoInputs = (id) =>{
-        setState(state=>({...state,nombre:data[id].Nombre}));
-        setState(state=>({...state,apellido:data[id].Apellido}));
-        setState(state=>({...state,domicilio:data[id].Domicilio}));
-        setState(state=>({...state,dni:data[id].Dni}));
-        setState(state=>({...state,telefono:data[id].Telefono}));
-        setState(state=>({...state,email:data[id].Email}));
-        setState(state=>({...state,banco:data[id].Banco}));
-        setState(state=>({...state,cvu:data[id].Cvu}));
-        setState(state=>({...state,alias:data[id].Alias})); 
-        setState(state=>({...state,valorHora:data[id].ValorHora})); 
+        setState(state=>({...state,nombre:info.datos[id].Nombre}));
+        setState(state=>({...state,apellido:info.datos[id].Apellido}));
+        setState(state=>({...state,domicilio:info.datos[id].Domicilio}));
+        setState(state=>({...state,dni:info.datos[id].Dni}));
+        setState(state=>({...state,telefono:info.datos[id].Telefono}));
+        setState(state=>({...state,email:info.datos[id].Email}));
+        setState(state=>({...state,banco:info.datos[id].Banco}));
+        setState(state=>({...state,cvu:info.datos[id].Cvu}));
+        setState(state=>({...state,alias:info.datos[id].Alias})); 
+        setState(state=>({...state,valorHora:info.datos[id].ValorHora})); 
     }
     const propsImg = {
         onRemove: file => {
@@ -308,7 +317,7 @@ function Acompañantes() {
                     </Divider>
                     <div className="cards-container">                        
                     {/* Display de acompañantes */}
-                    {info.map((i , index)=>{
+                    {info.datos.map((i , index)=>{
                         return(
                             <AcompCard edit={showEdit} refresh={getData} 
                             title={i.Nombre + " " + i.Apellido} 
@@ -316,7 +325,8 @@ function Acompañantes() {
                             email={i.Email} 
                             telefono={i.Telefono} 
                             domicilio={i.Domicilio} 
-                            id={i.Id} 
+                            id={i.Id}
+                            ucd= {info.ucd[i.IdBeneficiario - 1]}
                             key={index}/>
                         )
                     })}                   
