@@ -1,7 +1,7 @@
 import React from 'react';
 import { Divider, Row, Col, Input, Modal, AutoComplete, DatePicker,notification  } from 'antd';
-import { PlusOutlined, FileDoneOutlined, UploadOutlined, CheckCircleOutlined, PaperClipOutlined } from '@ant-design/icons';
-import JornadasInfo from './jornadas-info'
+import { PlusOutlined, FileDoneOutlined, UploadOutlined, CheckCircleOutlined, AlertOutlined } from '@ant-design/icons';
+import JornadaCard from './jornada-card';
 import axios from 'axios';
 
 
@@ -14,12 +14,8 @@ const mesesNombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
 const moment = require('moment');
 const { confirm } = Modal;
 
-var agds = [
-    { value: 'Vacio' },
-];
-const ucds = [
-    { value: 'Celina Melamedoff' }
-];
+var agds = [];
+var ucds = [];
 
 function nombreJornada (agdID, ucdID, fecha)
 {
@@ -53,15 +49,24 @@ var lastInfo = {
     rangeVal: undefined
 }
 
+const abortController = new AbortController();
+
 const getData = async () =>{
-    const res = await fetch('http://localhost:4000/acomp');
-    const datos = await res.json();
-    agds = (datos.map(p => ({value: p.Nombre + " " + p.Apellido, key: p.Id})));
+    try{
+        const res = await fetch('http://localhost:4000/acomp', {signal: abortController.signal});
+        const datosAcomp = await res.json();
+        agds = (datosAcomp.map(p => ({value: p.Nombre + " " + p.Apellido, key: p.Id})));
+
+        const resBenef = await fetch('http://localhost:4000/beneficiarios', {signal: abortController.signal});
+        const datosBenef = await resBenef.json();
+        ucds = (datosBenef.map(p => ({value: p.Nombre + " " + p.Apellido, key: p.Id})));
+    }catch{}
 }
 
 class Jornadas extends React.Component{
     state = { 
         visible: false,
+        btnNuevo: "hidden",
         horas: 0,
         jornadas: jornadasIn
     };
@@ -69,26 +74,29 @@ class Jornadas extends React.Component{
     componentDidMount(){
         this.cargarTodo();
     }
-
+    componentWillUnmount(){
+        abortController.abort();
+    }
     cargarTodo = () =>
     {
         getData().then(async() =>{
             const res = await fetch('http://localhost:4000/jornadas');
             const datos = await res.json();
+
             const jornadasInfoArray = (datos.map(j => ({
                 title: nombreJornada(j.IdBeneficiario, j.IdAcompañante, j.FechaIngreso),
                 agdID: j.IdBeneficiario,
-                agdNombre: getNombreAgd(j.IdBeneficiario),
+                agds: agds,
                 ucdID: j.IdAcompañante,
-                ucdNombre: getNombreUcd(j.IdAcompañante),
+                ucds: ucds,
                 horas: j.CantHoras,
                 ingreso: j.FechaIngreso,
                 egreso: j.FechaEgreso,
                 rangeVal: [moment(j.FechaIngreso, dateFormat+ " HH:mm"), moment(j.FechaEgreso, dateFormat+ " HH:mm")],
                 key: j.Id
-            })));
+            }), this));
             jornadasIn = jornadasInfoArray;
-            this.setState({jornadas: jornadasInfoArray});
+            this.setState({btnNuevo: "visible", jornadas: jornadasInfoArray});
         });
     }
 
@@ -121,40 +129,48 @@ class Jornadas extends React.Component{
 
     //maneja boton ok del modal
     handleOk = e => {
-        this.setState({
-        visible: false,
-        });
-
-        if(this.state.horas > 0)
-            lastInfo.horas = this.state.horas;
-
-        axios.post('http://localhost:4000/addjornada', lastInfo)
-        .then(() => {
-            this.openNotification()
-            lastInfo = 
-            {
-                agdID: 0,
-                ucdID: 0,
-                horas: 0,
-                ingreso: "",
-                egreso: "",
-                rangeVal: undefined
-            }
-            this.cargarTodo();
-        });
+        if(lastInfo.agdID > 0 && lastInfo.ucdID > 0 &&
+            lastInfo.rangeVal[0] !== null && lastInfo.rangeVal[1] !== null) {
         
+            this.setState({
+            visible: false,
+            });
+
+            if(this.state.horas > 0)
+                lastInfo.horas = this.state.horas;
+
+            axios.post('http://localhost:4000/addjornada', lastInfo)
+            .then(() => {
+                this.openNotification("Agregado exitoso",
+                "La jornada fue creada correctamente", true);
+                lastInfo = 
+                {
+                    agdID: 0,
+                    ucdID: 0,
+                    horas: 0,
+                    ingreso: "",
+                    egreso: "",
+                    rangeVal: undefined
+                }
+                this.cargarTodo();
+            });
+        }
+        else
+            this.openNotification("Datos invalidos",
+            "No se pueden dejar campos vacios", false);
     };
 
-    openNotification = () => {
+    openNotification = (msg, desc, succeed) => {
         this.setState({
-            visible: false,
+            editVisible: false,
         });
 
         notification.open({
-            message: 'Agregado exitoso',
-            description:
-            `La jornada se agregó correctamente.`,
-            icon: <CheckCircleOutlined style={{ color: '#52C41A' }} />,
+            message: msg,
+            description: desc,
+            icon: succeed ? 
+            <CheckCircleOutlined style={{ color: '#52C41A' }} /> : 
+            <AlertOutlined style={{ color: '#c4251a' }} />
         });
     };
 
@@ -180,16 +196,30 @@ class Jornadas extends React.Component{
                         </Divider>
                         
                         <div className="cards-container">
-                            <JornadasInfo
-                                jornadasInfo = {this.state.jornadas}
-                                Refresh={this.cargarTodo}
-                            />
+                            {this.state.jornadas.map(jornadaInfo => {
+                                return(
+                                    <JornadaCard
+                                        title={jornadaInfo.title}
+                                        agdID={jornadaInfo.agdID}
+                                        ucdID={jornadaInfo.ucdID}
+                                        horas={jornadaInfo.horas}
+                                        ingreso={jornadaInfo.ingreso}
+                                        egreso={jornadaInfo.egreso}
+                                        id={jornadaInfo.key}
+                                        rangeVal={jornadaInfo.rangeVal}
+                                        key={jornadaInfo.key}
+                                        ucds={jornadaInfo.ucds}
+                                        agds={jornadaInfo.agds}
+                                        Refresh={this.cargarTodo}
+                                    />
+                                )
+                            })}
                         </div>
 
                     </Col>
                     <Col span={6}>
                         <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onSearch={value => this.handleSearch(value)} allowClear={true}/>
-                        <div className="right-menu">
+                        <div className="right-menu" style={{visibility: this.state.btnNuevo}}>
                             <div className="right-btn" onClick={this.showModal}>
                                 <PlusOutlined />
                                 <span className="right-btn-text">Nuevo</span>

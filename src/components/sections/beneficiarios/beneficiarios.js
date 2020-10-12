@@ -5,11 +5,36 @@ import BenefCard from './benef-card'
 
 const { Search } = Input;
 
+var ucds = [];
+
+const abortController = new AbortController();
 
 class Beneficiarios extends React.Component{
 
-    state = { visible: false };
+    state = { 
+        visible: false,
+        cantidad: 0
+    };
 
+
+    getData = async () =>{
+        try{
+            const resBenef = await fetch('http://localhost:4000/beneficiarios', {signal: abortController.signal});
+            const datosBenef = await resBenef.json();
+            ucds = datosBenef;
+            this.setState({cantidad: ucds.length})
+        }catch(e){}
+    }
+
+    componentDidMount()
+    {
+        this.getData();
+    }
+
+    componentWillUnmount()
+    {
+        abortController.abort();
+    }
     //Mostrar modal
     showModal = () => {     
         this.setState({
@@ -51,14 +76,18 @@ class Beneficiarios extends React.Component{
                         </Divider>
 
                         <div className="cards-container">
-
+                        {ucds.map(p =>{
+                            return(
                             <BenefCard 
-                                title="Celina Melamedoff"
-                                domicilio="Castellanos 1445"
-                                telefono="+543483402494"
+                                title={p.Nombre + " " + p.Apellido}
+                                domicilio={p.Direccion}
+                                telefono={p.Telefono}
                                 linkto="/benefprofile"
-                            />
-
+                                key={p.Id}
+                                id={p.Id}
+                                Refresh={this.getData}
+                            />)
+                        })}
                         </div>
 
                     </Col>

@@ -46,6 +46,22 @@ app.post('/updateJornada/:id', async(req, res) => {
   await updJornada(req,res);
 })
 
+//Borrando Jornada
+app.delete('/jornada/:id', (req,res)=>{
+  var id = req.params.id;
+  // delete a row based on id
+  let db = getConnection();
+  let sql = `DELETE FROM jornada WHERE id="${id}"`;
+  db.run(sql, function(err) {
+    if (err) {
+      return console.error(err.message);
+    }
+    console.log(`Se ha borrado la fila ${id}`);
+    res.json("Se ha borrado la fila");
+  });
+
+})
+
 //Get Acompañante
 app.get('/acomp', async (req, res, next) => {
     // const acomp = await getAcomp(req, res, next);
@@ -260,6 +276,26 @@ app.get('/beneficiarios', async (req, res, next) => {
       });
       res.json(rows)
   });
+})
+
+//Get Un Beneficiario
+app.get('/benefOnly/:id', async (req, res, next) => {
+  var id = req.params.id;
+  let db = getConnection();
+  let sql = "SELECT * FROM Beneficiario WHERE id="+id;
+  var arrayData = [];
+  db.all(sql, [], (err, row) => {
+      if (err) {
+          res.status(400).json({"error":err.message});
+          return;
+      }
+      console.log(row);
+      res.json(row);
+  });
+})
+ //Agregando Acompañante
+app.post('/addacomp', async (req,res)=>{
+    await addAcomp(req,res);
 })
 
  //Agregando Beneficiario

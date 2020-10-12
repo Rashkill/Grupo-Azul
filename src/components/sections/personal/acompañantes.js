@@ -6,6 +6,8 @@ import Axios from 'axios';
 
 const { Search } = Input;
 
+var info = [];
+
 function Acompañantes() {
     const [state, setState] = useState({    //Estados
         id:0,
@@ -22,20 +24,28 @@ function Acompañantes() {
         valorHora:0
     });
     
+    const abortController = new AbortController();
     const [data, setData] = useState([]);
     const [acompEdit,setAcompEdit] = useState([]);
     const [fileImg, setFileImg] = useState([]);
     const [filePdf,setFilePdf] = useState([]);
 
-    const getData = async () =>{
-        const res = await fetch('http://localhost:4000/acomp');
-        const datos = await res.json();
-        setData(datos);
-        console.log(data);
+    const getData = async() =>{
+        try{
+            const res = await fetch('http://localhost:4000/acomp', {signal: abortController.signal});
+            const datos = await res.json();
+            setData(datos);
+            info = datos;
+        }catch(e){}
     }
+    
 
     useEffect(()=>{
         getData();
+
+        return () => {
+            abortController.abort();
+        }
     },[]);
 
     const showModal =  () => {     //Mostrar modal
@@ -48,12 +58,12 @@ function Acompañantes() {
             id:id,
             visibleEdit: true  
         });
-        const options = {method: 'GET'};
-        const res = await fetch('http://localhost:4000/acompOnly/'+id,options);
-        const datos = await res.json();
-        setAcompEdit(datos);
-        cargandoInputs(datos);
-        console.log(datos[0].Nombre);
+        // const options = {method: 'GET'};
+        // const res = await fetch('http://localhost:4000/acompOnly/'+id,options);
+        // const datos = await res.json();
+        setAcompEdit(data[id - 1]);
+        cargandoInputs(id - 1);
+        //console.log(datos[0].Nombre);
 
     };
 
@@ -237,17 +247,17 @@ function Acompañantes() {
         setFilePdf([]);
         setFileImg([]);
     } 
-    const cargandoInputs = (datos) =>{
-        setState(state=>({...state,nombre:datos[0].Nombre}));
-        setState(state=>({...state,apellido:datos[0].Apellido}));
-        setState(state=>({...state,domicilio:datos[0].Domicilio}));
-        setState(state=>({...state,dni:datos[0].Dni}));
-        setState(state=>({...state,telefono:datos[0].Telefono}));
-        setState(state=>({...state,email:datos[0].Email}));
-        setState(state=>({...state,banco:datos[0].Banco}));
-        setState(state=>({...state,cvu:datos[0].Cvu}));
-        setState(state=>({...state,alias:datos[0].Alias})); 
-        setState(state=>({...state,valorHora:datos[0].ValorHora})); 
+    const cargandoInputs = (id) =>{
+        setState(state=>({...state,nombre:data[id].Nombre}));
+        setState(state=>({...state,apellido:data[id].Apellido}));
+        setState(state=>({...state,domicilio:data[id].Domicilio}));
+        setState(state=>({...state,dni:data[id].Dni}));
+        setState(state=>({...state,telefono:data[id].Telefono}));
+        setState(state=>({...state,email:data[id].Email}));
+        setState(state=>({...state,banco:data[id].Banco}));
+        setState(state=>({...state,cvu:data[id].Cvu}));
+        setState(state=>({...state,alias:data[id].Alias})); 
+        setState(state=>({...state,valorHora:data[id].ValorHora})); 
     }
     const propsImg = {
         onRemove: file => {
@@ -296,23 +306,18 @@ function Acompañantes() {
                             Acompañantes
                         </h1>
                     </Divider>
-                    <div className="cards-container">
-                        
-                        <AcompCard 
-                            title="Juan Perez" 
-                            price="80" 
-                            udc="Calle XXX"
-                            domicilio="Avenida Siempre Viva 123"
-                            email="juanperez26@gmail.com"
-                            telefono="+545325000"
-                            id="1" 
-                            key={1}
-                        />
-                        
+                    <div className="cards-container">                        
                     {/* Display de acompañantes */}
-                    {data.map((i , index)=>{
+                    {info.map((i , index)=>{
                         return(
-                            <AcompCard edit={showEdit} refresh={getData} title={i.Nombre} price={i.ValorHora} email={i.Email} telefono={i.Telefono} domicilio={i.Domicilio} id={i.Id} key={index}/>
+                            <AcompCard edit={showEdit} refresh={getData} 
+                            title={i.Nombre + " " + i.Apellido} 
+                            price={i.ValorHora} 
+                            email={i.Email} 
+                            telefono={i.Telefono} 
+                            domicilio={i.Domicilio} 
+                            id={i.Id} 
+                            key={index}/>
                         )
                     })}                   
                     </div>

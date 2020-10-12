@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import { Menu, Dropdown, Divider, Row, Col, Input, Modal, AutoComplete, DatePicker,notification  } from 'antd';
-import { PlusOutlined, FileDoneOutlined, UploadOutlined, CheckCircleOutlined, PaperClipOutlined } from '@ant-design/icons';
+import { PlusOutlined, FileDoneOutlined, UploadOutlined, CheckCircleOutlined, AlertOutlined } from '@ant-design/icons';
 import { EllipsisOutlined, EditFilled, DeleteFilled } from '@ant-design/icons';
 import JornadaImg from '../../../images/image5.png'
 import { createHashHistory } from 'history';
@@ -30,100 +30,116 @@ var lastInfo = {
 
 class JornadaCard extends React.Component {
     state = { 
-        visible: false,
+        editVisible: false,
+        deleteVisible: false,
+        horas: 0
     };
 
 
+    //Se llama al presionar el boton OK de las fechas
     rangeOk = (value) => {
-        //calculo de horas
         if(value[0] !== null && value[1] !== null)
         {
+            //calculo de horas
             var mins = value[1] - value[0]
             mins = mins / 1000 / 60
             mins = Math.round(mins)
             var hs = mins / 60
             console.log(hs)
-            if(hs > 0)
+            if(hs > 0){
+                this.setState({horas: hs})
                 lastInfo.horas = hs;
+            }
 
-            //lastInfo.title = value[0]._d.getDate() + " de " + mesesNombres[value[0]._d.getMonth()];
             lastInfo.ingreso = value[0].format(dateFormat + " HH:mm");
             lastInfo.egreso = value[1].format(dateFormat + " HH:mm");
         }
     }
 
-    //Mostrar modal
-    showModal = () => {     
+    //Se muestra el cartel de edit
+    showModalEdit = () => {     
         this.setState({
-        visible: true,
+            editVisible: true,
+            horas: this.props.horas
         });
+        lastInfo = {
+            agdID: this.props.agdID,
+            ucdID: this.props.ucdID,
+            horas: this.props.horas,
+            ingreso: this.props.ingreso,
+            egreso: this.props.egreso,
+            rangeVal: this.props.rangeVal
+        }
     };
     
-    //maneja boton ok del modal
-    handleOk = e => {      
-        //console.log(e);
+    //Se muestra el cartel de confirmacion de borrado
+    showModalDelete = () => {     
         this.setState({
-        visible: false,
+            deleteVisible: true
+        });
+    }
+
+    //Boton aceptar del edit
+    handleOkEdit = e => {      
+        this.setState({
+            editVisible: false,
         });
 
-            // const formData = new FormData();
-            // formData.append("agdID",this.props.agdID)
-            // formData.append("ucdID",this.props.ucdID)
-            // formData.append("horas",this.props.horas)
-            // formData.append("ingreso",this.props.ingreso)
-            // formData.append("egreso",this.props.egreso)
         axios.post('http://localhost:4000/updateJornada/' + this.props.id, lastInfo).then(() => {
-            this.openNotification()
+            this.openNotification(
+                "Actualización exitosa",
+                "La jornada se modificó correctamente",
+                true
+            );
             this.props.Refresh();
         }
         );        
     };
 
-    openNotification = () => {
+    openNotification = (msg, desc, succeed) => {
         this.setState({
-            visible: false,
+            editVisible: false,
         });
 
         notification.open({
-            message: 'Actualización exitosa',
-            description:
-            `La jornada se actualizó correctamente.`,
-            icon: <CheckCircleOutlined style={{ color: '#52C41A' }} />,
+            message: msg,
+            description: desc,
+            icon: succeed ? 
+            <CheckCircleOutlined style={{ color: '#52C41A' }} /> : 
+            <AlertOutlined style={{ color: 'red' }} />
         });
     };
 
-    //cerrar modal
-    handleCancel = e => {
-        // var confirm = window.confirm('¿Desea cerrar el formulario? Se perderán los cambios no guardados')
-        // if(confirm){
-             this.setState({visible: false})
+    handleOkDelete = e => {
+        this.setState({deleteVisible: false})
 
-        // }
+        axios.delete('http://localhost:4000/jornada/' + this.props.id, lastInfo).then(() => {
+                this.openNotification(
+                    "Eliminación exitosa",
+                    "La jornada se borró correctamente",
+                    true
+                )
+                this.props.Refresh();
+            }
+        );
+    }
+
+    //Se cierran los carteles
+    handleCancel = e => {
+        this.setState({
+            editVisible: false,
+            deleteVisible: false
+        })
     }
 
 
     render() {
 
-        lastInfo = {
-            title: this.props.title,
-            agdID: this.props.agdID,
-            agdNombre: this.props.agdNombre,
-            ucdID: this.props.ucdID,
-            ucdNombre: this.props.ucdNombre,
-            horas: this.props.horas,
-            ingreso: this.props.ingreso,
-            egreso: this.props.egreso,
-            id: this.props.id,
-            rangeVal: this.props.rangeVal
-        }
-
         const dropClick = ({ key }) => {
-            //Key de <Menu.Item>
             if (key === 'edit') {
-                //alert('edit ' + props.id)
-                this.setState({visible: true})
+                this.showModalEdit();
             } else {
-                //alert('delete')
+                this.showModalDelete();
             }
         }
     
@@ -137,7 +153,7 @@ class JornadaCard extends React.Component {
                     </div>
                 </Menu.Item>
                 <Menu.Item key="delete">
-                    <div className="drop-btn">
+                    <div className="drop-btn" style={{color: "red"}}>
                         <DeleteFilled />
                         <p>Eliminar</p>
                     </div>
@@ -148,8 +164,8 @@ class JornadaCard extends React.Component {
         const modalEdit = (
             <Modal
                     title="Modificar Jornada"
-                    visible={this.state.visible}
-                    onOk={this.handleOk}
+                    visible={this.state.editVisible}
+                    onOk={this.handleOkEdit}
                     onCancel={this.handleCancel}
                     cancelText="Cancelar"
                     okText="Aceptar"
@@ -162,19 +178,19 @@ class JornadaCard extends React.Component {
                                     <h4>Beneficiario</h4>
                                     <AutoComplete
                                         style={{ width: '100%' }}
-                                        //options={ucds}
+                                        options={this.props.ucds}
                                         placeholder="Nombre"
                                         filterOption={(inputValue, option) =>
                                         option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
                                         }
-                                        // onChange = {(e, value, reason) => {
-                                        //     if(e === undefined) return;
-                                        //     var id = ucds.findIndex(v => v.value == e);
-                                        //     if(id !== -1)
-                                        //         lastInfo.ucdID = id+1;
-                                        //     console.log(lastInfo.ucdID);
-                                        // }}
-                                        value={this.props.ucdNombre}
+                                        onChange = {(e, value, reason) => {
+                                            if(e === undefined) return;
+                                            var id = this.props.ucds.findIndex(v => v.value == e);
+                                            if(id !== -1)
+                                                lastInfo.ucdID = id+1;
+                                            console.log(lastInfo.ucdID);
+                                        }}
+                                        defaultValue={this.props.ucds[this.props.ucdID - 1].value}
                                         allowClear
                                     />
                                 </Col>
@@ -183,19 +199,19 @@ class JornadaCard extends React.Component {
                                     <h4>Acompañante</h4>
                                     <AutoComplete
                                         style={{ width: '100%' }}
-                                        //options={agds}
+                                        options={this.props.agds}
                                         placeholder="Nombre"
                                         filterOption={(inputValue, option) =>
                                         option.value !== undefined
                                         }
-                                        // onChange = {(e, value, reason) => {
-                                        //     if(e === undefined) return;
-                                        //     var id = agds.findIndex(v => v.value == e);
-                                        //     if(id !== -1)
-                                        //         lastInfo.agdID = id+1;
-                                        //     console.log(lastInfo.agdID);
-                                        // }}
-                                        value={this.props.agdNombre}
+                                        onChange = {(e, value, reason) => {
+                                            if(e === undefined) return;
+                                            var id = this.props.agds.findIndex(v => v.value == e);
+                                            if(id !== -1)
+                                                lastInfo.agdID = id+1;
+                                            console.log(lastInfo.agdID);
+                                        }}
+                                        defaultValue={this.props.agds[this.props.agdID - 1].value}
                                         allowClear
                                     />
                                 </Col>
@@ -222,10 +238,27 @@ class JornadaCard extends React.Component {
     
             </Modal>
         );
+        const modalDelete = (
+            <Modal
+                    title="Eliminar Jornada"
+                    visible={this.state.deleteVisible}
+                    onOk={this.handleOkDelete}
+                    onCancel={this.handleCancel}
+                    cancelText="Cancelar"
+                    okText="Aceptar"
+                    destroyOnClose
+                    style={{padding: 16}}
+                    >
+                        <div className="name-title-hoverless" style={{padding:8, textAlign: "center"}}>
+                            ¿Quiere borrar la jornada <h1>{this.props.title}</h1>?
+                        </div>
     
+            </Modal>
+        );
         return(
             <div className="card">
                 {modalEdit}
+                {modalDelete}
                 <div className="card-row">
                     <div className="card-left-col">
                         <img src={JornadaImg} alt=""/>
@@ -240,8 +273,8 @@ class JornadaCard extends React.Component {
                         </Row>
                             <div className="card-contents cols">
                                 <div className="card-content-col">
-                                    <h3 className="card-subtitle">AGD: {this.props.agdNombre}</h3>
-                                    <h3 className="card-subtitle">UCD: {this.props.ucdNombre}</h3>
+                                    <h3 className="card-subtitle">AGD: {this.props.agds[this.props.agdID - 1].value}</h3>
+                                    <h3 className="card-subtitle">UCD: {this.props.ucds[this.props.ucdID - 1].value}</h3>
                                 </div>
                                 <div className="card-content-col">
                                     <h3 className="card-subtitle">Ingreso: {this.props.ingreso}</h3>

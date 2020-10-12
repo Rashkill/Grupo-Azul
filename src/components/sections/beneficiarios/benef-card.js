@@ -17,15 +17,8 @@ const dropClick = ({ key }) => {
 
 const menu = (
     <Menu onClick={dropClick}>
-        {/* la key es como se diferencian las opciones del drop, en la funcion dropClick*/}
-        <Menu.Item key="edit"> 
-            <div className="drop-btn">
-                <EditFilled />
-                <p>Editar</p>
-            </div>
-        </Menu.Item>
         <Menu.Item key="delete">
-            <div className="drop-btn">
+            <div className="drop-btn" style={{ color: 'red' }}>
                 <DeleteFilled />
                 <p>Eliminar</p>
             </div>
@@ -35,10 +28,20 @@ const menu = (
 
 const BenefCard = (props) =>{
 
-    const titleClick = () => {
-        props.history.push("/benefprofile")
+    var datos;
+    const getDatos = async () =>{
+            const res = await fetch('http://localhost:4000/benefOnly/' + props.id);
+            datos = await res.json();
     }
-
+    
+    const titleClick = () => {
+        getDatos().then(() =>
+            props.history.push({
+                pathname: props.linkto,
+                state: datos[0]
+            }))
+    }
+    
     return(
         <div className="card">
             <div className="card-row">

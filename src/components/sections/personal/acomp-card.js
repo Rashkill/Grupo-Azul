@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{ useState, useEffect } from 'react';
 import { Row, Col, Menu, Dropdown } from 'antd';
 import { EllipsisOutlined, EditFilled, DeleteFilled } from '@ant-design/icons';
 import UserImg from '../../../images/image3.png'
@@ -7,6 +7,31 @@ import Axios from 'axios';
 
 
 function AcompCard(props) {
+    const [state, setState] = useState({
+        ucd: { 
+            Nombre: "...",
+            Apellido: "..."
+        }
+    })
+    
+
+    const abortController = new AbortController();
+    const getData = async() =>{
+        try{
+            const res = await fetch('http://localhost:4000/benefOnly/' + props.id, {signal: abortController.signal});
+            const datos = await res.json();
+            setState({ucd: datos[0]});
+        }
+        catch(e){}
+    }
+    useEffect(()=>{
+        getData();
+
+        return () => {
+            abortController.abort();
+        }
+    },[]);
+
     const edit = () =>{
         const id = props.id
         props.edit(id);
@@ -62,7 +87,7 @@ function AcompCard(props) {
                                 {props.title}
                             </h1>
                             <h3 className="card-subtitle">
-                                UDC Asignada: {props.udc}
+                                UDC Asignada: {state.ucd.Nombre + " " + state.ucd.Apellido}
                             </h3>
                         </div>
                     </Row>

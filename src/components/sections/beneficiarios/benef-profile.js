@@ -9,8 +9,6 @@ const alertRow = (fecha) =>{
 }
 
 
-
-
 const { TabPane } = Tabs;
 const TabStyles = {
     background: 'white', 
@@ -49,6 +47,17 @@ const menu = (
 
 
 const BenefCard = (props) =>{
+
+    const vacio = "..."
+    const info = props.location.state !== undefined ? props.location.state :
+    {
+        Id: vacio,
+        Nombre: vacio,
+        Apellido: vacio,
+        Telefono: vacio,
+        Direccion: vacio
+    };
+    //console.log(info);
 
     const columns = [
         {
@@ -114,8 +123,8 @@ const BenefCard = (props) =>{
                 <PageHeader
                     className="site-page-header"
                     onBack={goBack}
-                    title="Celina Melamedoff"
-                    subTitle="Beneficiario n° 1"
+                    title={info.Nombre + " " + info.Apellido}
+                    subTitle={"Beneficiario n° " + info.Id}
                     style={{padding: 8}}
                 />
                 <Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
@@ -128,7 +137,7 @@ const BenefCard = (props) =>{
                     <TabPane tab="Perfil" key="1" style={TabStyles}>
                         <div className="profile-banner">
                             <img src={UserImg} style={{height: 125}}/>
-                            <h1 className="profile-name">Celina Melamedoff</h1>
+                            <h1 className="profile-name">{info.Nombre + " " + info.Apellido}</h1>
                             <p className="card-subtitle" style={{fontSize: 16}}>27-06320624-0</p>
                         </div>
                         
@@ -150,10 +159,10 @@ const BenefCard = (props) =>{
                                     <p className="data-attr">E-Mail</p>
                                 </div>
                                 <div className="data-col">
-                                    <p className="card-subtitle">Castellanos 1445</p>
+                                    <p className="card-subtitle">{info.Direccion}</p>
                                     <p className="card-subtitle">XX / XX / XXXX</p>
                                     <p className="card-subtitle">XX</p>
-                                    <p className="card-subtitle">+543483402494</p>
+                                    <p className="card-subtitle">{info.Telefono}</p>
                                     <p className="card-subtitle">carloschiaruli@gmail.com</p>
                                 </div>
                             </div>
