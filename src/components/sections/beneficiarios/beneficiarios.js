@@ -1,6 +1,6 @@
 import React from 'react';
-import { Divider, Row, Col, Input, Modal } from 'antd';
-import { PlusOutlined, FileDoneOutlined } from '@ant-design/icons';
+import { Divider, Row, Col, Input, Modal, Empty } from 'antd';
+import { PlusOutlined, LoadingOutlined } from '@ant-design/icons';
 import BenefCard from './benef-card'
 
 const { Search } = Input;
@@ -11,13 +11,17 @@ const abortController = new AbortController();
 
 class Beneficiarios extends React.Component{
 
-    state = { 
+    state = {
         visible: false,
+        isLoading: true,
         cantidad: 0
     };
 
+    getData = () =>{
+        this.loadAndGetData().then(this.setState({isLoading: false}));
+    }
 
-    getData = async () =>{
+    loadAndGetData = async() => {
         try{
             const resBenef = await fetch('http://localhost:4000/beneficiarios', {signal: abortController.signal});
             const datosBenef = await resBenef.json();
@@ -76,6 +80,7 @@ class Beneficiarios extends React.Component{
                         </Divider>
 
                         <div className="cards-container">
+                        <Empty style={{display: this.state.isLoading ? "none" : ucds.length > 0 ? "none" : "inline"}} description={false} />
                         {ucds.map(p =>{
                             return(
                             <BenefCard 
@@ -88,6 +93,7 @@ class Beneficiarios extends React.Component{
                                 Refresh={this.getData}
                             />)
                         })}
+                        <LoadingOutlined style={{ padding: 16, fontSize: 24, display: this.state.isLoading ? "inline" : "none" }} spin />
                         </div>
 
                     </Col>

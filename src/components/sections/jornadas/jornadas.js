@@ -1,6 +1,6 @@
 import React from 'react';
-import { Divider, Row, Col, Input, Modal, AutoComplete, DatePicker,notification  } from 'antd';
-import { PlusOutlined, FileDoneOutlined, UploadOutlined, CheckCircleOutlined, AlertOutlined } from '@ant-design/icons';
+import { Divider, Row, Col, Input, Modal, AutoComplete, DatePicker, notification , Empty } from 'antd';
+import { PlusOutlined, FileDoneOutlined, LoadingOutlined , UploadOutlined, CheckCircleOutlined, AlertOutlined } from '@ant-design/icons';
 import JornadaCard from './jornada-card';
 import axios from 'axios';
 
@@ -49,6 +49,7 @@ var lastInfo = {
     rangeVal: undefined
 }
 
+
 const abortController = new AbortController();
 
 const getData = async () =>{
@@ -63,13 +64,17 @@ const getData = async () =>{
     }catch{}
 }
 
+//const loadingIcon = <LoadingOutlined style={{ fontSize: 24, display: this.state.isLoading ? "inline" : "none" }} spin />;
+
 class Jornadas extends React.Component{
     state = { 
         visible: false,
-        btnNuevo: "hidden",
+        isLoading: true,
         horas: 0,
         jornadas: jornadasIn
     };
+
+    
 
     componentDidMount(){
         this.cargarTodo();
@@ -96,7 +101,7 @@ class Jornadas extends React.Component{
                 key: j.Id
             }), this));
             jornadasIn = jornadasInfoArray;
-            this.setState({btnNuevo: "visible", jornadas: jornadasInfoArray});
+            this.setState({isLoading: false, jornadas: jornadasInfoArray});
         });
     }
 
@@ -196,6 +201,7 @@ class Jornadas extends React.Component{
                         </Divider>
                         
                         <div className="cards-container">
+                            <Empty style={{display: this.state.isLoading ? "none" : jornadasIn.length > 0 ? "none" : "inline"}} description={false} />
                             {this.state.jornadas.map(jornadaInfo => {
                                 return(
                                     <JornadaCard
@@ -214,12 +220,13 @@ class Jornadas extends React.Component{
                                     />
                                 )
                             })}
+                            <LoadingOutlined style={{ padding: 16, fontSize: 24, display: this.state.isLoading ? "inline" : "none" }} spin />
                         </div>
 
                     </Col>
                     <Col span={6}>
                         <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onSearch={value => this.handleSearch(value)} allowClear={true}/>
-                        <div className="right-menu" style={{visibility: this.state.btnNuevo}}>
+                        <div className="right-menu">
                             <div className="right-btn" onClick={this.showModal}>
                                 <PlusOutlined />
                                 <span className="right-btn-text">Nuevo</span>

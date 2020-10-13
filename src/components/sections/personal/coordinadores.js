@@ -1,9 +1,15 @@
 import React,{ useState } from 'react';
-import { Divider, Row, Col, Input, Modal } from 'antd';
+import { Divider, Row, Col, Input, Modal, Form } from 'antd';
 import { PlusOutlined, FileDoneOutlined } from '@ant-design/icons';
 // import CoordCard from './coord-card.js';
 
 const { Search } = Input;
+
+var lastInfo = {
+    Nombre: "",
+    Apellido: "",
+    PrecioMensual: 0
+}
 
 function Coordinadores() {
     const [state, setState] = useState({    //Estados
@@ -31,6 +37,9 @@ function Coordinadores() {
         console.log(v)
     }
     
+    const form = Form.useForm();
+    const onChangeInput = (e) =>{}
+
     return(
         <div className="content-cont">
             <Row>
@@ -65,9 +74,29 @@ function Coordinadores() {
                 cancelText="Cancelar"
                 okText="Ok"
             >
-                <p>//Aquí iría el formulario//...</p>
-                <p>contenido...</p>
-                <p>contenido...</p>
+                culo
+                {/* <Form form={form}>
+                    <Row gutter={[48,20]}>
+                    <Col span={12}>
+                        <Divider orientation="left">Datos Principales</Divider>
+                    </Col>
+                    <Col span={12}>
+                        <Divider orientation="left">Datos de Contacto</Divider>
+                    </Col>
+                        <Col span={12}>
+                            <Input placeholder="Nombre" id="nombre" value={lastInfo.Nombre} onChange={onChangeInput} />
+                        </Col>
+
+                        <Col span={12}>
+
+                            <Input placeholder="Apellido" id="apellido" value={lastInfo.Apellido} onChange={onChangeInput}/>
+                        </Col>
+
+                        <Col span={12}>
+                        <Input placeholder="Precio Mensual" type="number" id="precioMensual" value={lastInfo.PrecioMensual} onChange={onChangeInput}/>
+                        </Col>
+                    </Row>
+                </Form> */}
             </Modal>
             
         </div>

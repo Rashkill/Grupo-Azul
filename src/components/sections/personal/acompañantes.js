@@ -1,6 +1,6 @@
 import React,{ useState, useEffect } from 'react';
-import { Form, Divider, Row, Col, Input, Modal, Button, Upload, message ,notification  } from 'antd';
-import { PlusOutlined, FileDoneOutlined, UploadOutlined, CheckCircleOutlined, PaperClipOutlined } from '@ant-design/icons';
+import { Form, Divider, Row, Col, Input, Modal, Button, Upload, Spin ,notification , Empty } from 'antd';
+import { PlusOutlined, FileDoneOutlined, UploadOutlined, CheckCircleOutlined, LoadingOutlined } from '@ant-design/icons';
 import AcompCard from './acomp-card.js';
 import Axios from 'axios';
 
@@ -33,7 +33,13 @@ function Acompañantes() {
     const [fileImg, setFileImg] = useState([]);
     const [filePdf,setFilePdf] = useState([]);
 
-    const getData = async() =>{
+    const emptyIcon = <Empty style={{display: state.isLoading ? "none" : info.datos.length > 0 ? "none" : "inline"}} description={false} />;
+    const loadIcon = <LoadingOutlined style={{ padding: 16, fontSize: 24, display: state.isLoading ? "inline" : "none" }} spin />;
+
+    const getData = () =>{
+        loadAndGetData().then(() => setState({isLoading: false}))
+    }
+    const loadAndGetData = async() => {
         try{
             const res = await fetch('http://localhost:4000/acomp', {signal: abortController.signal});
             const datos = await res.json();
@@ -48,7 +54,6 @@ function Acompañantes() {
         }catch(e){console.log(e)}
     }
     
-
     useEffect(()=>{
         getData();
 
@@ -315,8 +320,9 @@ function Acompañantes() {
                             Acompañantes
                         </h1>
                     </Divider>
-                    <div className="cards-container">                        
+                    <div className="cards-container">                 
                     {/* Display de acompañantes */}
+                    {emptyIcon}
                     {info.datos.map((i , index)=>{
                         return(
                             <AcompCard edit={showEdit} refresh={getData} 
@@ -329,13 +335,14 @@ function Acompañantes() {
                             ucd= {info.ucd[i.IdBeneficiario - 1]}
                             key={index}/>
                         )
-                    })}                   
+                    })}
+                    {loadIcon}                 
                     </div>
                 </Col>
                 <Col span={6}>
                     <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onSearch={value => this.handleSearch(value)} allowClear={true}/>
                     <div className="right-menu">
-                        <div className="right-btn" onClick={showModal}>
+                        <div className="right-btn" onClick={showModal} >
                             <PlusOutlined />
                             <span className="right-btn-text">Nuevo</span>
                         </div>
