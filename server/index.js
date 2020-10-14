@@ -277,6 +277,10 @@ app.get('/beneficiarios', async (req, res, next) => {
       res.json(rows)
   });
 })
+//Agregando Acompañante
+app.post('/addacomp', async (req,res)=>{
+  await addAcomp(req,res);
+})
 
 //Get Un Beneficiario
 app.get('/benefOnly/:id', async (req, res, next) => {
@@ -293,17 +297,67 @@ app.get('/benefOnly/:id', async (req, res, next) => {
       res.json(row);
   });
 })
- //Agregando Acompañante
-app.post('/addacomp', async (req,res)=>{
-    await addAcomp(req,res);
-})
 
  //Agregando Beneficiario
- app.post('/addabenef', async (req,res)=>{
+ app.post('/addbenef', async (req,res)=>{
   await addBenef(req,res);
 })
 
+//Get Coordinadores
+app.get('/coordinadores', async (req, res, next) => {
+  let db = getConnection();
+  let sql = `SELECT * FROM Coordinador
+         ORDER BY id`;
+  var arrayData = [];
+  db.all(sql, [], (err, rows) => {
+      if (err) {
+          res.status(400).json({"error":err.message});
+          return;
+      }
+      rows.forEach((row) => {
+          // console.log(row);
+          arrayData.push(row);
+      });
+      res.json(rows)
+  });
+})
+
+//Get Un Coordinador
+app.get('/coordOnly/:id', async (req, res, next) => {
+  var id = req.params.id;
+  let db = getConnection();
+  let sql = "SELECT * FROM Coordinador WHERE id="+id;
+  var arrayData = [];
+  db.all(sql, [], (err, row) => {
+      if (err) {
+          res.status(400).json({"error":err.message});
+          return;
+      }
+      console.log(row);
+      res.json(row);
+  });
+})
+
+//Agregando Coordinador
+app.post('/addcoord', async (req,res)=>{
+  let db = getConnection();
+  let sql = `INSERT INTO Coordinador(Nombre,Apellido,PrecioMensual) VALUES("
+    ${req.body.nombre}","
+    ${req.body.apellido}","
+    ${req.body.preciomensual}
+    ")`;
+  // insert one row into the langs table
+  db.run(sql, function(err) {
+    if (err) {
+      res.status(400).json({"error":err.message});
+      console.log(err.message);
+      return;
+    }
+    res.status(200).json("succed");
+    console.log("succed");
+    });
+})
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`)
+  console.log(`Base de datos activa en http://localhost:${port}`)
 })

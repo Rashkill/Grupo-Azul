@@ -1,5 +1,5 @@
 import React from 'react';
-import { Divider, Row, Col, Input, Modal, Empty } from 'antd';
+import { Divider, Row, Col, Input, Modal, Empty, Form, AutoComplete } from 'antd';
 import { PlusOutlined, LoadingOutlined } from '@ant-design/icons';
 import BenefCard from './benef-card'
 
@@ -68,6 +68,8 @@ class Beneficiarios extends React.Component{
         console.log(v)
     }
     
+    onChangeInput = (e) => {}
+
     render(){
         return(
             <div className="content-cont prot-shadow">
@@ -117,9 +119,35 @@ class Beneficiarios extends React.Component{
                 cancelText="Cancelar"
                 okText="Ok"
                 >
-                    <p>//Aquí iría el formulario//...</p>
-                    <p>contenido...</p>
-                    <p>contenido...</p>
+                <Form>
+                    <Row gutter={[48,20]}>
+                        <Col span={12}>
+                            <Divider orientation="left">Datos Principales</Divider>
+                        </Col>
+                        <Col span={12}>
+                            <Divider orientation="left">Datos de Contacto</Divider>
+                        </Col>
+                        <Col span={12}>
+                            <Input placeholder="Nombre" id="Nombre" onChange={this.onChangeInput} />
+                        </Col>
+                        <Col span={12}>
+                        <Input placeholder="Telefono" type="number" id="Telefono" onChange={this.onChangeInput}/>
+                        </Col>
+                        <Col span={12}>
+                        
+                            <Input placeholder="Apellido" id="Apellido" onChange={this.onChangeInput}/>
+                        </Col>
+                        <Col span={12}>
+                            <Input placeholder="Domicilio" id="Domicilio" onChange={this.onChangeInput}/>
+                        </Col>
+                        <Col span={12}>
+                        <Input placeholder="DNI" type="number" id="Dni" onChange={this.onChangeInput}/>
+                        </Col>
+                        <Col span={12}>
+                            <AutoComplete placeholder="Coordinador" id="IdCoordinador" onChange={this.onChangeInput} style={{ width: '100%' }}/>
+                        </Col>
+                    </Row> 
+                </Form>
                 </Modal>
                 
             </div>
