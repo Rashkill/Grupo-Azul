@@ -6,6 +6,8 @@ import BenefCard from './benef-card'
 const { Search } = Input;
 
 var ucds = [];
+var coords = [];
+var lastInfo = {};
 
 const abortController = new AbortController();
 
@@ -26,6 +28,13 @@ class Beneficiarios extends React.Component{
             const resBenef = await fetch('http://localhost:4000/beneficiarios', {signal: abortController.signal});
             const datosBenef = await resBenef.json();
             ucds = datosBenef;
+
+            const res = await fetch('http://localhost:4000/coordinadores', {signal: abortController.signal});
+            const datos = await res.json();
+            coords = datos.map(c => ({
+                value: c.Nombre + " " + c.Apellido
+            }));
+            console.log(coords);
             this.setState({cantidad: ucds.length})
         }catch(e){}
     }
@@ -47,11 +56,12 @@ class Beneficiarios extends React.Component{
     };
 
     //maneja boton ok del modal
-    handleOk = e => {      
-        console.log(e);
+    handleOk = e => {
         this.setState({
         visible: false,
         });
+        
+        console.log(lastInfo);
     };
 
     //cancelar modal
@@ -68,7 +78,9 @@ class Beneficiarios extends React.Component{
         console.log(v)
     }
     
-    onChangeInput = (e) => {}
+    onChangeInput = (e) => {
+        lastInfo[e.target.id] = e.target.value;
+    }
 
     render(){
         return(
@@ -128,25 +140,45 @@ class Beneficiarios extends React.Component{
                             <Divider orientation="left">Datos de Contacto</Divider>
                         </Col>
                         <Col span={12}>
+                        <h4>Nombre:</h4>
                             <Input placeholder="Nombre" id="Nombre" onChange={this.onChangeInput} />
                         </Col>
                         <Col span={12}>
+                        <h4>Telefono:</h4>
                         <Input placeholder="Telefono" type="number" id="Telefono" onChange={this.onChangeInput}/>
                         </Col>
                         <Col span={12}>
-                        
+                        <h4>Apellido:</h4>
                             <Input placeholder="Apellido" id="Apellido" onChange={this.onChangeInput}/>
                         </Col>
                         <Col span={12}>
+                        <h4>Domicilio:</h4>
                             <Input placeholder="Domicilio" id="Domicilio" onChange={this.onChangeInput}/>
                         </Col>
                         <Col span={12}>
+                        <h4>DNI:</h4>
                         <Input placeholder="DNI" type="number" id="Dni" onChange={this.onChangeInput}/>
                         </Col>
                         <Col span={12}>
-                            <AutoComplete placeholder="Coordinador" id="IdCoordinador" onChange={this.onChangeInput} style={{ width: '100%' }}/>
+                        
                         </Col>
-                    </Row> 
+                    </Row>
+                    <h4>Coordinador:</h4>
+                    <AutoComplete placeholder="Coordinador" id="IdCoordinador" 
+                        onChange={this.onChangeInput} 
+                        style={{ width: '100%' }}
+                        options={coords}
+                        filterOption={(inputValue, option) =>
+                            option.value !== undefined
+                            }
+                        onChange = {(e, value, reason) => {
+                            if(e === undefined) return;
+                            var id = coords.findIndex(v => v.value == e);
+                            if(id !== -1)
+                                lastInfo.coordID = id+1;
+                            console.log(lastInfo.coordID);
+                        }}
+                    />
                 </Form>
                 </Modal>
                 
