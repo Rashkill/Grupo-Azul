@@ -3,7 +3,6 @@ import { Row, Col, Menu, Dropdown } from 'antd';
 import { EllipsisOutlined, EditFilled, DeleteFilled } from '@ant-design/icons';
 import UserImg from '../../../images/image3.png'
 import '../../layout/cards.css'
-import Axios from 'axios';
 
 
 function CoordCard(props) {
@@ -14,27 +13,13 @@ function CoordCard(props) {
         }
     })
 
-    const edit = () =>{
-        const id = props.id
-        props.edit(id);
-    }
+
     const dropClick = ({ key }) => {
         //Key de <Menu.Item>
         if (key === 'edit') {
-            const id = props.id
-            props.edit(id);
+            props.OnEdit(props.id);
         } else {
-            var opcion = window.confirm('¿Estás seguro que deseas borrar al acompañante '+ props.title + '?');
-            if(opcion){
-                Axios.delete('http://localhost:4000/acomp/'+props.id ,{
-                    headers: {
-                        Accept: 'application/json'
-                    }
-                }).then(res=>{
-                    console.log("auch");
-                    props.refresh();
-                })
-            }
+            props.OnDelete(props.id);
         }
     }
     
@@ -48,7 +33,7 @@ function CoordCard(props) {
                 </div>
             </Menu.Item>
             <Menu.Item key="delete">
-                <div className="drop-btn">
+                <div className="drop-btn" style={{color: "red"}}>
                     <DeleteFilled />
                     <p>Eliminar</p>
                 </div>
@@ -77,7 +62,7 @@ function CoordCard(props) {
                     </Dropdown>
                     <h4 style={{fontFamily: 'Inter'}}>
                     {/* ids: {this.props.id}  */}
-                    ${props.PrecioMensual} / mes
+                    ${props.ValorMes} / mes
                     </h4>
                 </div>
             </div>

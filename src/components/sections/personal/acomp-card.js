@@ -13,46 +13,13 @@ function AcompCard(props) {
             Apellido: "..."
         }
     })
-    
 
-    // const abortController = new AbortController();
-    // const getData = async() =>{
-    //     try{
-    //         const res = await fetch('http://localhost:4000/benefOnly/' + props.id, {signal: abortController.signal});
-    //         const datos = await res.json();
-    //         setState({ucd: datos[0]});
-    //     }
-    //     catch(e){}
-    // }
-    // useEffect(()=>{
-    //     getData();
-
-    //     return () => {
-    //         abortController.abort();
-    //     }
-    // },[]);
-
-    const edit = () =>{
-        const id = props.id
-        props.edit(id);
-    }
     const dropClick = ({ key }) => {
         //Key de <Menu.Item>
         if (key === 'edit') {
-            const id = props.id
-            props.edit(id);
+            props.OnEdit(props.id);
         } else {
-            var opcion = window.confirm('¿Estás seguro que deseas borrar al acompañante '+ props.title + '?');
-            if(opcion){
-                Axios.delete('http://localhost:4000/acomp/'+props.id ,{
-                    headers: {
-                        Accept: 'application/json'
-                    }
-                }).then(res=>{
-                    console.log("auch");
-                    props.refresh();
-                })
-            }
+            props.OnDelete(props.id)
         }
     }
     
@@ -66,7 +33,7 @@ function AcompCard(props) {
                 </div>
             </Menu.Item>
             <Menu.Item key="delete">
-                <div className="drop-btn">
+                <div className="drop-btn" style={{color: "red"}}>
                     <DeleteFilled />
                     <p>Eliminar</p>
                 </div>
@@ -86,9 +53,9 @@ function AcompCard(props) {
                             <h1 className="name-title">
                                 {props.title}
                             </h1>
-                            <h3 className="card-subtitle">
+                            {/* <h3 className="card-subtitle">
                                 UDC Asignada: {props.ucd.Nombre + " " + props.ucd.Apellido}
-                            </h3>
+                            </h3> */}
                         </div>
                     </Row>
                         <div className="card-contents">

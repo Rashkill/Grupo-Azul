@@ -41,11 +41,11 @@ function getNombreUcd(id)
 var jornadasIn = []
 
 var lastInfo = {
-    agdID: 0,
-    ucdID: 0,
-    horas: 0,
-    ingreso: "",
-    egreso: "",
+    IdBeneficiario: 0,
+    IdAcompañante: 0,
+    CantHoras: 0,
+    FechaIngreso: "",
+    FechaEgreso: "",
     rangeVal: undefined
 }
 
@@ -54,14 +54,19 @@ const abortController = new AbortController();
 
 const getData = async () =>{
     try{
-        const res = await fetch('http://localhost:4000/acomp', {signal: abortController.signal});
+        const res = await fetch('http://localhost:4000/getAcomp', {signal: abortController.signal});
         const datosAcomp = await res.json();
-        agds = (datosAcomp.map(p => ({value: p.Nombre + " " + p.Apellido, key: p.Id})));
-
-        const resBenef = await fetch('http://localhost:4000/beneficiarios', {signal: abortController.signal});
+        if(datosAcomp !== undefined)
+            agds = (datosAcomp.map(p => ({value: p.Nombre + " " + p.Apellido, key: p.Id})));
+        
+        const resBenef = await fetch('http://localhost:4000/getBenef', {signal: abortController.signal});
         const datosBenef = await resBenef.json();
-        ucds = (datosBenef.map(p => ({value: p.Nombre + " " + p.Apellido, key: p.Id})));
-    }catch{}
+        if(datosBenef.data !== undefined)
+            ucds = (datosBenef.data.map(p => ({value: p.Nombre + " " + p.Apellido, key: p.Id})));
+        
+        console.log(datosAcomp);
+        
+    }catch(e){console.log(e)}
 }
 
 //const loadingIcon = <LoadingOutlined style={{ fontSize: 24, display: this.state.isLoading ? "inline" : "none" }} spin />;
@@ -75,7 +80,6 @@ class Jornadas extends React.Component{
     };
 
     
-
     componentDidMount(){
         this.cargarTodo();
     }
@@ -85,18 +89,18 @@ class Jornadas extends React.Component{
     cargarTodo = () =>
     {
         getData().then(async() =>{
-            const res = await fetch('http://localhost:4000/jornadas');
+            const res = await fetch('http://localhost:4000/getJornadas');
             const datos = await res.json();
 
             const jornadasInfoArray = (datos.map(j => ({
                 title: nombreJornada(j.IdBeneficiario, j.IdAcompañante, j.FechaIngreso),
-                agdID: j.IdBeneficiario,
+                IdBeneficiario: j.IdBeneficiario,
                 agds: agds,
-                ucdID: j.IdAcompañante,
+                IdAcompañante: j.IdAcompañante,
                 ucds: ucds,
-                horas: j.CantHoras,
-                ingreso: j.FechaIngreso,
-                egreso: j.FechaEgreso,
+                CantHoras: j.CantHoras,
+                FechaIngreso: j.FechaIngreso,
+                FechaEgreso: j.FechaEgreso,
                 rangeVal: [moment(j.FechaIngreso, dateFormat+ " HH:mm"), moment(j.FechaEgreso, dateFormat+ " HH:mm")],
                 key: j.Id
             }), this));
@@ -109,19 +113,17 @@ class Jornadas extends React.Component{
         //calculo de horas
         if(value[0] !== null && value[1] !== null)
         {
-            console.log(value);
             lastInfo.rangeVal = value;
             var mins = value[1] - value[0]
             mins = mins / 1000 / 60
             mins = Math.round(mins)
             var hs = mins / 60
-            console.log(hs)
             if(hs > 0)
                 this.setState({horas: hs});
 
             //lastInfo.title = value[0]._d.getDate() + " de " + mesesNombres[value[0]._d.getMonth()];
-            lastInfo.ingreso = value[0].format(dateFormat + " HH:mm");
-            lastInfo.egreso = value[1].format(dateFormat + " HH:mm");
+            lastInfo.FechaIngreso = value[0].format(dateFormat + " HH:mm");
+            lastInfo.FechaEgreso = value[1].format(dateFormat + " HH:mm");
         }
     }
 
@@ -134,7 +136,7 @@ class Jornadas extends React.Component{
 
     //maneja boton ok del modal
     handleOk = e => {
-        if(lastInfo.agdID > 0 && lastInfo.ucdID > 0 &&
+        if(lastInfo.IdBeneficiario > 0 && lastInfo.IdAcompañante > 0 &&
             lastInfo.rangeVal[0] !== null && lastInfo.rangeVal[1] !== null) {
         
             this.setState({
@@ -142,19 +144,19 @@ class Jornadas extends React.Component{
             });
 
             if(this.state.horas > 0)
-                lastInfo.horas = this.state.horas;
+                lastInfo.CantHoras = this.state.horas;
 
-            axios.post('http://localhost:4000/addjornada', lastInfo)
+            axios.post('http://localhost:4000/addJornada', lastInfo)
             .then(() => {
                 this.openNotification("Agregado exitoso",
                 "La jornada fue creada correctamente", true);
                 lastInfo = 
                 {
-                    agdID: 0,
-                    ucdID: 0,
-                    horas: 0,
-                    ingreso: "",
-                    egreso: "",
+                    IdBeneficiario: 0,
+                    IdAcompañante: 0,
+                    CantHoras: 0,
+                    FechaIngreso: "",
+                    FechaEgreso: "",
                     rangeVal: undefined
                 }
                 this.cargarTodo();
@@ -186,7 +188,6 @@ class Jornadas extends React.Component{
     
     //Presionar enter al buscador
     handleSearch = (v) => { 
-        console.log(v)
     }
 
     render(){
@@ -206,11 +207,11 @@ class Jornadas extends React.Component{
                                 return(
                                     <JornadaCard
                                         title={jornadaInfo.title}
-                                        agdID={jornadaInfo.agdID}
-                                        ucdID={jornadaInfo.ucdID}
-                                        horas={jornadaInfo.horas}
-                                        ingreso={jornadaInfo.ingreso}
-                                        egreso={jornadaInfo.egreso}
+                                        agdID={jornadaInfo.IdBeneficiario}
+                                        ucdID={jornadaInfo.IdAcompañante}
+                                        horas={jornadaInfo.CantHoras}
+                                        ingreso={jornadaInfo.FechaIngreso}
+                                        egreso={jornadaInfo.FechaEgreso}
                                         id={jornadaInfo.key}
                                         rangeVal={jornadaInfo.rangeVal}
                                         key={jornadaInfo.key}
@@ -227,7 +228,7 @@ class Jornadas extends React.Component{
                     <Col span={6}>
                         <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onSearch={value => this.handleSearch(value)} allowClear={true}/>
                         <div className="right-menu">
-                            <div className="right-btn" onClick={this.showModal}>
+                            <div className="right-btn" hidden={this.state.isLoading} onClick={this.showModal}>
                                 <PlusOutlined />
                                 <span className="right-btn-text">Nuevo</span>
                             </div>
@@ -255,16 +256,15 @@ class Jornadas extends React.Component{
                                     options={ucds}
                                     placeholder="Nombre"
                                     filterOption={(inputValue, option) =>
-                                        option.value !== undefined
+                                        option.value.toUpperCase().indexOf(inputValue.toUpperCase()) + 1 !== 0
                                     }
                                     onChange = {(e, value, reason) => {
                                         if(e === undefined) return;
                                         var id = ucds.findIndex(v => v.value == e);
                                         if(id !== -1)
-                                            lastInfo.ucdID = id+1;
-                                        console.log(lastInfo.ucdID);
+                                            lastInfo.IdAcompañante = id+1;
                                     }}
-                                    value={lastInfo.ucdID > 0 ? ucds[lastInfo.ucdID - 1].value : this.value}
+                                    defaultValue={lastInfo.IdAcompañante > 0 ? ucds[lastInfo.IdAcompañante - 1].value : this.value}
                                     allowClear
                                 />
                             </Col>
@@ -276,16 +276,15 @@ class Jornadas extends React.Component{
                                     options={agds}
                                     placeholder="Nombre"
                                     filterOption={(inputValue, option) =>
-                                    option.value !== undefined
+                                        option.value.toUpperCase().indexOf(inputValue.toUpperCase()) + 1 !== 0
                                     }
                                     onChange = {(e, value, reason) => {
                                         if(e === undefined) return;
                                         var id = agds.findIndex(v => v.value == e);
                                         if(id !== -1)
-                                            lastInfo.agdID = id+1;
-                                        console.log(lastInfo.agdID);
+                                            lastInfo.IdBeneficiario = id+1;
                                     }}
-                                    value={lastInfo.agdID > 0 ? agds[lastInfo.agdID - 1].value : this.value}
+                                    defaultValue={lastInfo.IdBeneficiario > 0 ? agds[lastInfo.IdBeneficiario - 1].value : this.value}
                                     allowClear
                                 />
                             </Col>

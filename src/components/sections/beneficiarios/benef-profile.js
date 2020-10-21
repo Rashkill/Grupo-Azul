@@ -138,7 +138,7 @@ const BenefCard = (props) =>{
                         <div className="profile-banner">
                             <img src={UserImg} style={{height: 125}}/>
                             <h1 className="profile-name">{info.Nombre + " " + info.Apellido}</h1>
-                            <p className="card-subtitle" style={{fontSize: 16}}>27-06320624-0</p>
+                            <p className="card-subtitle" style={{fontSize: 16}}>{info.CUIL}</p>
                         </div>
                         
                         <Divider/>
@@ -159,11 +159,11 @@ const BenefCard = (props) =>{
                                     <p className="data-attr">E-Mail</p>
                                 </div>
                                 <div className="data-col">
-                                    <p className="card-subtitle">{info.Direccion}</p>
-                                    <p className="card-subtitle">XX / XX / XXXX</p>
+                                    <p className="card-subtitle">{info.Domicilio}</p>
+                                    <p className="card-subtitle">{info.FechaNacimiento}</p>
                                     <p className="card-subtitle">XX</p>
                                     <p className="card-subtitle">{info.Telefono}</p>
-                                    <p className="card-subtitle">carloschiaruli@gmail.com</p>
+                                    <p className="card-subtitle">{info.Email}</p>
                                 </div>
                             </div>
 
@@ -175,9 +175,9 @@ const BenefCard = (props) =>{
 
                                 </div>
                                 <div className="data-col">
-                                    <p className="card-subtitle">Santa Fe</p>
-                                    <p className="card-subtitle">3000</p>
-
+                                    <p className="card-subtitle">{info.Localidad}</p>
+                                    <p className="card-subtitle">{info.CodigoPostal}</p>
+                                    <p className="card-subtitle">{info.Enfermedades}</p>
                                 </div>
                             </div>
                         </div>

@@ -6,31 +6,37 @@ import UserImg from '../../../images/image4.png'
 import { createHashHistory } from 'history';
 export const history = createHashHistory();
 
-const dropClick = ({ key }) => {
-    //Key de <Menu.Item>
-    if (key === 'edit') {
-        alert('edit')
-    } else {
-        alert('delete')
-    }
-}
-
-const menu = (
-    <Menu onClick={dropClick}>
-        <Menu.Item key="delete">
-            <div className="drop-btn" style={{ color: 'red' }}>
-                <DeleteFilled />
-                <p>Eliminar</p>
-            </div>
-        </Menu.Item>
-    </Menu>
-);
-
 const BenefCard = (props) =>{
+
+    const dropClick = ({ key }) => {
+        //Key de <Menu.Item>
+        if (key === 'edit') {
+            props.OnEdit(props.id);
+        } else {
+            props.OnDelete(props.id);
+        }
+    }
+    
+    const menu = (
+        <Menu onClick={dropClick}>
+            <Menu.Item key="edit"> 
+                        <div className="drop-btn">
+                            <EditFilled />
+                            <p>Editar</p>
+                        </div>
+            </Menu.Item>
+            <Menu.Item key="delete">
+                <div className="drop-btn" style={{ color: 'red' }}>
+                    <DeleteFilled />
+                    <p>Eliminar</p>
+                </div>
+            </Menu.Item>
+        </Menu>
+    );
 
     var datos;
     const getDatos = async () =>{
-            const res = await fetch('http://localhost:4000/benefOnly/' + props.id);
+            const res = await fetch('http://localhost:4000/getBenefOnly/' + props.id);
             datos = await res.json();
     }
     
@@ -42,6 +48,7 @@ const BenefCard = (props) =>{
             }))
     }
     
+
     return(
         <div className="card">
             <div className="card-row">

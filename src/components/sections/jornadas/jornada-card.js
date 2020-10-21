@@ -85,7 +85,7 @@ class JornadaCard extends React.Component {
             editVisible: false,
         });
 
-        axios.post('http://localhost:4000/updateJornada/' + this.props.id, lastInfo).then(() => {
+        axios.post('http://localhost:4000/updJornada/' + this.props.id, lastInfo).then(() => {
             this.openNotification(
                 "Actualización exitosa",
                 "La jornada se modificó correctamente",

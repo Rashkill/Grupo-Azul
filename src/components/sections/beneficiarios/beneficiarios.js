@@ -1,14 +1,15 @@
 import React from 'react';
-import { Divider, Row, Col, Input, Modal, Empty, Form, AutoComplete } from 'antd';
-import { PlusOutlined, LoadingOutlined } from '@ant-design/icons';
+import { Divider, Row, Col, Input, Modal, Empty, Form, AutoComplete, Upload, Button, DatePicker, notification} from 'antd';
+import { PlusOutlined, LoadingOutlined, UploadOutlined, CheckCircleOutlined, AlertOutlined } from '@ant-design/icons';
 import BenefCard from './benef-card'
+import Axios from 'axios';
 
 const { Search } = Input;
 
 var ucds = [];
 var coords = [];
-var lastInfo = {};
-
+var lastInfo = new FormData();
+var fileBlob, fileURL;
 const abortController = new AbortController();
 
 class Beneficiarios extends React.Component{
@@ -16,25 +17,28 @@ class Beneficiarios extends React.Component{
     state = {
         visible: false,
         isLoading: true,
-        cantidad: 0
+        cantidad: 0,
+        fileList: [],
+        editId: 0
     };
 
     getData = () =>{
+        this.setState({isLoading: true})
         this.loadAndGetData().then(this.setState({isLoading: false}));
     }
 
     loadAndGetData = async() => {
         try{
-            const resBenef = await fetch('http://localhost:4000/beneficiarios', {signal: abortController.signal});
+            const resBenef = await fetch('http://localhost:4000/getBenef', {signal: abortController.signal});
             const datosBenef = await resBenef.json();
-            ucds = datosBenef;
+            ucds = datosBenef.data;
 
-            const res = await fetch('http://localhost:4000/coordinadores', {signal: abortController.signal});
+            const res = await fetch('http://localhost:4000/getCoord', {signal: abortController.signal});
             const datos = await res.json();
             coords = datos.map(c => ({
                 value: c.Nombre + " " + c.Apellido
             }));
-            console.log(coords);
+
             this.setState({cantidad: ucds.length})
         }catch(e){}
     }
@@ -48,6 +52,21 @@ class Beneficiarios extends React.Component{
     {
         abortController.abort();
     }
+
+    openNotification = (msg, desc, succeed) => {
+        this.setState({
+            editVisible: false,
+        });
+
+        notification.open({
+            message: msg,
+            description: desc,
+            icon: succeed ? 
+            <CheckCircleOutlined style={{ color: '#52C41A' }} /> : 
+            <AlertOutlined style={{ color: '#c4251a' }} />
+        });
+    };
+    
     //Mostrar modal
     showModal = () => {     
         this.setState({
@@ -55,12 +74,40 @@ class Beneficiarios extends React.Component{
         });
     };
 
+    
     //maneja boton ok del modal
-    handleOk = e => {
-        this.setState({
-        visible: false,
-        });
-        
+    handleOk = e => {   
+        if(this.state.editId <=0){
+
+            lastInfo.set("FichaInicial", this.state.fileList[0])
+            Axios.post('http://localhost:4000/addBenef', lastInfo, {
+                headers: {
+                    Accept: 'application/json'
+                }
+            }).then(() => {this.setState({
+                visible: false,
+                editId: 0
+                })
+                this.getData();
+            });
+        }
+        else{
+            
+            if(this.state.fileList.length >= 1)
+                lastInfo.set("FichaInicial", this.state.fileList[0]);
+            else
+                lastInfo.set("FichaInicial", fileBlob)
+            Axios.post('http://localhost:4000/updBenef/' + this.state.editId, lastInfo, {
+                headers: {
+                    Accept: 'application/json'
+                }
+            }).then(() => {this.setState({
+                visible: false,
+                editId: 0
+                })
+                this.getData();
+            });
+        }
         console.log(lastInfo);
     };
 
@@ -68,8 +115,7 @@ class Beneficiarios extends React.Component{
     handleCancel = e => {   
         var confirm = window.confirm('¿Desea cerrar el formulario? Se perderán los cambios no guardados')
         if(confirm){
-            this.setState({visible: false})
-
+            this.setState({visible: false, editId: 0})
         }
     };
 
@@ -78,8 +124,52 @@ class Beneficiarios extends React.Component{
         console.log(v)
     }
     
+    onEdit = (id) => {
+        this.setState({editId: id, visible: true})
+
+        let index = ucds.findIndex(p => p.Id === id);
+        for (var prop in ucds[index]) {
+            lastInfo.set(prop, ucds[index][prop]);
+            //console.log(ucds[id - 1][prop])
+            if(prop === "FichaInicial"){
+                fileBlob = new Blob([Buffer.from(ucds[index][prop])], {type: "application/pdf"})
+                fileURL = URL.createObjectURL(fileBlob);
+            }
+        }
+    }
+
+    onDelete = (id) => {
+        if(window.confirm('¿Realmente desea eliminar esta tabla?'))
+        Axios.delete('http://localhost:4000/benef/' + id, lastInfo).then(() => {
+                this.openNotification(
+                    "Eliminación exitosa",
+                    "La jornada se borró correctamente",
+                    true
+                )
+                this.getData();
+            }
+        );
+    }
+
+    modalGetValue = (e) =>{
+        console.log(e);
+    }
+
+    FichaInicial = {
+        onRemove: file => {
+                this.setState({fileList: []})
+                return true;
+        },
+        beforeUpload: file => {
+            let fileL = []; fileL.push(file);
+            this.setState({fileList: fileL})
+            console.log(file);
+          return false;
+        }
+    };
+
     onChangeInput = (e) => {
-        lastInfo[e.target.id] = e.target.value;
+        lastInfo.set(e.target.id, e.target.value);
     }
 
     render(){
@@ -99,12 +189,13 @@ class Beneficiarios extends React.Component{
                             return(
                             <BenefCard 
                                 title={p.Nombre + " " + p.Apellido}
-                                domicilio={p.Direccion}
+                                domicilio={p.Domicilio}
                                 telefono={p.Telefono}
                                 linkto="/benefprofile"
                                 key={p.Id}
                                 id={p.Id}
-                                Refresh={this.getData}
+                                OnEdit={this.onEdit}
+                                OnDelete={this.onDelete}
                             />)
                         })}
                         <LoadingOutlined style={{ padding: 16, fontSize: 24, display: this.state.isLoading ? "inline" : "none" }} spin />
@@ -124,11 +215,12 @@ class Beneficiarios extends React.Component{
 
 
                 <Modal
-                title="Nuevo Beneficiario"
+                title={this.state.editId <=0 ? "Nuevo Beneficiario" : "Modificar Beneficiario"}
                 visible={this.state.visible}
                 onOk={this.handleOk}
                 onCancel={this.handleCancel}
                 cancelText="Cancelar"
+                destroyOnClose={true}
                 okText="Ok"
                 >
                 <Form>
@@ -141,47 +233,97 @@ class Beneficiarios extends React.Component{
                         </Col>
                         <Col span={12}>
                         <h4>Nombre:</h4>
-                            <Input placeholder="Nombre" id="Nombre" onChange={this.onChangeInput} />
+                            <Input placeholder="Nombre" id="Nombre" onChange={this.onChangeInput}
+                            defaultValue={this.state.editId <=0 ? this.value : lastInfo.get("Nombre")} />
                         </Col>
                         <Col span={12}>
-                        <h4>Telefono:</h4>
-                        <Input placeholder="Telefono" type="number" id="Telefono" onChange={this.onChangeInput}/>
+                            <h4>Telefono:</h4>
+                            <Input placeholder="Telefono" type="number" id="Telefono" onChange={this.onChangeInput}
+                            defaultValue={this.state.editId <=0 ? this.value : lastInfo.get("Telefono")}/>
                         </Col>
                         <Col span={12}>
-                        <h4>Apellido:</h4>
-                            <Input placeholder="Apellido" id="Apellido" onChange={this.onChangeInput}/>
+                            <h4>Apellido:</h4>
+                            <Input placeholder="Apellido" id="Apellido" onChange={this.onChangeInput}
+                            defaultValue={this.state.editId <=0 ? this.value : lastInfo.get("Apellido")}/>
                         </Col>
                         <Col span={12}>
-                        <h4>Domicilio:</h4>
-                            <Input placeholder="Domicilio" id="Domicilio" onChange={this.onChangeInput}/>
+                            <h4>Domicilio:</h4>
+                            <Input placeholder="Domicilio" id="Domicilio" onChange={this.onChangeInput}
+                            defaultValue={this.state.editId <=0 ? this.value : lastInfo.get("Domicilio")}/>
                         </Col>
                         <Col span={12}>
-                        <h4>DNI:</h4>
-                        <Input placeholder="DNI" type="number" id="Dni" onChange={this.onChangeInput}/>
+                            <h4>DNI:</h4>
+                            <Input placeholder="DNI" type="number" id="DNI" onChange={this.onChangeInput}
+                            defaultValue={this.state.editId <=0 ? this.value : lastInfo.get("DNI")}/>
                         </Col>
                         <Col span={12}>
-                        
+                            <h4>Localidad:</h4>
+                            <Input placeholder="Localidad" id="Localidad" onChange={this.onChangeInput}
+                            defaultValue={this.state.editId <=0 ? this.value : lastInfo.get("Localidad")}/>
+                        </Col>
+                        <Col span={12}>
+                            <h4>Fecha de Nacimiento:</h4>
+                            <DatePicker placeholder="Fecha de Nacimiento" id="FechaNacimiento"
+                                format="DD / MM / YYYY"
+                                style={{width: '100%'}}
+                                onChange={(e) =>{lastInfo.set("FechaNacimiento", e.format('DD/MM/YYYY'))}}
+                            />
+                        </Col>
+                        <Col span={12}>
+                            <h4>CUIL:</h4>
+                            <Input placeholder="CUIL" type="number" id="CUIL" onChange={this.onChangeInput}
+                            defaultValue={this.state.editId <=0 ? this.value : lastInfo.get("CUIL")}/>
+                        </Col>
+                        <Col span={12}>
+                            <h4>Codigo Postal:</h4>
+                            <Input placeholder="Codigo Postal" id="CodigoPostal" onChange={this.onChangeInput}
+                            defaultValue={this.state.editId <=0 ? this.value : lastInfo.get("CodigoPostal")}/>
+                        </Col>
+                        <Col span={12}>
+                            <h4>Email:</h4>
+                            <Input placeholder="Email" id="Email" onChange={this.onChangeInput}
+                            defaultValue={this.state.editId <=0 ? this.value : lastInfo.get("Email")}/>
+                        </Col>
+                        <Col span={12}>
+                            <h4>Enfermedades:</h4>
+                            <Input placeholder="Enfermedades" id="Enfermedades" onChange={this.onChangeInput}
+                            defaultValue={this.state.editId <=0 ? this.value : lastInfo.get("Enfermedades")}/>
+                        </Col>
+                        <Col span={12}>
+                            <h4>Coordinador:</h4>
+                            <AutoComplete placeholder="Coordinador" id="IdCoordinador" 
+                                onChange={this.onChangeInput} 
+                                style={{ width: '100%' }}
+                                options={coords}
+                                filterOption={(inputValue, option) =>
+                                    option.value.toUpperCase().indexOf(inputValue.toUpperCase()) + 1 !== 0}
+                                onChange = {(e, value, reason) => {
+                                    if(e === undefined) return;
+                                    var id = coords.findIndex(v => v.value == e);
+                                    if(id !== -1)
+                                        lastInfo.coordID = id+1;
+                                    console.log(lastInfo.coordID);
+                                }}
+                                defaultValue={this.state.editId <=0 ? this.value : lastInfo.get("IdCoordinador")}
+                            />
+                        </Col>
+                        <Col span={12}>
+                            <h4>Ficha Inicial:</h4>
+                            <Upload {...this.FichaInicial} id="FichaInicial" 
+                                    accept="application/pdf">
+                                <Button disabled={this.state.fileList.length>0} icon={<UploadOutlined />}>Subir PDF</Button>
+                            </Upload>
+                            <a href={fileURL} 
+                                download={this.state.editId >0 ? ucds[this.state.editId - 1].Apellido + "_FichaInicial.pdf" : "_.pdf"}
+                                hidden={this.state.editId <= 0}
+                            >
+                            Descargar
+                            </a>
                         </Col>
                     </Row>
-                    <h4>Coordinador:</h4>
-                    <AutoComplete placeholder="Coordinador" id="IdCoordinador" 
-                        onChange={this.onChangeInput} 
-                        style={{ width: '100%' }}
-                        options={coords}
-                        filterOption={(inputValue, option) =>
-                            option.value !== undefined
-                            }
-                        onChange = {(e, value, reason) => {
-                            if(e === undefined) return;
-                            var id = coords.findIndex(v => v.value == e);
-                            if(id !== -1)
-                                lastInfo.coordID = id+1;
-                            console.log(lastInfo.coordID);
-                        }}
-                    />
+                    
                 </Form>
                 </Modal>
-                
             </div>
         )
     }
