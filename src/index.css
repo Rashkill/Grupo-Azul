@@ -55,21 +55,29 @@ code {
   width: 100%;
   padding: 16px 32px 0 32px;
   display: flex;
-  justify-content: space-around;
+  justify-content: space-evenly;
   margin-bottom: 16px;
 }
 
 .data-col-wrap{
   width: 45%;
   display: flex;
+  flex-direction: column;
+}
+
+.data-row{
+  display: flex;
+  flex-direction: row;
+  width: 100%;
 }
 
 .data-col{
   margin: 0 4px 0 4px;
-  max-width: 200px;
+  width: 49%;
   font-size: 15px;
-  margin-right: 64px;
+  /* margin-right: 64px; */
   line-height: 24px;
+  overflow-wrap: break-word;
 }
 
 .data-attr{

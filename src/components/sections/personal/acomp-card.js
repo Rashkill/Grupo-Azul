@@ -1,9 +1,12 @@
 import React,{ useState, useEffect } from 'react';
+import { Link, withRouter } from 'react-router-dom';
 import { Row, Col, Menu, Dropdown } from 'antd';
 import { EllipsisOutlined, EditFilled, DeleteFilled } from '@ant-design/icons';
 import UserImg from '../../../images/image3.png'
 import '../../layout/cards.css'
 import Axios from 'axios';
+import { createHashHistory } from 'history';
+export const history = createHashHistory();
 
 
 function AcompCard(props) {
@@ -13,6 +16,20 @@ function AcompCard(props) {
             Apellido: "..."
         }
     })
+
+    var datos;
+    const getDatos = async () =>{
+        const res = await fetch('http://localhost:4000/acompOnly/' + props.id);
+        datos = await res.json();
+    }
+    
+    const titleClick = () => {
+        getDatos().then(() =>
+            props.history.push({
+                pathname: props.linkto,
+                state: datos[0]
+            }))
+    }
     
 
     // const abortController = new AbortController();
@@ -83,7 +100,7 @@ function AcompCard(props) {
                 <div className="card-mid-col">
                     <Row>
                         <div className="card-title-container">
-                            <h1 className="name-title">
+                            <h1 className="name-title" onClick={titleClick}>
                                 {props.title}
                             </h1>
                             <h3 className="card-subtitle">
@@ -112,4 +129,4 @@ function AcompCard(props) {
 }
 
 
-export default AcompCard
+export default withRouter(AcompCard)

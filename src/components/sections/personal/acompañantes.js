@@ -333,7 +333,10 @@ function Acompañantes() {
                             domicilio={i.Domicilio} 
                             id={i.Id}
                             ucd= {info.ucd[i.IdBeneficiario - 1]}
-                            key={index}/>
+                            key={index}
+                            linkto="acompprofile"
+                            />
+
                         )
                     })}
                     {loadIcon}                 

@@ -1,13 +1,9 @@
 import React from 'react';
 import { withRouter } from 'react-router-dom';
-import { Tabs, PageHeader, Menu, Dropdown, Divider, Table, Timeline, Row, Col, Button } from 'antd';
+import { Tabs, PageHeader, Menu, Dropdown, Divider, Table, Row, Col, Button } from 'antd';
 import { SettingFilled, EditFilled, DeleteFilled, PlusOutlined } from '@ant-design/icons';
-import UserImg from '../../../images/image4-5.png'
+import UserImg from '../../../images/image3.png'
 import DataRow from  '../../layout/data-row'
-
-const alertRow = (fecha) =>{
-    alert(fecha)
-}
 
 
 const { TabPane } = Tabs;
@@ -19,6 +15,7 @@ const TabStyles = {
     borderBottom: '1px solid #f0f0f0',
 }
 
+//click dropdown
 const dropClick = ({ key }) => {
     //Key de <Menu.Item>
     if (key === 'edit') {
@@ -28,6 +25,7 @@ const dropClick = ({ key }) => {
     }
 }
 
+//dropdown
 const menu = (
     <Menu onClick={dropClick}>
         {/* la key es como se diferencian las opciones del drop, en la funcion dropClick*/}
@@ -46,8 +44,7 @@ const menu = (
     </Menu>
 );
 
-
-const BenefCard = (props) =>{
+const AcompProfile = (props) =>{
 
     const vacio = "..."
     const info = props.location.state !== undefined ? props.location.state :
@@ -60,19 +57,27 @@ const BenefCard = (props) =>{
     };
     //console.log(info);
 
-    const columns = [
+
+    //COLUMNAS TABLA MONOTRIBUTO
+    const compCols = [
+        {
+            title: 'N°',
+            dataIndex: 'id',
+            key: 'id'
+        },
+    
+        {
+            title: 'Comprobante',
+            dataIndex: 'comprobante',
+            key: 'comprobante'
+        },
+
         {
             title: 'Fecha',
             dataIndex: 'fecha',
             key: 'fecha'
         },
-    
-        {
-            title: 'PDF',
-            dataIndex: 'pdf',
-            key: 'pdf'
-        },
-    
+        
         {
             title: 'Acciones',
             dataIndex: 'acciones',
@@ -87,33 +92,67 @@ const BenefCard = (props) =>{
         }
     ];
     
-    const data = [
+    //DATOS O VALORES EN TABLA MONOTRIBUTO
+    const compData = [
         {
-            fecha: "15/5",
-            pdf: "archivo1.pdf"
+            id: '1',
+            comprobante: 'comp1.pdf',
+            fecha: "15/5/2020"
         },
         {
-            fecha: "16/5",
-            pdf: "archivo2.pdf"
+            id: '2',
+            comprobante: 'comp2.pdf',
+            fecha: "2/6/2020"
         },
         {
-            fecha: "15/5",
-            pdf: "archivo1.pdf"
+            id: '3',
+            comprobante: 'comp-3.pdf',
+            fecha: "3/7/2020"
+        },
+    ]
+
+
+    //COLUMNAS TABLA CONTRATOS
+    const contCols = [
+        {
+            title: 'N°',
+            dataIndex: 'id',
+            key: 'id'
         },
         {
-            fecha: "16/5",
-            pdf: "archivo2.pdf"
+            title: 'Contrato',
+            dataIndex: 'contrato',
+            key: 'contrato'
         },
         {
-            fecha: "15/5",
-            pdf: "archivo1.pdf"
+            title: 'Fecha',
+            dataIndex: 'fecha',
+            key: 'fecha'
         },
         {
-            fecha: "16/5",
-            pdf: "archivo2.pdf"
+            title: 'Acciones',
+            dataIndex: 'acciones',
+            key: 'acciones',
+            render: (text, record) => (
+                <div>
+                    <a>Abrir </a>
+                    <a>Editar </a>
+                    <a>Eliminar </a>
+                </div>
+            )
         }
     ]
 
+    //VALORES TABLA CONTRATOS
+    const contData = [
+        {
+            id: '2',
+            contrato: 'contrato1.pdf',
+            fecha: '1/10/2020'
+        }
+    ] 
+
+    //Atrás
     const goBack = () =>{
         props.history.goBack()
     }
@@ -125,7 +164,7 @@ const BenefCard = (props) =>{
                     className="site-page-header"
                     onBack={goBack}
                     title={info.Nombre + " " + info.Apellido}
-                    subTitle={"Beneficiario n° " + info.Id}
+                    subTitle={"Acompañante n° " + info.Id}
                     style={{padding: 8}}
                 />
                 <Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
@@ -151,86 +190,90 @@ const BenefCard = (props) =>{
                         </Divider>
 
                         <div className="data">
-                            <div className="data-col-wrap">
 
-                                <DataRow
-                                    title="DNI / CUIL"
-                                    value=""
-                                />
-                                <DataRow
+                            <div className="data-col-wrap">
+                                <DataRow 
                                     title="Domicilio"
-                                    value={info.Direccion}
+                                    value={info.Domicilio}
                                 />
-                                <DataRow
-                                    title="Fecha de Nacimiento"
-                                    value=""
-                                />
-                                <DataRow
-                                    title="Edad"
-                                    value=""
-                                />
-                                <DataRow
+                                
+                                <DataRow 
                                     title="Teléfono"
                                     value={info.Telefono}
                                 />
-                                <DataRow
+                                
+                                <DataRow 
                                     title="E-mail"
-                                    value=""
+                                    value="asd"
                                 />
-
+                                
+                                <DataRow 
+                                    title="Valor Hora"
+                                    value="asd"
+                                />
+                                
+                                <DataRow 
+                                    title="Unidad de cuidado actual"
+                                    value="asd"
+                                />
                             </div>
+
 
                             <div className="data-col-wrap">
+                                <DataRow 
+                                    title="Comp. de seguros"
+                                    value="Nombre"
+                                />
 
-                                <DataRow
-                                    title="Localidad"
-                                    value=""
+                                <DataRow 
+                                    title="N° Póliza"
+                                    value="asd"
                                 />
-                                <DataRow
-                                    title="Código Postal"
-                                    value=""
+                                
+                                <DataRow 
+                                    title="Banco"
+                                    value="asd"
                                 />
-                                <DataRow
+
+                                <DataRow 
+                                    title="CBU / Alias"
+                                    value="asd"
+                                />
+                                
+                                <DataRow 
                                     title="Enfermedades y comorbilidades"
-                                    value=""
+                                    value="asd"
                                 />
-
                             </div>
+                            
                         </div>
 
                         <Divider/>
 
+                        {/* Tabla Pagos Monotributo */}
                         <Divider orientation="left" plain>
                             <h1 className="big-title">
-                                Notas
+                                Pagos Monotributo
                             </h1>
                         </Divider>
                         <div className="tablewrap">
-                            <Table dataSource={data} columns={columns} bordered/>
+                            <Table dataSource={compData} columns={compCols} bordered/>
+                        </div>
+
+                        <Divider/>
+
+                        {/* Tabla Contratos */}
+                        <Divider orientation="left" plain>
+                            <h1 className="big-title">
+                                Contratos
+                            </h1>
+                        </Divider>
+                        <div className="tablewrap">
+                            <Table dataSource={contData} columns={contCols} bordered/>
                         </div>
                             
                     </TabPane>
-                    <TabPane tab="Seguimientos" key="2" style={TabStyles}>
-                        <div className="buttons">
-                            <Button block type="secondary" icon={<EditFilled/>}>Editar</Button>
-                            <Button block type="primary" icon={<PlusOutlined/>}>Nuevo</Button>
-                        </div>
-                        <div 
-                        style={{marginTop: 24, padding: 32, marginLeft: '-25%', width: '100%'}}
-                        >
-                            <Timeline mode='left' reverse>
-                                <Timeline.Item label="2015-09-01">Seguimiento n°1</Timeline.Item>
-                                <Timeline.Item label="2015-09-03">Lorem Ipsum es un texto de marcador de posición comúnmente utilizado en las industrias gráficas, gráficas 
-                                y editoriales para previsualizar diseños y maquetas visuales.</Timeline.Item>
-                                <Timeline.Item label="2015-09-04">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-                                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
-                                Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
-                                Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</Timeline.Item>
-                            </Timeline>
-
-                        </div>
-                    </TabPane>
-                    <TabPane tab="Mapa" key="3" style={TabStyles}>
+                    <TabPane tab="Mapa" key="2" style={TabStyles}>
                         
                     </TabPane>
                 </Tabs>
@@ -241,4 +284,4 @@ const BenefCard = (props) =>{
     )
 }
 
-export default withRouter(BenefCard)
+export default withRouter(AcompProfile)
