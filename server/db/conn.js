@@ -1,6 +1,6 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path')
-const dbPath = path.resolve(__dirname, 'db.db')
+const dbPath = path.resolve(__dirname, 'Base_de_Datos.db')
 
 const getConnection = () =>{
   // open database in memory

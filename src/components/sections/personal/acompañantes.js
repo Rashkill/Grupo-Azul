@@ -1,54 +1,52 @@
 import React,{ useState, useEffect } from 'react';
 import { Form, Divider, Row, Col, Input, Modal, Button, Upload, Spin ,notification , Empty } from 'antd';
-import { PlusOutlined, FileDoneOutlined, UploadOutlined, CheckCircleOutlined, LoadingOutlined } from '@ant-design/icons';
+import { PlusOutlined, FileDoneOutlined, UploadOutlined, CheckCircleOutlined, AlertOutlined, LoadingOutlined, PaperClipOutlined } from '@ant-design/icons';
 import AcompCard from './acomp-card.js';
 import Axios from 'axios';
 
 const { Search } = Input;
 
 var info = {
-    ucd: [],
     datos: []
 };
+
+var lastInfo = new FormData();
+var fileBlobAFIP, fileUrlAFIP;
+var fileBlobCV, fileUrlCV;
 
 function Acompañantes() {
     const [state, setState] = useState({    //Estados
         id:0,
         visible : false,
-        fileList: [],
-        visibleEdit: false,
         isLoading:true,
-        nombre:"",
-        apellido:"",
-        dni:0,
-        telefono:"",
-        domicilio:"",
-        email:"",
-        valorHora:0
     });
     
     const abortController = new AbortController();
     const [data, setData] = useState([]);
-    const [acompEdit,setAcompEdit] = useState([]);
-    const [fileImg, setFileImg] = useState([]);
-    const [filePdf,setFilePdf] = useState([]);
+    const [afipFiles, setAFIP] = useState([]);
+    const [cvFiles, setCV] = useState([]);
 
     const emptyIcon = <Empty style={{display: state.isLoading ? "none" : info.datos.length > 0 ? "none" : "inline"}} description={false} />;
     const loadIcon = <LoadingOutlined style={{ padding: 16, fontSize: 24, display: state.isLoading ? "inline" : "none" }} spin />;
 
     const getData = () =>{
-        loadAndGetData().then(() => setState({isLoading: false}))
+        loadAndGetData().then(() => setState({isLoading: false, id:0}))
     }
     const loadAndGetData = async() => {
         try{
-            const res = await fetch('http://localhost:4000/acomp', {signal: abortController.signal});
+            const res = await fetch('http://localhost:4000/getAcomp', {signal: abortController.signal});
             const datos = await res.json();
-            info.datos = datos;
+            if(datos !== undefined)
+                info.datos = datos;
 
-            const res2 = await fetch('http://localhost:4000/beneficiarios', {signal: abortController.signal});
-            const datos2 = await res2.json();
-            info.ucd = datos2;
+            // console.log(datos);
 
+            // const res2 = await fetch('http://localhost:4000/getBenef', {signal: abortController.signal});
+            // const datos2 = await res2.json();
+            // if(datos2.data !== undefined)
+            //     info.ucd = datos2.data;
+
+            
             setData(info);
 
         }catch(e){console.log(e)}
@@ -67,249 +65,131 @@ function Acompañantes() {
             visible: true,
         });
     };
-    const showEdit = async(id) =>{     //Mostrar modal Editar 
+    const onEdit = async(id) =>{     //Mostrar modal Editar 
         setState({
             id:id,
-            visibleEdit: true  
+            visible: true
         });
-        // const options = {method: 'GET'};
-        // const res = await fetch('http://localhost:4000/acompOnly/'+id,options);
-        // const datos = await res.json();
-        setAcompEdit(data[id - 1]);
-        cargandoInputs(id - 1);
-        //console.log(datos[0].Nombre);
-
+        let index = info.datos.findIndex(p => p.Id === id);
+        for (var prop in info.datos[index]) {
+            lastInfo.set(prop, info.datos[index][prop]);
+            if(prop === "ConstanciaAFIP"){
+                fileBlobAFIP = new Blob([Buffer.from(info.datos[index][prop])], {type: "application/pdf"})
+                fileUrlAFIP = URL.createObjectURL(fileBlobAFIP)
+            }
+            if(prop === "CV"){
+                fileBlobCV = new Blob([Buffer.from(info.datos[index][prop])], {type: "application/pdf"})
+                fileUrlCV = URL.createObjectURL(fileBlobCV)
+            }
+        }
     };
 
-    const handleOk = async () => {       //maneja boton ok del modal
-        const formData = new FormData();
-        var data = [state.nombre,state.apellido,state.dni,state.telefono,state.domicilio,state.email,state.banco,state.cvu,state.valorHora];
-        console.log(data);
-        // var file =[];
-        // file.push(fileImg);
-        // file.push(filePdf);
-        formData.append("files",fileImg); 
-        formData.append("files",filePdf); 
-        // formData.append("data",data)
-        formData.append("nombre",state.nombre)
-        formData.append("apellido",state.apellido)
-        formData.append("dni",state.dni)
-        formData.append("domicilio",state.domicilio)
-        formData.append("telefono",state.telefono)
-        formData.append("email",state.email)
-        formData.append("banco",state.banco)
-        formData.append("cvu",state.cvu)
-        formData.append("valorHora",state.valorHora)
-
-        Axios.post('http://localhost:4000/addfile',formData,{
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'multipart/form-data'
+    const onDelete = (id) => {
+        if(window.confirm('¿Realmente desea eliminar esta tabla?'))
+        Axios.delete('http://localhost:4000/benef/' + id).then(() => {
+                openNotification(
+                    "Eliminación exitosa",
+                    "El Acompañante se borró correctamente",
+                    true
+                )
+                getData();
             }
-        }).then(res=>{
-            form.resetFields();
-            limpiarInputs();
-            openNotification();
-            getData();
-        });
+        );
+    }
 
+    const handleOk = () => {       //maneja boton ok del modal
+
+        if(state.id <= 0 || state.id === undefined)
+        {
+            lastInfo.set("ConstanciaAFIP", afipFiles[0])
+            lastInfo.set("CV", cvFiles[0])
+            Axios.post('http://localhost:4000/addAcomp',lastInfo,{
+                headers: {
+                    Accept: 'application/json'
+                }
+            }).then(res=>{
+                setState({visible: false})
+                openNotification("Datos Agregados",
+                "El acompañante " + lastInfo.get("Apellido") + " ahora se encuentra en la lista", true);
+                getData();
+            }).catch((error) => openNotification("Error","Algunos campos están vacios", false));
+        }
+        else
+        {
+            if(afipFiles>0)
+                lastInfo.set("ConstanciaAFIP", afipFiles[0])
+            else
+                lastInfo.set("ConstanciaAFIP", fileBlobAFIP)
+
+            if(cvFiles>0)
+                lastInfo.set("CV", cvFiles[0])
+            else
+                lastInfo.set("CV", fileBlobCV)
+
+            Axios.post('http://localhost:4000/updAcomp/' + state.id ,lastInfo,{
+                headers: {
+                    Accept: 'application/json'
+                }
+            }).then(res=>{
+                setState({visible: false})
+                openNotification("Datos Actualizados",
+                "El acompañante fue actualizado correctamente", true);
+                getData();
+            });
+        }
         // var response =  await res.json().then(openNotification()).then(getData());
 
     };
-    const handlerOkEdit = async () =>{
-        console.log(state.id);
-        const formData = new FormData();
-        formData.append("files",fileImg); 
-        formData.append("files",filePdf); 
-        formData.append("nombre",state.nombre)
-        formData.append("apellido",state.apellido)
-        formData.append("dni",state.dni)
-        formData.append("domicilio",state.domicilio)
-        formData.append("telefono",state.telefono)
-        formData.append("email",state.email)
-        formData.append("banco",state.banco)
-        formData.append("cvu",state.cvu)
-        formData.append("valorHora",state.valorHora)
 
-        Axios.post('http://localhost:4000/updateAcomp/'+state.id,formData,{
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'multipart/form-data'
-            }
-        }).then(res=>{
-            form1.resetFields();
-            limpiarInputs();
-            openNotification();
-            getData();
-        });
-    }
     const handleCancel = e => {   //cancelar modales
         var confirm = window.confirm('¿Desea cerrar el formulario? Se perderán los cambios no guardados')
         if(confirm){
-            console.log(e);
             setState({
-            visible: false,
-            visibleEdit: false
+            visible: false
             });
-            limpiarInputs();
-            form.resetFields();
-            form1.resetFields();
         }
     };
     const handleSearch = (v) => { //Presionar enter al buscador
         console.log(v)
     }  
     const onChangeInput = e =>{
-        if(e.target.id==="nombre"){
-            var nombre = e.target.value;
-            console.log("nombre: ",nombre);
-            setState(state=>({...state,nombre:nombre}));
-        }
-        if(e.target.id==="apellido"){
-            var apellido = e.target.value;
-            console.log("apellido: ",apellido);
-            setState(state=>({...state,apellido:apellido}));
-        }
-        if(e.target.id==="dni"){
-            var dni = e.target.value;
-            console.log("dni: ",dni);
-            setState(state=>({...state,dni:dni}));
-        }
-        if(e.target.id==="telefono"){
-            var telefono = e.target.value;
-            console.log("telefono: ",telefono);
-            setState(state=>({...state,telefono:telefono}));
-        }
-        if(e.target.id==="domicilio"){
-            var domicilio = e.target.value;
-            console.log("domicilio: ",domicilio);
-            setState(state=>({...state,domicilio:domicilio}));
-        }
-        if(e.target.id==="email"){
-            var email = e.target.value;
-            console.log("email: ",email);
-            setState(state=>({...state,email:email}));
-        }
-        if(e.target.id==="valorHora"){
-            var valorHora = e.target.value;
-            console.log("valorHora: ",valorHora);
-            setState(state=>({...state,valorHora:valorHora}));
-        }
-        if(e.target.id==="banco"){
-            var banco = e.target.value;
-            console.log("banco: ",banco);
-            setState(state=>({...state,banco:banco}));
-        }
-        if(e.target.id==="cvu"){
-            var cvu = e.target.value;
-            console.log("cvu: ",cvu);
-            setState(state=>({...state,cvu:cvu}));
-        }
-        if(e.target.id==="valorHora"){
-            var valorHora = e.target.value;
-            console.log("valorHora: ",valorHora);
-            setState(state=>({...state,valorHora:valorHora}));
-        }
+        lastInfo.set([e.target.id], e.target.value);
     }
-    const fileHandler = event =>{
-        console.log(fileImg);
-        const data = new FormData();
-        data.append("file",fileImg);
-        Axios.post('http://localhost:4000/addfile',data,{
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'multipart/form-data'
-            }
-        })
-        .then(res=>console.log("asd: ",res))
-        .catch(err=>console.log("err: ", err));
-    };
-    const openNotification = () => {
-        setState({
-            visible: false,
-        });
 
+    const openNotification = (msg, desc, succeed) => {
         notification.open({
-            message: 'Creado con éxito',
-            description:
-            `El Acompañante ${state.nombre} ya se encuentra en la lista.`,
-            icon: <CheckCircleOutlined style={{ color: '#52C41A' }} />,
+            message: msg,
+            description: desc,
+            icon: succeed ? 
+            <CheckCircleOutlined style={{ color: '#52C41A' }} /> : 
+            <AlertOutlined style={{ color: '#c4251a' }} />
         });
     };
-    const showFile =()=>{
-        Axios.get('http://localhost:4000/photo/1',{
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'multipart/form-data'
-            }
-        })
-        .then(res=>setFileImg(res))
-        .then(console.log(fileImg))
-        .catch(err=>console.log("err: ", err));
-    }
-    const limpiarInputs = () =>{
-        setState(state=>({...state,nombre:""}));
-        setState(state=>({...state,apellido:""}));
-        setState(state=>({...state,domicilio:""}));
-        setState(state=>({...state,dni:0}));
-        setState(state=>({...state,telefono:0}));
-        setState(state=>({...state,email:""}));
-        setState(state=>({...state,banco:""}));
-        setState(state=>({...state,cvu:""}));
-        setState(state=>({...state,alias:""})); 
-        setState(state=>({...state,valorHora:0})); 
-        setFilePdf([]);
-        setFileImg([]);
-    } 
-    const cargandoInputs = (id) =>{
-        setState(state=>({...state,nombre:info.datos[id].Nombre}));
-        setState(state=>({...state,apellido:info.datos[id].Apellido}));
-        setState(state=>({...state,domicilio:info.datos[id].Domicilio}));
-        setState(state=>({...state,dni:info.datos[id].Dni}));
-        setState(state=>({...state,telefono:info.datos[id].Telefono}));
-        setState(state=>({...state,email:info.datos[id].Email}));
-        setState(state=>({...state,banco:info.datos[id].Banco}));
-        setState(state=>({...state,cvu:info.datos[id].Cvu}));
-        setState(state=>({...state,alias:info.datos[id].Alias})); 
-        setState(state=>({...state,valorHora:info.datos[id].ValorHora})); 
-    }
-    const propsImg = {
+    
+    const propsConstanciaAFIP = {
         onRemove: file => {
-            console.log(file);
-                setFileImg([]);
-                return {
-                    fileImg,
-                };
-        },
-        // },
-        // onChange: e =>{
-        //     fileImg.slice(-1);
-        //     return {
-        //         fileImg,
-        //     }
-        // },
-        beforeUpload: file => {
-            setFileImg(file);
-            console.log(fileImg);
-          return false;
-        },
-        fileImg,
-    };
-    const propsPdf = {
-        onRemove: file => {
-                setFilePdf([]);
-                return {
-                    filePdf,
-                  };
+                setAFIP([])
+                return true;
         },
         beforeUpload: file => {
-            setFilePdf(file);
+            let fileL = []; fileL.push(file);
+            setAFIP(fileL)
           return false;
-        },
-        filePdf,
+        }
     };
-    const [form] = Form.useForm();
-    const [form1] = Form.useForm();
+
+    const propsCV = {
+        onRemove: file => {
+                setCV([])
+                return true;
+        },
+        beforeUpload: file => {
+            let fileL = []; fileL.push(file);
+            setCV(fileL)
+          return false;
+        }
+    };
+
     return(
         <div className="content-cont">
             {/*Todos los Acompañantes */}
@@ -325,27 +205,29 @@ function Acompañantes() {
                     {emptyIcon}
                     {info.datos.map((i , index)=>{
                         return(
-                            <AcompCard edit={showEdit} refresh={getData} 
-                            title={i.Nombre + " " + i.Apellido} 
-                            price={i.ValorHora} 
-                            email={i.Email} 
-                            telefono={i.Telefono} 
-                            domicilio={i.Domicilio} 
-                            id={i.Id}
-                            ucd= {info.ucd[i.IdBeneficiario - 1]}
-                            key={index}
-                            linkto="acompprofile"
+                            <AcompCard 
+                                OnEdit={onEdit} 
+                                OnDelete={onDelete} 
+                                title={i.Nombre + " " + i.Apellido} 
+                                price={i.ValorHora} 
+                                email={i.Email} 
+                                telefono={i.Telefono} 
+                                domicilio={i.Domicilio} 
+                                id={i.Id}
+                                // ucd= {info.ucd[i.IdBeneficiario - 1]}
+                                key={index}
+                                linkto="acompprofile"
                             />
-
                         )
+                            
                     })}
-                    {loadIcon}                 
+                    {loadIcon}
                     </div>
                 </Col>
                 <Col span={6}>
                     <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onSearch={value => this.handleSearch(value)} allowClear={true}/>
                     <div className="right-menu">
-                        <div className="right-btn" onClick={showModal} >
+                        <div className="right-btn" hidden={state.isLoading} onClick={showModal} >
                             <PlusOutlined />
                             <span className="right-btn-text">Nuevo</span>
                         </div>
@@ -359,216 +241,100 @@ function Acompañantes() {
             
             {/* //Agregar Acomp MODAL */}     
             <Modal
-                title="Nuevo Acompañante"
+                title={state.id === undefined ? "Nuevo Acompañante" : "Modificar Acompañante"}
                 visible={state.visible}
                 onOk={handleOk}
                 onCancel={handleCancel}
                 cancelText="Cancelar"
+                destroyOnClose={true}
                 okText="Ok"
                 width='70%'
             >
 
-            <Form form={form}>
+            <Form>
 
                 <Row gutter={[48,20]}>
-                <Col span={12}>
-                    <Divider orientation="left">Datos Principales</Divider>
-                </Col>
-                <Col span={12}>
-                    <Divider orientation="left">Datos de Contacto</Divider>
-                </Col>
                     <Col span={12}>
-                        <Input placeholder="Nombre" id="nombre" value={state.nombre} onChange={onChangeInput} />
+                        <Divider orientation="left">Datos Principales</Divider>
                     </Col>
                     <Col span={12}>
-                    <Input placeholder="Telefono" type="number" id="telefono" value={state.telefono} onChange={onChangeInput}/>
+                        <Divider orientation="left">Datos de Contacto</Divider>
                     </Col>
                     <Col span={12}>
-             
-                        <Input placeholder="Apellido" id="apellido" value={state.apellido} onChange={onChangeInput}/>
+                        <h1>Nombre</h1>
+                        <Input placeholder="Nombre" id="Nombre"  onChange={onChangeInput} 
+                        defaultValue={state.id === undefined ? undefined : lastInfo.get("Nombre")} />
                     </Col>
                     <Col span={12}>
-                        <Input placeholder="Domicilio" id="domicilio" value={state.domicilio} onChange={onChangeInput}/>
+                        <h1>Teléfono</h1>
+                        <Input placeholder="Telefono" type="number" id="Telefono" onChange={onChangeInput} 
+                        defaultValue={state.id === undefined ? undefined : lastInfo.get("Telefono")} />
                     </Col>
                     <Col span={12}>
-                    <Input placeholder="DNI" type="number" id="dni" value={state.dni} onChange={onChangeInput}/>
+                        <h1>Apellido</h1>
+                        <Input placeholder="Apellido" id="Apellido" onChange={onChangeInput} 
+                        defaultValue={state.id === undefined ? undefined : lastInfo.get("Apellido")} />
                     </Col>
                     <Col span={12}>
-                        <Input placeholder="Email" id="email" value={state.email} onChange={onChangeInput}/>
+                        <h1>Domicilio</h1>
+                        <Input placeholder="Domicilio" id="Domicilio" onChange={onChangeInput} 
+                        defaultValue={state.id === undefined ? undefined : lastInfo.get("Domicilio")} />
+                    </Col>
+                    <Col span={12}>
+                        <h1>DNI</h1>
+                        <Input placeholder="DNI" type="number" id="DNI" onChange={onChangeInput} 
+                        defaultValue={state.id === undefined ? undefined : lastInfo.get("DNI")} />
+                    </Col>
+                    <Col span={12}>
+                        <h1>E-Mail</h1>
+                        <Input placeholder="Email" id="Email" onChange={onChangeInput} 
+                        defaultValue={state.id === undefined ? undefined : lastInfo.get("Email")} />
+                    </Col>
+                    <Col span={12}>
+                        <h1>CUIL</h1>
+                        <Input placeholder="CUIL" type="number" id="CUIL" onChange={onChangeInput} 
+                        defaultValue={state.id === undefined ? undefined : lastInfo.get("CUIL")} />
                     </Col>
                 </Row>
-                 <Divider orientation="left">Datos de Facturación</Divider>
-                 <Row gutter={[48,20]}>
-                 <Col span={12}>
-                        <Input placeholder="Banco" id="banco" value={state.banco} onChange={onChangeInput}/>
+                <Divider orientation="left">Datos de Facturación</Divider>
+                <Row gutter={[48,20]}>
+                    <Col span={12}>
+                        <h1>Entidad Bancaria</h1>
+                        <Input placeholder="Entidad Bancaria" id="EntidadBancaria" onChange={onChangeInput}
+                        defaultValue={state.id === undefined ? undefined : lastInfo.get("EntidadBancaria")} />
                     </Col>
                     <Col span={12}>
-                        {/* <Button placeholder="Póliza" onClick={fileHandler} id="poliza" onChange={onChangeInput} suffix={<PaperClipOutlined className="site-form-item-icon" />}/> */}
-                    {/* <Upload {...props}>
-                        <Button icon={<UploadOutlined />}>Click to upload</Button>
-                    </Upload> */}
+                        <h1>Numero Póliza</h1>
+                        <Input placeholder="Numero Póliza" id="NumeroPoliza" onChange={onChangeInput}
+                        defaultValue={state.id === undefined ? undefined : lastInfo.get("NumeroPoliza")} />
                     </Col>
                     <Col span={12}>
-                    
-                        <Input placeholder="CVU/ALIAS" id="cvu" value={state.cvu} onChange={onChangeInput}/>
+                        <h1>Nombre Seguros</h1>
+                        <Input placeholder="Nombre Seguros" id="NombreSeguros" onChange={onChangeInput}
+                        defaultValue={state.id === undefined ? undefined : lastInfo.get("NombreSeguros")} />
                     </Col>
-
-                 <Col span={12}>
-                 {/* <Input placeholder="Constancia AFIP" id="afip" onChange={onChangeInput}  suffix={<PaperClipOutlined className="site-form-item-icon" />}/>      */}
-                 {/* <Upload {...props}>
-                    <Button icon={<UploadOutlined />}>Constancia AFIP</Button>
-                </Upload>   */}
-                {/* <input type="file" id="img" accept="image/jpeg,image/png" onChange={event => {
-                    const file = event.target.files[0];
-                    setFileImg(file);
-                }}/>
-                <input type="file" id="file" accept="application/pdf" placeholder="Poliza" onChange={event => {
-                    const file = event.target.files[0];
-                    setFilePdf(file);
-                            }}/> */}
-                <Form.Item
-                    name="Afip"
-                    valuePropName="fileImg"
-                    getValueFromEvent={fileImg}
-                >                
-                <Upload {...propsImg} accept="image/jpeg,image/png">
-                    <Button icon={<UploadOutlined />}>Constancia AFIP</Button>
-                </Upload>             
-                </Form.Item>
-
-                <Form.Item
-                    name="Poliza"
-                    valuePropName="filePdf"
-                    getValueFromEvent={filePdf}
-                >
-                 <Upload {...propsPdf} accept="application/pdf">
-                    <Button icon={<UploadOutlined />}>Poliza</Button>
-                </Upload>
-                </Form.Item> 
-               
-
-                </Col>
                     <Col span={12}>
-                        <Input placeholder="Valor Hora" type="number" id="valorHora" value={state.valorHora} onChange={onChangeInput}/>
+                        <h1>CBU/ALIAS</h1>
+                        <Input placeholder="CBU/ALIAS" id="CBU" onChange={onChangeInput}
+                        defaultValue={state.id === undefined ? undefined : lastInfo.get("CBU")} />
+                    </Col>
+                    <Col span={12}>
+                        <Upload {...propsConstanciaAFIP} accept="application/pdf">
+                            <Button disabled={afipFiles.length>0} icon={<UploadOutlined />}>Constancia AFIP</Button>
+                        </Upload>
+                    </Col>
+                    <Col span={12}>
+                        <h1>Valor por Hora</h1>
+                        <Input placeholder="Valor Hora" type="number" id="ValorHora" onChange={onChangeInput}
+                        defaultValue={state.id === undefined ? undefined : lastInfo.get("ValorHora")} />
+                    </Col>
+                    <Col span={12}>
+                        <Upload {...propsCV} accept="application/pdf">
+                            <Button disabled={cvFiles.length>0} icon={<UploadOutlined />}>CV</Button>
+                        </Upload>
                     </Col>
                 </Row>        
-            </Form> 
-
-                
-
-                {/* Botones Programados
-                <Upload {...props}>
-                    <Button icon={<UploadOutlined />}>Click to upload</Button>
-                </Upload>  
-                <input type="file" id="file" accept="image/jpeg,image/png,application/pdf" onChange={event => {
-                    const file = event.target.files[0];
-                    setFilePath(file);
-                }}/>
-                <Button onClick={fileHandler}>Enviar File</Button>
-                <Button onClick={showFile}>Mostrar Poliza</Button>
-                <img src={`data:image/jpeg;base64,${img.data}`} /> */}
-                           
-            </Modal>
-            
-            {/* //Editar Acomp MODAL */}       
-            <Modal
-                title="Editar Acompañante"
-                visible={state.visibleEdit}
-                onOk={handlerOkEdit}
-                onCancel={handleCancel}
-                cancelText="Cancelar"
-                okText="Editar"
-                width='70%'
-            >
-            <Form form={form1}>
-
-            <Row gutter={[48,20]}>
-                <Col span={12}>
-                    <Divider orientation="left">Datos Principales</Divider>
-                </Col>
-                <Col span={12}>
-                    <Divider orientation="left">Datos de Contacto</Divider>
-                </Col>
-                    <Col span={12}>
-                        <Input placeholder="Nombre" id="nombre" value={state.nombre} onChange={onChangeInput}/>
-                    </Col>
-                    <Col span={12}>
-                    <Input placeholder="Telefono" type="number" id="telefono" value={state.telefono} onChange={onChangeInput}/>
-                    </Col>
-                    <Col span={12}>
-             
-                        <Input placeholder="Apellido" id="apellido" value={state.apellido} onChange={onChangeInput}/>
-                    </Col>
-                    <Col span={12}>
-                        <Input placeholder="Domicilio" id="domicilio" value={state.domicilio} onChange={onChangeInput}/>
-                    </Col>
-                    <Col span={12}>
-                    <Input placeholder="DNI" type="number" id="dni" value={state.dni} onChange={onChangeInput}/>
-                    </Col>
-                    <Col span={12}>
-                        <Input placeholder="Email" id="email" value={state.email} onChange={onChangeInput}/>
-                    </Col>
-                </Row>
-                 <Divider orientation="left">Datos de Facturación</Divider>
-                 <Row gutter={[48,20]}>
-                 <Col span={12}>
-                        <Input placeholder="Banco" id="banco" value={state.banco} onChange={onChangeInput}/>
-                    </Col>
-                    <Col span={12}>
-                        {/* <Button placeholder="Póliza" onClick={fileHandler} id="poliza" onChange={onChangeInput} suffix={<PaperClipOutlined className="site-form-item-icon" />}/> */}
-                    {/* <Upload {...props}>
-                        <Button icon={<UploadOutlined />}>Click to upload</Button>
-                    </Upload> */}
-                    </Col>
-                    <Col span={12}>    
-                        <Input placeholder="CVU/ALIAS" id="cvu" value={state.cvu} onChange={onChangeInput}/>
-                    </Col>
-
-                 <Col span={12}>
-                 {/* <Input placeholder="Constancia AFIP" id="afip" onChange={onChangeInput}  suffix={<PaperClipOutlined className="site-form-item-icon" />}/>      */}
-                 {/* <Upload {...props}>
-                    <Button icon={<UploadOutlined />}>Constancia AFIP</Button>
-                </Upload>   */}
-                <Form.Item
-                    name="Afip"
-                    valuePropName="fileImg"
-                    getValueFromEvent={fileImg}
-                >
-                <Upload {...propsImg} accept="image/jpeg,image/png">
-                    <Button icon={<UploadOutlined />}>Constancia AFIP</Button>
-                </Upload>
-                </Form.Item>
-                
-                <Form.Item
-                    name="Poliza"
-                    valuePropName="filePdf"
-                    getValueFromEvent={filePdf}
-                >
-                <Upload {...propsPdf} accept="application/pdf">
-                    <Button icon={<UploadOutlined />}>Poliza</Button>
-                </Upload>
-                </Form.Item>
-
-                </Col>
-                    <Col span={12}>
-                        <Input placeholder="Valor Hora" type="number" id="valorHora" value={state.valorHora} onChange={onChangeInput}/>
-                    </Col>
-                </Row>
-            </Form>
-                
-
-                {/* Botones Programados
-                <Upload {...props}>
-                    <Button icon={<UploadOutlined />}>Click to upload</Button>
-                </Upload>  
-                <input type="file" id="file" accept="image/jpeg,image/png,application/pdf" onChange={event => {
-                    const file = event.target.files[0];
-                    setFilePath(file);
-                }}/>
-                <Button onClick={fileHandler}>Enviar File</Button>
-                <Button onClick={showFile}>Mostrar Poliza</Button>
-                <img src={`data:image/jpeg;base64,${img.data}`} /> */}
-        
+            </Form>              
             </Modal>
         </div>
     )

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Divider, Row, Col, Input, Modal, AutoComplete, DatePicker } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
+import LiqCard from './liq-card.js'
 
 const { Search } = Input;
 const ucds = [
@@ -50,7 +51,16 @@ class Liquidaciones extends React.Component{
                             <h1 className="big-title">
                                 Liquidaciones
                             </h1>
+                            
                         </Divider>
+
+
+                        <div className="cards-container">
+                            <LiqCard
+                                title="Melamedoff, Celina - Junio 2020"
+                            />
+                            
+                        </div>
                     </Col>
                     <Col span={6}>
                         <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onSearch={value => this.handleSearch(value)} allowClear={true}/>

@@ -1,12 +1,12 @@
 const express = require('express');
 const cors = require('cors');
 const port = 4000
-const {getAcomp} = require('./routes/getAcomp');
-const {addAcomp} = require('./routes/addAcomp');
-const {addBenef, getBenef} = require('./routes/addGetBenef');
-const {addJornada, updJornada} = require('./routes/jornadaDBHandle');
-const {addFile} = require('./routes/addFile');
-const {getConnection} = require('./db/conn');
+
+const {addAcomp, updAcomp, getAcomp, getAcompOnly, delAcomp} = require('./routes/acompañanteDBHandle');
+const {addBenef, updBenef, getBenef, getBenefOnly, delBenef} = require('./routes/beneficiarioDBHandle');
+const {addCoord, updCoord, getCoord, getCoordOnly, delCoord} = require('./routes/coordinadorDBHandle')
+const {addJornada, updJornada, getJornadas, getJornadaOnly, delJornada} = require('./routes/jornadaDBHandle');
+//const {getConnection} = require('./db/conn');
 const app = express()
 const multer = require('multer');
 const fs =  require('fs');
@@ -17,345 +17,122 @@ app.use(express.json());
 var upload = multer();
 
 
+/*-------------
+    JORNADAS
+---------------*/
+
  //Agregando Jornada
- app.post('/addjornada', async (req,res)=>{
+ app.post('/addJornada', async (req,res)=>{
   await addJornada(req,res);
 })
 
-//Get Jornadas
-app.get('/jornadas', async (req, res, next) => {
-  let db = getConnection();
-  let sql = `SELECT * FROM jornada
-         ORDER BY id`;
-  var arrayData = [];
-  db.all(sql, [], (err, rows) => {
-      if (err) {
-          res.status(400).json({"error":err.message});
-          return;
-      }
-      rows.forEach((row) => {
-          // console.log(row);
-          arrayData.push(row);
-      });
-      res.json(rows)
-  });
+//Obtener Jornadas
+app.get('/getJornadas', async (req, res) => {
+  await getJornadas(req,res);
 })
 
 //Actualizando Jornada
-app.post('/updateJornada/:id', async(req, res) => {
+app.post('/updJornada/:id', async(req, res) => {
   await updJornada(req,res);
 })
 
-//Borrando Jornada
-app.delete('/jornada/:id', (req,res)=>{
-  var id = req.params.id;
-  // delete a row based on id
-  let db = getConnection();
-  let sql = `DELETE FROM jornada WHERE id="${id}"`;
-  db.run(sql, function(err) {
-    if (err) {
-      return console.error(err.message);
-    }
-    console.log(`Se ha borrado la fila ${id}`);
-    res.json("Se ha borrado la fila");
-  });
+//Obtener una Jornada
+app.get('/getJornadaOnly/:id', async(req,res)=>{
+  await getJornadaOnly(req,res);
+})
 
+//Borrando Jornada
+app.delete('/jornada/:id', async(req,res)=>{
+  await getJornadaOnly(req,res);
+})
+
+/*-------------
+  ACOMPAÑANTES
+---------------*/
+
+//Agregando Acompañante
+app.post('/addAcomp', upload.fields([{name: "ConstanciaAFIP", maxCount: 1}, {name: "CV", maxCount: 1}]), async (req,res)=>{
+  await addAcomp(req,res);
 })
 
 //Get Acompañante
-app.get('/acomp', async (req, res, next) => {
-    // const acomp = await getAcomp(req, res, next);
-    // console.log("acomp: "+ acomp);
-    // res.json(acomp);
-    let db = getConnection();
-    let sql = `SELECT * FROM acompañante
-           ORDER BY id`;
-    var arrayData = [];
-    db.all(sql, [], (err, rows) => {
-        if (err) {
-            res.status(400).json({"error":err.message});
-            return;
-        }
-        rows.forEach((row) => {
-            // console.log(row);
-            arrayData.push(row);
-        });
-        res.json(rows)
-    });
+app.get('/getAcomp', async (req, res) => {
+    await getAcomp(req,res);
 })
 
 //Get Un Acompañante
 app.get('/acompOnly/:id', async (req, res, next) => {
-  var id = req.params.id;
-  let db = getConnection();
-  let sql = "SELECT * FROM acompañante WHERE id="+id;
-  var arrayData = [];
-  db.all(sql, [], (err, row) => {
-      if (err) {
-          res.status(400).json({"error":err.message});
-          return;
-      }
-      console.log(row);
-      res.json(row);
-  });
-})
- //Agregando Acompañante
-app.post('/addacomp', async (req,res)=>{
-    await addAcomp(req,res);
+  await getAcompOnly(req,res)
 })
 
-
-//Agregando Acompañante y Archivo
-app.post('/addfile', upload.array("files",2), (req, res) => {
-    const files = req.files
-    console.log("req: ",files);
-    console.log("nombre: ",req.body.cvu);
-    console.log("length: ",req.files.length);
-    var nombre= "";
-    if(req.body.nombre){
-      nombre=req.body.nombre;
-    }
-    var apellido= "";
-    if(req.body.apellido){
-      apellido=req.body.apellido;
-    }
-    var dni = 0;
-    if(req.body.dni){
-      dni=req.body.dni;
-    }
-    var telefono = 0;
-    if(req.body.telefono){
-      telefono=req.body.telefono;
-    }
-    var domicilio = "";
-    if(req.body.domicilio){
-      domicilio=req.body.domicilio;
-    }
-    var email = "";
-    if(req.body.email){
-      email=req.body.email;
-    }
-    var banco = "";
-    if(req.body.banco){
-      banco=req.body.banco;
-    }
-    var cvu = "";
-    if(req.body.cvu){
-      cvu=req.body.cvu;
-    }
-    var valorHora = 0;
-    if(req.body.valorHora){
-      valorHora=req.body.valorHora;
-    }
-    var filePdf;
-    var fileImg;
-    if(files){
-      files.forEach(e  =>{
-        if(e.mimetype == "application/pdf"){
-          filePdf = e.buffer;
-        };
-        if(e.mimetype == "image/jpeg" ||e.mimetype == "image/png" ){
-          fileImg = e.buffer;
-        };
-      });
-    };
-
-
-    let db = getConnection();
-    let sql = `INSERT INTO Acompañante(Nombre,Apellido,Dni,Telefono,Domicilio,Email,Banco,Cvu,ValorHora,Poliza,Afip) VALUES(?,?,?,?,?,?,?,?,?,?,?)`; 
-
-    // insert one row into the langs table
-    db.run(sql,nombre,apellido,dni,telefono,domicilio,email,req.body.banco,cvu,valorHora,fileImg,filePdf, function(err) {
-      if (err) {
-        res.status(400).json({"error":err.message});
-        console.log(err.message);
-        return;
-      }
-      res.status(200).json("succed");
-      console.log("succed");
-    });
-
-
-    // var db = getConnection();
-    // db.run('UPDATE Acompañante SET Poliza = (?) WHERE id=27', bufferdirecto , function(err){
-    //     if (err) return console.log(err);
-    //     console.log('saved to database');
-    // });
-});
-//Agregando Acompañante y Archivo
-app.post('/updateAcomp/:id', upload.array("files",2), (req, res) => {
-  const files = req.files
-  console.log("req: ",files);
-  console.log("id: ",req.params.id);
-  var filePdf;
-  var fileImg;
-  if(files){
-    files.forEach(e  =>{
-      if(e.mimetype == "application/pdf"){
-        filePdf = e.buffer;
-      };
-      if(e.mimetype == "image/jpeg" ||e.mimetype == "image/png" ){
-        fileImg = e.buffer;
-      };
-    });
-  };
-
-  let db = getConnection();
-  let sql = `UPDATE Acompañante SET Nombre=?, Apellido=?, Dni=?, Telefono=?,Domicilio=?,Email=?,Banco=?,Cvu=?,ValorHora=?,Poliza=?,Afip=? WHERE id=?`; 
-
-  // insert one row into the langs table
-  db.run(sql,req.body.nombre,req.body.apellido,req.body.dni,req.body.telefono,req.body.domicilio,req.body.email,req.body.banco,req.body.cvu,req.body.valorHora,fileImg,filePdf,req.params.id, function(err) {
-    if (err) {
-      res.status(400).json({"error":err.message});
-      console.log(err.message);
-      return;
-    }
-    res.status(200).json("succed");
-    console.log("succed");
-  });
-
+//Actualizando Acompañante
+app.post('/updAcomp/:id', upload.fields([{name: "ConstanciaAFIP", maxCount: 1}, {name: "CV", maxCount: 1}]), async (req, res) => {
+  await updAcomp(req,res);
 })
-//Retornando Imagenes
-app.get('/photo/:id', (req, res) => {
-    var filename = req.params.id; 
-   
-    let db = getConnection();
-    let sql = `SELECT Poliza FROM acompañante WHERE id="${filename}"`;
 
-    db.all(sql,[], (err, row) => {
-        if (err) {
-          return console.error(err.message);
-        }
-        if(row){
-            // var bufferBase64 = new Buffer( row[0].Poliza, 'binary' ).toString('base64');
-            var img = new Buffer(row[0].Poliza).toString('base64');
-            // res.contentType('image/jpeg')
-            // res.send(img)  
-            res.json(img)
-            // res.send(bufferBase64)  
-            // console.log(row) 
-            // var bufferBase64 = new Buffer( blob, 'binary' ).toString('base64');
-            // const img = Buffer.from(row[0].Poliza, 'base64');
-            // console.log(img)
-            // res.writeHead(200, {
-            // 'Content-Type': 'image/png'
-            // });
-            // res.end(img); 
-        }
-      });
-})
 //Borrando Acompañante
-app.delete('/acomp/:id', (req,res)=>{
-  var id = req.params.id;
-  // delete a row based on id
-  let db = getConnection();
-  let sql = `DELETE FROM acompañante WHERE id="${id}"`;
-  db.run(sql, function(err) {
-    if (err) {
-      return console.error(err.message);
-    }
-    console.log(`Se ha borrado la fila ${id}`);
-    res.json("Se ha borrado la fila");
-  });
-
+app.delete('/acomp/:id', async(req,res)=>{
+  await delAcomp(req,res);
 })
 
-//Get Beneficiarios
-app.get('/beneficiarios', async (req, res, next) => {
-  let db = getConnection();
-  let sql = `SELECT * FROM beneficiario
-         ORDER BY id`;
-  var arrayData = [];
-  db.all(sql, [], (err, rows) => {
-      if (err) {
-          res.status(400).json({"error":err.message});
-          return;
-      }
-      rows.forEach((row) => {
-          arrayData.push(row);
-      });
-      res.json(rows)
-  });
-})
-//Agregando Acompañante
-app.post('/addacomp', async (req,res)=>{
-  await addAcomp(req,res);
-})
 
-//Get Un Beneficiario
-app.get('/benefOnly/:id', async (req, res, next) => {
-  var id = req.params.id;
-  let db = getConnection();
-  let sql = "SELECT * FROM Beneficiario WHERE id="+id;
-  var arrayData = [];
-  db.all(sql, [], (err, row) => {
-      if (err) {
-          res.status(400).json({"error":err.message});
-          return;
-      }
-      console.log(row);
-      res.json(row);
-  });
-})
+/*-------------
+  BENEFICIARIOS
+---------------*/
 
  //Agregando Beneficiario
- app.post('/addbenef', async (req,res)=>{
+ app.post('/addBenef', upload.single("FichaInicial"), async (req,res)=>{
   await addBenef(req,res);
 })
 
-//Get Coordinadores
-app.get('/coordinadores', async (req, res, next) => {
-  let db = getConnection();
-  let sql = `SELECT * FROM Coordinador
-         ORDER BY id`;
-  var arrayData = [];
-  db.all(sql, [], (err, rows) => {
-      if (err) {
-          res.status(400).json({"error":err.message});
-          return;
-      }
-      rows.forEach((row) => {
-          // console.log(row);
-          arrayData.push(row);
-      });
-      res.json(rows)
-  });
+//Actualizando Beneficiario
+app.post('/updBenef/:id', upload.single("FichaInicial"), (req, res) => {
+  updBenef(req,res);
 })
 
-//Get Un Coordinador
-app.get('/coordOnly/:id', async (req, res, next) => {
-  var id = req.params.id;
-  let db = getConnection();
-  let sql = "SELECT * FROM Coordinador WHERE id="+id;
-  var arrayData = [];
-  db.all(sql, [], (err, row) => {
-      if (err) {
-          res.status(400).json({"error":err.message});
-          return;
-      }
-      console.log(row);
-      res.json(row);
-  });
+//Obteniendo Beneficiarios
+app.get('/getBenef', async (req, res) => {
+  await getBenef(req,res);
+})
+
+//Obteniendo Un Solo Beneficiario
+app.get('/getBenefOnly/:id', async (req, res) => {
+  await getBenefOnly(req,res);
+})
+
+//Borrando Beneficiario
+app.delete('/benef/:id', async (req, res) => {
+  await delBenef(req,res);
+})
+
+
+/*-------------
+  COORDINADORES
+---------------*/
+
+//Agregando Coordinador
+app.post('/addCoord', upload.fields([{name: "ConstanciaAFIP", maxCount: 1}, {name: "CV", maxCount: 1}]), async (req,res)=>{
+  await addCoord(req,res);
 })
 
 //Agregando Coordinador
-app.post('/addcoord', async (req,res)=>{
-  let db = getConnection();
-  let sql = `INSERT INTO Coordinador(Nombre,Apellido,PrecioMensual) VALUES("
-    ${req.body.nombre}","
-    ${req.body.apellido}","
-    ${req.body.preciomensual}
-    ")`;
-  // insert one row into the langs table
-  db.run(sql, function(err) {
-    if (err) {
-      res.status(400).json({"error":err.message});
-      console.log(err.message);
-      return;
-    }
-    res.status(200).json("succed");
-    console.log("succed");
-    });
+app.post('/updCoord', upload.fields([{name: "ConstanciaAFIP", maxCount: 1}, {name: "CV", maxCount: 1}]), async (req,res)=>{
+  await updCoord(req,res);
+})
+
+//Get Coordinadores
+app.get('/getCoord', async (req, res) => {
+  await getCoord(req,res)
+})
+
+//Get Un Coordinador
+app.get('/getCoordOnly/:id', async (req, res) => {
+  await getCoordOnly(req,res)
+})
+
+//Borrand Coordinador
+app.delete('/coord/:id', async (req, res)=>{
+  await delCoord(req,res);
 })
 
 app.listen(port, () => {
