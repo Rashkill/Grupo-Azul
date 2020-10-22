@@ -29,6 +29,7 @@ function Acompañantes() {
     const emptyIcon = <Empty style={{display: state.isLoading ? "none" : info.datos.length > 0 ? "none" : "inline"}} description={false} />;
     const loadIcon = <LoadingOutlined style={{ padding: 16, fontSize: 24, display: state.isLoading ? "inline" : "none" }} spin />;
 
+    //Secuencia que obtiene la informacion y luego desactiva el icono de carga
     const getData = () =>{
         loadAndGetData().then(() => setState({isLoading: false, id:0}))
     }
@@ -38,21 +39,30 @@ function Acompañantes() {
             const res = await fetch('http://localhost:4000/getAcomp/' + fields, {signal: abortController.signal});
             const datos = await res.json();
             if(datos)
-                info.datos = datos;
-
-            // console.log(datos);
-
-            // const res2 = await fetch('http://localhost:4000/getBenef', {signal: abortController.signal});
-            // const datos2 = await res2.json();
-            // if(datos2.data !== undefined)
-            //     info.ucd = datos2.data;
-
-            
+                info.datos = datos;            
             setData(info);
 
         }catch(e){console.log(e)}
     }
-    
+
+    //Obtiene los archivos
+    const getPdfs = async(id) =>{
+        try{
+            const res = await fetch('http://localhost:4000/getAcompOnly/'+ id +'/ConstanciaAFIP,CV', {signal: abortController.signal});
+            const datos = await res.json();
+            console.log(datos);
+            console.log(state.id);
+
+            fileBlobAFIP = new Blob([Buffer.from(datos[0].ConstanciaAFIP)], {type: "application/pdf"})
+            fileUrlAFIP = URL.createObjectURL(fileBlobAFIP)
+            
+            fileBlobCV = new Blob([Buffer.from(datos[0].CV)], {type: "application/pdf"})
+            fileUrlCV = URL.createObjectURL(fileBlobCV)
+        } 
+        catch(e){console.log(e)}
+    }
+
+    //Se ejecuta al montar el componente
     useEffect(()=>{
         abortController = new AbortController();
         getData();
@@ -68,33 +78,18 @@ function Acompañantes() {
         });
     };
 
-    const getPdfs = async() =>{
-        try{
-            const res = await fetch('http://localhost:4000/getAcomp/ConstanciaAFIP,CV', {signal: abortController.signal});
-            const datos = await res.json();
-            console.log(datos);
-
-            fileBlobAFIP = new Blob([Buffer.from(datos[0].ConstanciaAFIP)], {type: "application/pdf"})
-            fileUrlAFIP = URL.createObjectURL(fileBlobAFIP)
-            
-            fileBlobCV = new Blob([Buffer.from(datos[0].CV)], {type: "application/pdf"})
-            fileUrlCV = URL.createObjectURL(fileBlobCV)
-        } 
-        catch(e){console.log(e)}
-    }
-    const onEdit = async(id) =>{     //Mostrar modal Editar 
-        setState({
-            id:id
-        });
+    //Se llama al presionar el boton 'Editar' en la tarjeta
+    const onEdit = async(id) =>{ 
 
         let index = info.datos.findIndex(p => p.Id === id);
         for (var prop in info.datos[index]) {
             lastInfo.set(prop, info.datos[index][prop]);
         }
         
-        getPdfs().then(() => setState({id:id, visible: true}));
+        getPdfs(id).then(() => setState({id:id, visible: true}));
     };
 
+    //Se llama al presionar el boton 'Eliminar' en la tarjeta
     const onDelete = (id) => {
         if(window.confirm('¿Realmente desea eliminar esta tabla?'))
         Axios.delete('http://localhost:4000/benef/' + id).then(() => {
@@ -108,10 +103,13 @@ function Acompañantes() {
         );
     }
 
-    const handleOk = () => {       //maneja boton ok del modal
-
+    //maneja boton ok del modal
+    const handleOk = () => 
+    {
+        //Si la 'id' es menor o igual a 0, significa que se esta agregando uno nuevo
         if(state.id <= 0 || state.id === undefined)
         {
+            //Se asigna el archivo desde la lista y se llama a la base de datos
             lastInfo.set("ConstanciaAFIP", afipFiles[0])
             lastInfo.set("CV", cvFiles[0])
             Axios.post('http://localhost:4000/addAcomp',lastInfo,{
@@ -119,14 +117,19 @@ function Acompañantes() {
                     Accept: 'application/json'
                 }
             }).then(res=>{
+                //Se establecen los valores por defecto y se abre la notificacion
                 setState({visible: false})
                 openNotification("Datos Agregados",
                 "El acompañante " + lastInfo.get("Apellido") + " ahora se encuentra en la lista", true);
                 getData();
+                setAFIP([]);
+                setCV([]);
             }).catch((error) => openNotification("Error","Algunos campos están vacios", false));
         }
         else
         {
+            //Se comprueba que no se haya subido un archivo nuevo.
+            //De lo contrario, se utiliza el que ya estaba
             if(afipFiles>0)
                 lastInfo.set("ConstanciaAFIP", afipFiles[0])
             else
@@ -146,6 +149,8 @@ function Acompañantes() {
                 openNotification("Datos Actualizados",
                 "El acompañante fue actualizado correctamente", true);
                 getData();
+                setAFIP([]);
+                setCV([]);
             });
         }
         // var response =  await res.json().then(openNotification()).then(getData());

@@ -99,7 +99,6 @@ const getAcompOnly = (req,res) =>{
           res.status(400).json({"error":err.message});
           return;
       }
-      console.log(row);
       res.json(row);
   });
 }

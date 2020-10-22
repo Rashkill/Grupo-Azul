@@ -26,24 +26,49 @@ function LiqCard(props) {
 
         const desde = moment(props.desde, dateFormat).format("YYYY-MM-DD")
         const hasta = moment(props.hasta, dateFormat).format("YYYY-MM-DD")
-        let jornadas
-        let totalhoras = 0
+        let jornadas;
+        let totalhoras = 0;
 
         try{
-            const res = await fetch('http://localhost:4000/getJor4Liq/' + props.idbenef + '/' + desde + '/' + hasta, 
+            let fields = "Id,IdAcompañante,CantHoras";
+            const res = await fetch('http://localhost:4000/getJor4Liq/' + fields + '/' + props.idbenef + '/' + desde + '/' + hasta, 
             // {signal: this.abortController.signal}
             );
             jornadas = await res.json();
-            console.log(jornadas)
+            console.log("Jornadas: ", jornadas)
         }catch(e){
             console.log("MAL ", e)
         }
 
+        
         jornadas.map(j => {
-            console.log(j.CantHoras)
+            console.log("CantidadHoras " + j.IdAcompañante + " :", j.CantHoras)
             totalhoras = totalhoras + j.CantHoras
         })
 
+        //Array que almacena las horas totales divididas por id de acompañante
+        let infoPorAcomp = [];
+
+        //Se loopea el array de las jornadas obtenidas
+        for (let index = 0; index < jornadas.length; index++) {
+            //Elemento actual
+            const jorElem = jornadas[index];
+            //Se compara que tenga la misma ID de acompañante (si es que ya existe dentro de "infoPorAcomp")
+            //Y devuelve el elemento
+            const infoElement = infoPorAcomp.find(v => v.IdAcompañante == jorElem.IdAcompañante);
+
+            //Si lo encuentra, se le suma la hora con la propiedad del elemento actual
+            if(infoElement)
+                infoElement.horasTotales += jorElem.CantHoras;
+            //Caso contrario, se agrega un nuevo elemento con los datos del actual
+            else
+                infoPorAcomp.push({
+                    IdAcompañante: jorElem.IdAcompañante, 
+                    horasTotales: jorElem.CantHoras
+                })
+        }
+
+        console.log("Informacion separada por acompañante: ", infoPorAcomp);
         console.log("Horas totales del ciclo: " + totalhoras)
     }
     

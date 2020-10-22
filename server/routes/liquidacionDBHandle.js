@@ -45,16 +45,16 @@ const getLiq = (req,res,next) =>{
 }
 
 const getLiqOnly = (req,res,next) =>{
-  var id = req.params.id;
-  // delete a row based on id
+  let fields = req.params.fields ? req.params.fields : "*";
   let db = getConnection();
-  let sql = `DELETE FROM Liquidacion WHERE id="${id}"`;
-  db.run(sql, function(err) {
-    if (err) {
-      return console.error(err.message);
-    }
-    console.log(`Se ha borrado la fila ${id}`);
-    res.json("Se ha borrado la fila");
+  let sql = `SELECT ${fields} FROM Liquidacion WHERE Id=`+id;
+  db.all(sql, [], (err, row) => {
+      if (err) {
+          res.status(400).json({"error":err.message});
+          return;
+      }
+      console.log(row);
+      res.json(row);
   });
 }
 

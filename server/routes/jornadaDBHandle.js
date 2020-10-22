@@ -50,16 +50,15 @@ const getJor4Liq = (req,res,next) => {
   let idbenef = req.params.idbenef
   let desde = req.params.desde
   let hasta = req.params.hasta
-  // let fields = req.params.fields ? req.params.fields : "*";
+  let fields = req.params.fields ? req.params.fields : "*";
   let db = getConnection();
-  let sql = `SELECT Id, IdAcompañante, CantHoras FROM Jornada WHERE IdBeneficiario = "${idbenef}" 
+  let sql = `SELECT ${fields} FROM Jornada WHERE IdBeneficiario = "${idbenef}" 
     AND 
     (
       FechaIngreso LIKE '%${desde}%' OR (FechaIngreso > '${desde}' AND FechaIngreso < '${hasta}')
       AND
       FechaEgreso LIKE '%${hasta}%' OR (FechaEgreso < '${hasta}' AND FechaEgreso > '${desde}')
-    )
-  `;
+    )`;
     console.log(sql)
   var arrayData = [];
   db.all(sql, [], (err, rows) => {
@@ -76,14 +75,16 @@ const getJor4Liq = (req,res,next) => {
 }
 
 const getJornadaOnly = (req,res,next) =>{
-  var id = req.params.id;
-  // delete a row based on id
+  let fields = req.params.fields ? req.params.fields : "*";
   let db = getConnection();
-  let sql = `GET FROM Jornada WHERE id="${id}"`;
-  db.run(sql, function(err) {
-    if (err) {
-      return console.error(err.message);
-    }
+  let sql = `SELECT ${fields} FROM Jornada WHERE Id=`+id;
+  db.all(sql, [], (err, row) => {
+      if (err) {
+          res.status(400).json({"error":err.message});
+          return;
+      }
+      console.log(row);
+      res.json(row);
   });
 }
 

@@ -90,15 +90,15 @@ const getBenef = (req,res,next) =>{
 }
 
 const getBenefOnly = (req, res) => {
-
+  let fields = req.params.fields ? req.params.fields : "*";
   let db = getConnection();
-  let sql = "SELECT * FROM Beneficiario WHERE id="+req.params.id;
+  let sql = `SELECT ${fields} FROM Beneficiario WHERE id=`+req.params.id;
   db.all(sql, (err, row) => {
       if (err) {
           res.status(400).json({"error":err.message});
           return;
       }
-      console.log(row);
+      //console.log(row);
       res.json(row);
   });
 }

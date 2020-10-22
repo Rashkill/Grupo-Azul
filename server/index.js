@@ -56,7 +56,7 @@ app.delete('/jornada/:id', (req,res)=>{
 })
 
 //Buscar Jornadas para hacer la liquidacion
-app.get('/getJor4Liq/:idbenef/:desde/:hasta',  (req, res) => {
+app.get('/getJor4Liq/:fields/:idbenef/:desde/:hasta',  (req, res) => {
    getJor4Liq(req,res);
 })
 
@@ -80,12 +80,12 @@ app.get('/getAcomp/:fields',  (req, res) => {
  })
 
 //Get Un Acompañante
-app.get('/acompOnly/:id',  (req, res, next) => {
+app.get('/getAcompOnly/:id',  (req, res, next) => {
   getAcompOnly(req,res)
 })
 
 //Get Un Acompañante con campos especificos
-app.get('/acompOnly/:id/:fields',  (req, res, next) => {
+app.get('/getAcompOnly/:id/:fields',  (req, res, next) => {
    getAcompOnly(req,res)
  })
 

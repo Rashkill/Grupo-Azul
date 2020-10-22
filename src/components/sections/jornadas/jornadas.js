@@ -57,7 +57,15 @@ class Jornadas extends React.Component{
             const res = await fetch('http://localhost:4000/getJornadas/*', {signal: this.abortController.signal});
             const datos = await res.json();
             if(datos)
+            {
                 jornadasIn = datos;
+                jornadasIn.forEach(v => {
+                    if(v.FechaIngreso)
+                        v.FechaIngreso = moment(v.FechaIngreso, dateFormat + " HH:mm").format("DD/MM/YYYY");
+                    if(v.FechaEgreso)
+                        v.FechaEgreso = moment(v.FechaEgreso, dateFormat + " HH:mm").format("DD/MM/YYYY");
+                })
+            }
         }catch(e){
             jornadasIn = [];
             console.log(e);
@@ -342,8 +350,8 @@ class Jornadas extends React.Component{
                                     placeholder={['Desde', 'Hasta']}
                                     style={{width: '100%'}}
                                     defaultValue = {this.state.editId <=0 ? this.value : 
-                                        [moment(lastInfo.get("FechaIngreso"), "DD/MM/YYYY HH:mm"), 
-                                        moment(lastInfo.get("FechaEgreso"), "DD/MM/YYYY HH:mm")]}
+                                        [moment(moment(lastInfo.get("FechaIngreso"), dateFormat + " HH:mm").format("DD/MM/YYYY HH:mm"), "DD/MM/YYYY HH:mm"), 
+                                        moment(moment(lastInfo.get("FechaEgreso"), dateFormat + " HH:mm").format("DD/MM/YYYY HH:mm"), "DD/MM/YYYY HH:mm")]}
                                     allowClear
                                 />
                             </Col>

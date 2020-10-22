@@ -25,14 +25,16 @@ class Beneficiarios extends React.Component{
 
     abortController = new AbortController();
 
+    //Secuencia que obtiene la informacion y luego desactiva el icono de carga
     getData = () =>{
         this.loadAndGetData().then(() => this.setState({isLoading: false}));
     }
 
+    //Obtiene la informacion de la base de datos
     loadAndGetData = async() => {
         try{
-            const fields = "Id, Nombre, Apellido, DNI, CUIL, FechaNacimiento, Domicilio, Email, Telefono, Enfermedades"
-            const resBenef = await fetch('http://localhost:4000/getBenef', {signal: this.abortController.signal});
+            const fields = "Id, Nombre, Apellido, DNI, CUIL, FechaNacimiento, Domicilio, Localidad, CodigoPostal, Email, Telefono, Enfermedades, IdCoordinador"
+            const resBenef = await fetch('http://localhost:4000/getBenef/' + fields, {signal: this.abortController.signal});
             const datosBenef = await resBenef.json();
             if(datosBenef)
                 ucds = datosBenef;
@@ -49,16 +51,32 @@ class Beneficiarios extends React.Component{
         }catch(e){}
     }
 
+    //Obtiene los archivos
+    getPdf = async(id) =>{
+        try{
+            const res = await fetch('http://localhost:4000/getBenefOnly/'+ id +'/FichaInicial', {signal: this.abortController.signal});
+            const datos = await res.json();
+            console.log(datos);
+
+            this.fileBlob = new Blob([Buffer.from(datos[0].FichaInicial)], {type: "application/pdf"})
+            this.fileUrl = URL.createObjectURL(this.fileBlob)
+        } 
+        catch(e){console.log(e)}
+    }
+
+    //Se ejecuta al montar el componente
     componentDidMount()
     {
         this.getData();
     }
 
+    //Se ejecuta al desmontar el componente
     componentWillUnmount()
     {
         this.abortController.abort();
     }
 
+    //Notificacion (duh)
     openNotification = (msg, desc, succeed) => {
         this.setState({
             editVisible: false,
@@ -82,23 +100,33 @@ class Beneficiarios extends React.Component{
     };
 
     
-    //maneja boton ok del modal
+    //Se llama al presionar el boton OK
     handleOk = e => {   
-        if(this.state.editId <=0){
+        //Si la 'editID' es menor o igual a 0, significa que se esta agregando uno nuevo
+        if(this.state.editId <=0)
+        {
+            //Se asigna el archivo desde la lista y se llama a la base de datos
             lastInfo.set("FichaInicial", this.state.fileList[0])
             Axios.post('http://localhost:4000/addBenef', lastInfo, {
                 headers: {
                     Accept: 'application/json'
                 }
-            }).then(() => {this.setState({
-                visible: false,
-                editId: 0
+            }).then(() => {
+                //Se establecen los valores por defecto y se abre la notificacion
+                this.setState({
+                    visible: false,
+                    editId: 0,
+                    fileList: []
                 })
+                this.openNotification("Datos Agregados",
+                "El beneficiario " + lastInfo.get("Apellido") + " ahora se encuentra en la lista", true);
                 this.getData();
             });
         }
-        else{
-            
+        else    //Parte de la actualizacion
+        {   
+            //Se comprueba que no se haya subido un archivo nuevo.
+            //De lo contrario, se utiliza el que ya estaba
             if(this.state.fileList.length >= 1)
                 lastInfo.set("FichaInicial", this.state.fileList[0]);
             else
@@ -107,17 +135,21 @@ class Beneficiarios extends React.Component{
                 headers: {
                     Accept: 'application/json'
                 }
-            }).then(() => {this.setState({
-                visible: false,
-                editId: 0
+            }).then(() => {
+                //Se establecen los valores por defecto y se abre la notificacion
+                this.setState({
+                    visible: false,
+                    editId: 0,
+                    fileList: []
                 })
+                this.openNotification("Datos Actualizados",
+                "El acompañante fue actualizado correctamente", true);
                 this.getData();
             });
         }
-        console.log(lastInfo);
     };
 
-    //cancelar modal
+    //Al cancelar la ventana
     handleCancel = e => {   
         var confirm = window.confirm('¿Desea cerrar el formulario? Se perderán los cambios no guardados')
         if(confirm){
@@ -130,21 +162,20 @@ class Beneficiarios extends React.Component{
         console.log(v)
     }
     
+    //Se llama al presionar el boton 'Editar' en la tarjeta
     onEdit = (id) => {
-        this.setState({editId: id, visible: true})
 
+        //Se obtiene el index del array, segun la Id a editar
+        //Luego se rellenan los campos correspondientes
         let index = ucds.findIndex(p => p.Id == id);
         for (var prop in ucds[index]) {
             lastInfo.set(prop, ucds[index][prop]);
-            //console.log(ucds[id - 1][prop])
-            if(prop === "FichaInicial"){
-                fileBlob = new Blob([Buffer.from(ucds[index][prop])], {type: "application/pdf"})
-                fileURL = URL.createObjectURL(fileBlob);
-            }
         }
         coordIndex = coords.findIndex(v => v.id == lastInfo.get("IdCoordinador"));
+        this.getPdf(id).then(() => this.setState({editId:id, visible: true}));
     }
 
+    //Se llama al presionar el boton 'Eliminar' en la tarjeta
     onDelete = (id) => {
         if(window.confirm('¿Realmente desea eliminar esta tabla?'))
         Axios.delete('http://localhost:4000/benef/' + id, lastInfo).then(() => {
@@ -162,6 +193,7 @@ class Beneficiarios extends React.Component{
         console.log(e);
     }
 
+    //Se asigna o elimina el archivo
     FichaInicial = {
         onRemove: file => {
                 this.setState({fileList: []})
@@ -175,6 +207,7 @@ class Beneficiarios extends React.Component{
         }
     };
 
+    //Se asignan los campos correspondientes
     onChangeInput = (e) => {
         lastInfo.set(e.target.id, e.target.value);
     }

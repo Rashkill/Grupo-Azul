@@ -13,7 +13,8 @@ function AcompCard(props) {
 
     var datos;
     const getDatos = async () =>{
-        const res = await fetch('http://localhost:4000/acompOnly/' + props.id);
+        const fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, Email, Telefono, ValorHora, NumeroPoliza, NombreSeguros"
+        const res = await fetch('http://localhost:4000/getAcompOnly/' + props.id + "/" + fields);
         datos = await res.json();
     }
     

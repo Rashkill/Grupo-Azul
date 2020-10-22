@@ -6,7 +6,7 @@ import Axios from 'axios';
 
 const moment = require('moment');
 const { Search } = Input;
-const dateFormat = 'DD/MM/YYYY';
+const dateFormat = 'YYYY-MM-DD';
 const mesesNombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
 ];
@@ -273,9 +273,9 @@ class Liquidaciones extends React.Component {
                                 <DatePicker 
                                     placeholder="Fecha" 
                                     style={{width: '100%'}} 
-                                    format={dateFormat}
+                                    format={"DD/MM/YYYY"}
                                     onChange={(e) => lastInfo.set("Desde", e.format(dateFormat))}
-                                    defaultValue={this.state.editId <=0 ? this.value : moment(lastInfo.get("Desde"), dateFormat)}
+                                    defaultValue={this.state.editId <=0 ? this.value : moment(lastInfo.get("Desde"), "DD/MM/YYYY")}
                                 />
                             </Col>
                             <Col span={11}>
@@ -283,9 +283,9 @@ class Liquidaciones extends React.Component {
                                 <DatePicker 
                                     placeholder="Fecha" 
                                     style={{width: '100%'}}
-                                    format={dateFormat}
+                                    format={"DD/MM/YYYY"}
                                     onChange={(e) => lastInfo.set("Hasta", e.format(dateFormat))}
-                                    defaultValue={this.state.editId <=0 ? this.value : moment(lastInfo.get("Hasta"), dateFormat)}
+                                    defaultValue={this.state.editId <=0 ? this.value : moment(lastInfo.get("Hasta"), "DD/MM/YYYY")}
                                     />
                             </Col>
                         </Row>

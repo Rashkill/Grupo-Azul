@@ -58,7 +58,7 @@ const BenefCard = (props) =>{
         Telefono: vacio,
         Direccion: vacio
     };
-    //console.log(info);
+    console.log(info);
 
     const columns = [
         {
@@ -155,15 +155,15 @@ const BenefCard = (props) =>{
 
                                 <DataRow
                                     title="DNI / CUIL"
-                                    value=""
+                                    value={info.CUIL}
                                 />
                                 <DataRow
                                     title="Domicilio"
-                                    value={info.Direccion}
+                                    value={info.Domicilio}
                                 />
                                 <DataRow
                                     title="Fecha de Nacimiento"
-                                    value=""
+                                    value={info.FechaNacimiento}
                                 />
                                 <DataRow
                                     title="Edad"
@@ -175,7 +175,7 @@ const BenefCard = (props) =>{
                                 />
                                 <DataRow
                                     title="E-mail"
-                                    value=""
+                                    value={info.Email}
                                 />
 
                             </div>
@@ -184,15 +184,15 @@ const BenefCard = (props) =>{
 
                                 <DataRow
                                     title="Localidad"
-                                    value=""
+                                    value={info.Localidad}
                                 />
                                 <DataRow
                                     title="Código Postal"
-                                    value=""
+                                    value={info.CodigoPostal}
                                 />
                                 <DataRow
                                     title="Enfermedades y comorbilidades"
-                                    value=""
+                                    value={info.Enfermedades}
                                 />
 
                             </div>
