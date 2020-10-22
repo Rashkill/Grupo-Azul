@@ -15,7 +15,8 @@ var liq = [];
 var ucds = [];
 var lastInfo = new FormData();
 
-const getTitle = (ucdId, fecha) =>{
+const getTitle = (ucdId, fecha) => {
+
     const f = fecha.split('/');
     var n = ucds[ucds.findIndex(v => v.id == ucdId)];
 
@@ -27,7 +28,7 @@ const getTitle = (ucdId, fecha) =>{
     return t;
 }
 
-class Liquidaciones extends React.Component{
+class Liquidaciones extends React.Component {
 
     state = { 
         visible: false,
@@ -49,7 +50,7 @@ class Liquidaciones extends React.Component{
             console.log(e);
         }
     }
-
+    
     getBenef = async () => {
         try{            
             const resBenef = await fetch('http://localhost:4000/getBenef/' + "Nombre,Apellido,Id", {signal: this.abortController.signal});
@@ -212,6 +213,7 @@ class Liquidaciones extends React.Component{
                                 OnEdit={this.onEdit}
                                 OnDelete={this.onDelete}
                                 title={getTitle(v.IdBeneficiario, v.Desde)}
+                                idbenef={v.IdBeneficiario}
                                 desde={v.Desde}
                                 hasta={v.Hasta}
                                 fecha={v.FechaEmision}

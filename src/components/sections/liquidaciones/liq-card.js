@@ -6,23 +6,49 @@ import LiqImg from '../../../images/image6.png'
 import '../../layout/cards.css'
 import Axios from 'axios';
 import { createHashHistory } from 'history';
+// import { format } from 'sequelize/types/lib/utils';
 export const history = createHashHistory();
 
 
-function LiqCard(props) {
+const dateFormat = 'DD/MM/YYYY';
+const moment = require('moment');
 
+function LiqCard(props) {
+    
     var datos;
     const getDatos = async () =>{
         const res = await fetch('http://localhost:4000/acompOnly/' + props.id);
         datos = await res.json();
     }
+
+
+    const getJor4Liq = async () => {
+
+        const desde = moment(props.desde, dateFormat).format("YYYY-MM-DD")
+        const hasta = moment(props.hasta, dateFormat).format("YYYY-MM-DD")
+        let jornadas
+        let totalhoras = 0
+
+        try{
+            const res = await fetch('http://localhost:4000/getJor4Liq/' + props.idbenef + '/' + desde + '/' + hasta, 
+            // {signal: this.abortController.signal}
+            );
+            jornadas = await res.json();
+            console.log(jornadas)
+        }catch(e){
+            console.log("MAL ", e)
+        }
+
+        jornadas.map(j => {
+            console.log(j.CantHoras)
+            totalhoras = totalhoras + j.CantHoras
+        })
+
+        console.log("Horas totales del ciclo: " + totalhoras)
+    }
     
     const titleClick = () => {
-        // getDatos().then(() =>
-        //     props.history.push({
-        //         pathname: props.linkto,
-        //         state: datos[0]
-        //     }))
+        getJor4Liq()
     }
 
     const dropClick = ({ key }) => {

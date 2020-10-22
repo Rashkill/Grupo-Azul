@@ -1,15 +1,15 @@
 import React from 'react';
 import { Divider, Row, Col, Input, Modal, AutoComplete, DatePicker, notification , Empty } from 'antd';
-import { PlusOutlined, FileDoneOutlined, LoadingOutlined , UploadOutlined, CheckCircleOutlined, AlertOutlined } from '@ant-design/icons';
+import { PlusOutlined, LoadingOutlined , CheckCircleOutlined, AlertOutlined } from '@ant-design/icons';
 import JornadaCard from './jornada-card';
 import Axios from 'axios';
 
 
 const { Search } = Input;
 const { RangePicker } = DatePicker;
-const dateFormat = 'DD/MM/YYYY';
+const dateFormat = 'YYYY-MM-DD';
 const mesesNombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+"Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
 ];
 const moment = require('moment');
 const { confirm } = Modal;
@@ -54,7 +54,7 @@ class Jornadas extends React.Component{
 
     getData = async () => {
         try{            
-            const res = await fetch('http://localhost:4000/getJornadas', {signal: this.abortController.signal});
+            const res = await fetch('http://localhost:4000/getJornadas/*', {signal: this.abortController.signal});
             const datos = await res.json();
             if(datos)
                 jornadasIn = datos;
@@ -203,8 +203,8 @@ class Jornadas extends React.Component{
             if(hs > 0)
                 this.setState({horas: hs});
 
-            lastInfo.set("FechaIngreso", value[0].format(dateFormat + " HH:mm"));
-            lastInfo.set("FechaEgreso", value[1].format(dateFormat + " HH:mm"));
+            lastInfo.set("FechaIngreso", value[0].format(dateFormat + " HH:MM"));
+            lastInfo.set("FechaEgreso", value[1].format(dateFormat + " HH:MM"));
         }
     }
 
@@ -336,14 +336,14 @@ class Jornadas extends React.Component{
                                 <h4 style={{marginTop: 24}}>Ingreso y Egreso</h4>
                                 <RangePicker 
                                     showTime={{ format: 'HH:mm' }} 
-                                    format="DD / MM / YYYY HH:mm"
+                                    format={"DD/MM/YYYY HH:MM"}
                                     onOk={this.rangeOk}
                                     minuteStep={30}
                                     placeholder={['Desde', 'Hasta']}
                                     style={{width: '100%'}}
                                     defaultValue = {this.state.editId <=0 ? this.value : 
-                                        [moment(lastInfo.get("FechaIngreso"), dateFormat+ " HH:mm"), 
-                                        moment(lastInfo.get("FechaEgreso"), dateFormat+ " HH:mm")]}
+                                        [moment(lastInfo.get("FechaIngreso"), "DD/MM/YYYY HH:mm"), 
+                                        moment(lastInfo.get("FechaEgreso"), "DD/MM/YYYY HH:mm")]}
                                     allowClear
                                 />
                             </Col>

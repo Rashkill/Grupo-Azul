@@ -5,7 +5,7 @@ const compression = require('compression');
 const {addAcomp, updAcomp, getAcomp, getAcompOnly, delAcomp} = require('./routes/acompañanteDBHandle');
 const {addBenef, updBenef, getBenef, getBenefOnly, delBenef} = require('./routes/beneficiarioDBHandle');
 const {addCoord, updCoord, getCoord, getCoordOnly, delCoord} = require('./routes/coordinadorDBHandle')
-const {addJornada, updJornada, getJornadas, getJornadaOnly, delJornada} = require('./routes/jornadaDBHandle');
+const {addJornada, updJornada, getJornadas, getJornadaOnly, delJornada, getJor4Liq} = require('./routes/jornadaDBHandle');
 const {addLiq, updLiq, getLiq, getLiqOnly, delLiq} = require('./routes/liquidacionDBHandle');
 //const {getConnection} = require('./db/conn');
 const app = express()
@@ -31,12 +31,12 @@ var upload = multer();
 ---------------*/
 
  //Agregando Jornada
- app.post('/addJornada',  (req,res)=>{
+ app.post('/addJornada', upload.none(), (req,res)=>{
    addJornada(req,res);
 })
 
 //Obtener Jornadas
-app.get('/getJornadas',  (req, res) => {
+app.get('/getJornadas/:fields',  (req, res) => {
    getJornadas(req,res);
 })
 
@@ -53,6 +53,11 @@ app.get('/getJornadaOnly/:id', (req,res)=>{
 //Borrando Jornada
 app.delete('/jornada/:id', (req,res)=>{
    delJornada(req,res);
+})
+
+//Buscar Jornadas para hacer la liquidacion
+app.get('/getJor4Liq/:idbenef/:desde/:hasta',  (req, res) => {
+   getJor4Liq(req,res);
 })
 
 /*-------------
@@ -179,7 +184,7 @@ app.delete('/coord/:id',  (req, res)=>{
 ---------------*/
 
 //Agregando Liquidacion
-app.post('/addLiq',  (req,res)=>{
+app.post('/addLiq', upload.none(), (req,res)=>{
    addLiq(req,res);
 })
 

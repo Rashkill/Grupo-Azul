@@ -28,9 +28,39 @@ const addJornada = (req,res,next) =>{
 }
 
 const getJornadas = (req,res,next) =>{
+  let fields = req.params.fields ? req.params.fields : "*";
   let db = getConnection();
-  let sql = `SELECT * FROM Jornada
+    let sql = `SELECT ${fields} FROM Jornada
          ORDER BY id`;
+  var arrayData = [];
+  db.all(sql, [], (err, rows) => {
+      if (err) {
+          res.status(400).json({"error":err.message});
+          return;
+      }
+      rows.forEach((row) => {
+          // console.log(row);
+          arrayData.push(row);
+      });
+      res.json(rows)
+  });
+}
+
+const getJor4Liq = (req,res,next) => {
+  let idbenef = req.params.idbenef
+  let desde = req.params.desde
+  let hasta = req.params.hasta
+  // let fields = req.params.fields ? req.params.fields : "*";
+  let db = getConnection();
+  let sql = `SELECT Id, IdAcompañante, CantHoras FROM Jornada WHERE IdBeneficiario = "${idbenef}" 
+    AND 
+    (
+      FechaIngreso LIKE '%${desde}%' OR (FechaIngreso > '${desde}' AND FechaIngreso < '${hasta}')
+      AND
+      FechaEgreso LIKE '%${hasta}%' OR (FechaEgreso < '${hasta}' AND FechaEgreso > '${desde}')
+    )
+  `;
+    console.log(sql)
   var arrayData = [];
   db.all(sql, [], (err, rows) => {
       if (err) {
@@ -49,15 +79,14 @@ const getJornadaOnly = (req,res,next) =>{
   var id = req.params.id;
   // delete a row based on id
   let db = getConnection();
-  let sql = `DELETE FROM Jornada WHERE id="${id}"`;
+  let sql = `GET FROM Jornada WHERE id="${id}"`;
   db.run(sql, function(err) {
     if (err) {
       return console.error(err.message);
     }
-    console.log(`Se ha borrado la fila ${id}`);
-    res.json("Se ha borrado la fila");
   });
 }
+
 
 const updJornada = (req,res,next) =>{
   let db = getConnection();
@@ -96,4 +125,4 @@ const delJornada = (req,res) =>{
   });
 }
 
-module.exports = {addJornada, updJornada, getJornadas, getJornadaOnly, delJornada}
+module.exports = {addJornada, updJornada, getJornadas, getJornadaOnly, delJornada, getJor4Liq}
