@@ -2,7 +2,7 @@ import React from 'react';
 import { Divider, Row, Col, Input, Modal, AutoComplete, DatePicker, notification , Empty } from 'antd';
 import { PlusOutlined, FileDoneOutlined, LoadingOutlined , UploadOutlined, CheckCircleOutlined, AlertOutlined } from '@ant-design/icons';
 import JornadaCard from './jornada-card';
-import axios from 'axios';
+import Axios from 'axios';
 
 
 const { Search } = Input;
@@ -19,56 +19,24 @@ var ucds = [];
 
 function nombreJornada (agdID, ucdID, fecha)
 {
-    if (ucds.length > 0) {
-        const f = fecha.split('/');
-        const n1 = ucds[ucdID - 1].value.split(" ");
-        const n2 = agds[agdID - 1].value.split(" ");
-        var n = f[0] + " de " + mesesNombres[parseInt(f[1] - 1, 10)];
-        n += " / " + n1[n1.length -1] + " - " + n2[n2.length -1];
-        return n;
-    }
-    
+    const f = fecha.split('/');
+    var n1; n1 = ucds[ucds.findIndex(v => v.id == ucdID)]; n1 = n1 ? n1.value.split(" ") : "[Beneficiario Borrado]";
+    var n2; n2 = agds[agds.findIndex(v => v.id == agdID)]; n2 = n2 ? n2.value.split(" ") : "[Acompañante Borrado]";
+    var n = f[0] + " de " + mesesNombres[parseInt(f[1] - 1, 10)];
+    n += " / " + n1[n1.length -1] + " - " + n2[n2.length -1];
+    return n;    
 }
 
-function getNombreAgd(id)
-{
-    return agds[id - 1].value;
-}
-
-function getNombreUcd(id)
-{
-    return ucds[id - 1].value;
+function getName (id, array){
+    var n = "[Usuario Eliminado]";
+    var index = array.findIndex(v => v.id == id);
+    n = index !== -1 ? array[index].value : n;
+    return n;
 }
 
 var jornadasIn = []
 
-var lastInfo = {
-    IdBeneficiario: 0,
-    IdAcompañante: 0,
-    CantHoras: 0,
-    FechaIngreso: "",
-    FechaEgreso: "",
-    rangeVal: undefined
-}
-
-
-const abortController = new AbortController();
-
-const getData = async () => {
-    try{
-        const res = await fetch('http://localhost:4000/getAcomp', {signal: abortController.signal});
-        const datosAcomp = await res.json();
-        if(datosAcomp)
-            agds = (datosAcomp.map(p => ({value: p.Nombre + " " + p.Apellido, key: p.Id})));
-        
-        const resBenef = await fetch('http://localhost:4000/getBenef', {signal: abortController.signal});
-        const datosBenef = await resBenef.json();
-        if(datosBenef.data)
-            ucds = (datosBenef.data.map(p => ({value: p.Nombre + " " + p.Apellido, key: p.Id})));
-        
-        
-    }catch(e){console.log(e)}
-}
+var lastInfo = new FormData();
 
 //const loadingIcon = <LoadingOutlined style={{ fontSize: 24, display: this.state.isLoading ? "inline" : "none" }} spin />;
 
@@ -77,37 +45,150 @@ class Jornadas extends React.Component{
         visible: false,
         isLoading: true,
         horas: 0,
-        jornadas: jornadasIn
+        editId: 0,
+        acompIndex: -1,
+        benefIndex: -1
     };
 
-    
+    abortController = new AbortController();
+
+    getData = async () => {
+        try{            
+            const res = await fetch('http://localhost:4000/getJornadas', {signal: this.abortController.signal});
+            const datos = await res.json();
+            if(datos)
+                jornadasIn = datos;
+        }catch(e){
+            jornadasIn = [];
+            console.log(e);
+        }
+    }
+
+    getAcompBenef = async () => {
+        try{            
+            const resBenef = await fetch('http://localhost:4000/getBenef/' + "Nombre,Apellido,Id", {signal: this.abortController.signal});
+            const datosBenef = await resBenef.json();
+            if(datosBenef)
+                ucds = (datosBenef.map(p => ({
+                    value: p.Nombre + " " + p.Apellido, 
+                    key: p.Id, 
+                    id: p.Id
+                })));
+            const resAcomp = await fetch('http://localhost:4000/getAcomp/' + "Nombre,Apellido,Id", {signal: this.abortController.signal});
+            const datosAcomp = await resAcomp.json();
+            if(datosAcomp)
+                agds = (datosAcomp.map(p => ({
+                    value: p.Nombre + " " + p.Apellido, 
+                    key: p.Id, 
+                    id: p.Id
+            })));     
+        }catch(e){
+            ucds = [];
+            agds = [];
+            console.log(e);
+        }
+    }
+
+    cargarTodo = () =>{
+        this.getAcompBenef().then(
+            () => this.getData().then(
+                () => this.setState({isLoading: false})))
+    }
+
     componentDidMount(){
         this.cargarTodo();
     }
-    componentWillUnmount(){
-        abortController.abort();
-    }
-    cargarTodo = () =>
-    {
-        getData().then(async() =>{
-            const res = await fetch('http://localhost:4000/getJornadas');
-            const datos = await res.json();
 
-            const jornadasInfoArray = (datos.map(j => ({
-                title: nombreJornada(j.IdBeneficiario, j.IdAcompañante, j.FechaIngreso),
-                IdBeneficiario: j.IdBeneficiario,
-                agds: agds,
-                IdAcompañante: j.IdAcompañante,
-                ucds: ucds,
-                CantHoras: j.CantHoras,
-                FechaIngreso: j.FechaIngreso,
-                FechaEgreso: j.FechaEgreso,
-                rangeVal: [moment(j.FechaIngreso, dateFormat+ " HH:mm"), moment(j.FechaEgreso, dateFormat+ " HH:mm")],
-                key: j.Id
-            }), this));
-            jornadasIn = jornadasInfoArray;
-            this.setState({isLoading: false, jornadas: jornadasInfoArray});
+    componentWillUnmount(){
+        this.abortController.abort();
+    }
+
+    //Mostrar modal
+    showModal = () => {     
+        this.setState({
+        visible: true,
+        editId: 0,
+        acompIndex: -1,
+        benefIndex: -1
         });
+    };
+
+    //maneja boton ok del modal
+    handleOk = e => {
+
+        lastInfo.set("CantHoras", this.state.horas);
+
+        if(this.state.editId <=0){
+            Axios.post('http://localhost:4000/addJornada', lastInfo, {
+                    headers: {
+                        Accept: 'application/json'
+                    }
+                }).then(() => {this.setState({
+                    visible: false,
+                    })
+                    this.cargarTodo();
+                    this.openNotification(
+                        "Agregado Exitoso",
+                        "La Jornada fue creada correctamente",
+                        true
+                    )
+            });
+        }
+        else{
+            Axios.post('http://localhost:4000/updJornada/' + this.state.editId, lastInfo, {
+                    headers: {
+                        Accept: 'application/json'
+                    }
+                }).then(() => {this.setState({
+                    visible: false
+                    })
+                    this.cargarTodo();
+                    this.openNotification(
+                        "Modificacion Exitosa",
+                        "La Jornada fue modificada correctamente",
+                        true
+                    )
+            });
+        }
+    };
+
+    //cancelar modal
+    handleCancel = e => {   
+        var confirm = window.confirm('¿Desea cerrar el formulario? Se perderán los cambios no guardados')
+        if(confirm){
+            this.setState({visible: false})
+        }
+    };
+
+
+    onEdit = (id) => {
+
+        let array = jornadasIn;
+        let index = array.findIndex(p => p.Id == id);
+        for (var prop in array[index]) {
+            lastInfo.set(prop, array[index][prop]);
+        }
+        this.setState({acompIndex: agds.findIndex(v => v.id == lastInfo.get("IdAcompañante"))});
+        this.setState({benefIndex: ucds.findIndex(v => v.id == lastInfo.get("IdBeneficiario"))});
+
+        this.setState({
+            editId: id, 
+            visible: true,
+            horas: lastInfo.get("CantHoras")
+        })
+    }
+
+    onDelete = (id) => {
+        if(window.confirm('¿Realmente desea eliminar esta tabla?'))
+        Axios.delete('http://localhost:4000/jornada/' + id).then(() => {
+                this.openNotification(
+                    "Eliminación exitosa",
+                    "La Jornada se borró correctamente",
+                    true
+                )
+                this.getData();
+            }
+        );
     }
 
     rangeOk = (value) => {
@@ -122,51 +203,10 @@ class Jornadas extends React.Component{
             if(hs > 0)
                 this.setState({horas: hs});
 
-            //lastInfo.title = value[0]._d.getDate() + " de " + mesesNombres[value[0]._d.getMonth()];
-            lastInfo.FechaIngreso = value[0].format(dateFormat + " HH:mm");
-            lastInfo.FechaEgreso = value[1].format(dateFormat + " HH:mm");
+            lastInfo.set("FechaIngreso", value[0].format(dateFormat + " HH:mm"));
+            lastInfo.set("FechaEgreso", value[1].format(dateFormat + " HH:mm"));
         }
     }
-
-    //Mostrar modal
-    showModal = () => {     
-        this.setState({
-        visible: true
-        });
-    };
-
-    //maneja boton ok del modal
-    handleOk = e => {
-        if(lastInfo.IdBeneficiario > 0 && lastInfo.IdAcompañante > 0 &&
-            lastInfo.rangeVal[0] !== null && lastInfo.rangeVal[1] !== null) {
-        
-            this.setState({
-            visible: false,
-            });
-
-            if(this.state.horas > 0)
-                lastInfo.CantHoras = this.state.horas;
-
-            axios.post('http://localhost:4000/addJornada', lastInfo)
-            .then(() => {
-                this.openNotification("Agregado exitoso",
-                "La jornada fue creada correctamente", true);
-                lastInfo = 
-                {
-                    IdBeneficiario: 0,
-                    IdAcompañante: 0,
-                    CantHoras: 0,
-                    FechaIngreso: "",
-                    FechaEgreso: "",
-                    rangeVal: undefined
-                }
-                this.cargarTodo();
-            });
-        }
-        else
-            this.openNotification("Datos invalidos",
-            "No se pueden dejar campos vacios", false);
-    };
 
     openNotification = (msg, desc, succeed) => {
         this.setState({
@@ -182,14 +222,15 @@ class Jornadas extends React.Component{
         });
     };
 
-    //cerrar modal
-    handleCancel = e => {
-        this.setState({visible: false})
-    }
-    
     //Presionar enter al buscador
     handleSearch = (v) => { 
+        console.log(v)
     }
+    
+
+    // onChangeInput = (e) => {
+    //     lastInfo.set(e.target.id, e.target.value);
+    // }
 
     render(){
         return(
@@ -204,21 +245,19 @@ class Jornadas extends React.Component{
                         
                         <div className="cards-container">
                             <Empty style={{display: this.state.isLoading ? "none" : jornadasIn.length > 0 ? "none" : "inline"}} description={false} />
-                            {this.state.jornadas.map(jornadaInfo => {
+                            {jornadasIn.map(jornadaInfo => {
                                 return(
                                     <JornadaCard
-                                        title={jornadaInfo.title}
-                                        agdID={jornadaInfo.IdBeneficiario}
-                                        ucdID={jornadaInfo.IdAcompañante}
+                                        title={nombreJornada(jornadaInfo.IdAcompañante, jornadaInfo.IdBeneficiario, jornadaInfo.FechaIngreso)}
+                                        agd={getName(jornadaInfo.IdAcompañante, agds)}
+                                        ucd={getName(jornadaInfo.IdBeneficiario, ucds)}
                                         horas={jornadaInfo.CantHoras}
                                         ingreso={jornadaInfo.FechaIngreso}
                                         egreso={jornadaInfo.FechaEgreso}
-                                        id={jornadaInfo.key}
-                                        rangeVal={jornadaInfo.rangeVal}
-                                        key={jornadaInfo.key}
-                                        ucds={jornadaInfo.ucds}
-                                        agds={jornadaInfo.agds}
-                                        Refresh={this.cargarTodo}
+                                        id={jornadaInfo.Id}
+                                        key={jornadaInfo.Id}
+                                        OnEdit={this.onEdit}
+                                        OnDelete={this.onDelete}
                                     />
                                 )
                             })}
@@ -261,11 +300,11 @@ class Jornadas extends React.Component{
                                     }
                                     onChange = {(e, value, reason) => {
                                         if(e === undefined) return;
-                                        var id = ucds.findIndex(v => v.value == e);
-                                        if(id !== -1)
-                                            lastInfo.IdAcompañante = id+1;
+                                        var prop = ucds.find(v => v.value == e);
+                                        if(prop)
+                                            lastInfo.set("IdBeneficiario", prop.id);
                                     }}
-                                    defaultValue={lastInfo.IdAcompañante > 0 ? ucds[lastInfo.IdAcompañante - 1].value : this.value}
+                                    defaultValue={this.state.editId <=0 ? this.value : this.state.benefIndex > -1 ? ucds[this.state.benefIndex].value : "[Beneficiario Borrado]"}
                                     allowClear
                                 />
                             </Col>
@@ -281,11 +320,11 @@ class Jornadas extends React.Component{
                                     }
                                     onChange = {(e, value, reason) => {
                                         if(e === undefined) return;
-                                        var id = agds.findIndex(v => v.value == e);
-                                        if(id !== -1)
-                                            lastInfo.IdBeneficiario = id+1;
+                                        var prop = agds.find(v => v.value == e);
+                                        if(prop)
+                                            lastInfo.set("IdAcompañante", prop.id);
                                     }}
-                                    defaultValue={lastInfo.IdBeneficiario > 0 ? agds[lastInfo.IdBeneficiario - 1].value : this.value}
+                                    defaultValue={this.state.editId <=0 ? this.value : this.state.acompIndex > -1 ? agds[this.state.acompIndex].value : "[Acompañante Borrado]"}
                                     allowClear
                                 />
                             </Col>
@@ -302,7 +341,9 @@ class Jornadas extends React.Component{
                                     minuteStep={30}
                                     placeholder={['Desde', 'Hasta']}
                                     style={{width: '100%'}}
-                                    value={lastInfo.rangeVal !== undefined ? lastInfo.rangeVal : this.value}
+                                    defaultValue = {this.state.editId <=0 ? this.value : 
+                                        [moment(lastInfo.get("FechaIngreso"), dateFormat+ " HH:mm"), 
+                                        moment(lastInfo.get("FechaEgreso"), dateFormat+ " HH:mm")]}
                                     allowClear
                                 />
                             </Col>

@@ -10,9 +10,9 @@ const addJornada = (req,res,next) =>{
     db.run(sql,
       req.body.IdBeneficiario,
       req.body.IdAcompañante,
+      req.body.FechaIngreso,
+      req.body.FechaEgreso, 
       req.body.CantHoras,
-      req.body.FechaIngreso, 
-      req.body.FechaEgreso,
       function(err) {
       if (err) {
         res.status(400).json({"error":err.message});
@@ -61,15 +61,15 @@ const getJornadaOnly = (req,res,next) =>{
 
 const updJornada = (req,res,next) =>{
   let db = getConnection();
-  let sql = `UPDATE Jornada SET IdBeneficiario=?, IdAcompañante=?, CantHoras=?, FechaIngreso=?, FechaEgreso=? WHERE Id=${req.params.id}`
+  let sql = `UPDATE Jornada SET IdBeneficiario=?, IdAcompañante=?, FechaIngreso=?, FechaEgreso=?,CantHoras=? WHERE Id=${req.params.id}`
 
   // insert one row into the langs table
   db.run(sql,
     req.body.IdBeneficiario,
-    req.body.IdAcompañante,
-    req.body.CantHoras,
-    req.body.FechaIngreso, 
-    req.body.FechaEgreso ,
+      req.body.IdAcompañante,
+      req.body.FechaIngreso,
+      req.body.FechaEgreso, 
+      req.body.CantHoras,
     function(err) {
     if (err) {
       res.status(400).json({"error":err.message});

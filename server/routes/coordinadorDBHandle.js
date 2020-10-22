@@ -65,8 +65,9 @@ const updCoord = (req,res) =>{
 }
 
 const getCoord = (req,res,next) =>{
+  let fields = req.params.fields ? req.params.fields : "*";
   let db = getConnection();
-  let sql = `SELECT * FROM Coordinador
+  let sql = `SELECT ${fields} FROM Coordinador
          ORDER BY Id`;
   var arrayData = [];
   db.all(sql, [], (err, rows) => {
@@ -78,19 +79,16 @@ const getCoord = (req,res,next) =>{
           // console.log(row);
           arrayData.push(row);
       });
-      res.json({
-          "message":"Exito",
-          "data":rows
-      })
+      res.json(rows)
   });
   // close the database connection
   // db.close();
 }
 
 const getCoordOnly = (req, res) => {
-  var id = req.params.id;
+  let fields = req.params.fields ? req.params.fields : "*";
   let db = getConnection();
-  let sql = "SELECT * FROM Coordinador WHERE Id="+id;
+  let sql = `SELECT ${fields} FROM Coordinador WHERE Id=`+id;
   db.all(sql, [], (err, row) => {
       if (err) {
           res.status(400).json({"error":err.message});

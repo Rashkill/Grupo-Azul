@@ -21,7 +21,7 @@ function Acompañantes() {
         isLoading:true,
     });
     
-    const abortController = new AbortController();
+    var abortController = new AbortController();
     const [data, setData] = useState([]);
     const [afipFiles, setAFIP] = useState([]);
     const [cvFiles, setCV] = useState([]);
@@ -34,9 +34,10 @@ function Acompañantes() {
     }
     const loadAndGetData = async() => {
         try{
-            const res = await fetch('http://localhost:4000/getAcomp', {signal: abortController.signal});
+            const fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, Email, Telefono, ValorHora, NumeroPoliza, NombreSeguros"
+            const res = await fetch('http://localhost:4000/getAcomp/' + fields, {signal: abortController.signal});
             const datos = await res.json();
-            if(datos !== undefined)
+            if(datos)
                 info.datos = datos;
 
             // console.log(datos);
@@ -53,6 +54,7 @@ function Acompañantes() {
     }
     
     useEffect(()=>{
+        abortController = new AbortController();
         getData();
 
         return () => {
@@ -65,23 +67,32 @@ function Acompañantes() {
             visible: true,
         });
     };
+
+    const getPdfs = async() =>{
+        try{
+            const res = await fetch('http://localhost:4000/getAcomp/ConstanciaAFIP,CV', {signal: abortController.signal});
+            const datos = await res.json();
+            console.log(datos);
+
+            fileBlobAFIP = new Blob([Buffer.from(datos[0].ConstanciaAFIP)], {type: "application/pdf"})
+            fileUrlAFIP = URL.createObjectURL(fileBlobAFIP)
+            
+            fileBlobCV = new Blob([Buffer.from(datos[0].CV)], {type: "application/pdf"})
+            fileUrlCV = URL.createObjectURL(fileBlobCV)
+        } 
+        catch(e){console.log(e)}
+    }
     const onEdit = async(id) =>{     //Mostrar modal Editar 
         setState({
-            id:id,
-            visible: true
+            id:id
         });
+
         let index = info.datos.findIndex(p => p.Id === id);
         for (var prop in info.datos[index]) {
             lastInfo.set(prop, info.datos[index][prop]);
-            if(prop === "ConstanciaAFIP"){
-                fileBlobAFIP = new Blob([Buffer.from(info.datos[index][prop])], {type: "application/pdf"})
-                fileUrlAFIP = URL.createObjectURL(fileBlobAFIP)
-            }
-            if(prop === "CV"){
-                fileBlobCV = new Blob([Buffer.from(info.datos[index][prop])], {type: "application/pdf"})
-                fileUrlCV = URL.createObjectURL(fileBlobCV)
-            }
         }
+        
+        getPdfs().then(() => setState({id:id, visible: true}));
     };
 
     const onDelete = (id) => {

@@ -21,7 +21,7 @@ function Coordinadores() {
         isLoading: true,
     });
 
-    const abortController = new AbortController();
+    var abortController = new AbortController();
 
     const emptyIcon = <Empty style={{display: state.isLoading ? "none" : info.datos.length > 0 ? "none" : "inline"}} description={false} />;
     const loadIcon = <LoadingOutlined style={{ padding: 16, fontSize: 24, display: state.isLoading ? "inline" : "none" }} spin />;
@@ -35,9 +35,11 @@ function Coordinadores() {
     }
     const loadAndGetData = async() => {
         try{
-            const res = await fetch('http://localhost:4000/getCoord', {signal: abortController.signal});
+            const fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, ValorMes"
+            const res = await fetch('http://localhost:4000/getCoord/' + fields, {signal: abortController.signal});
             const datos = await res.json();
-            info.datos = datos.data;
+            if(datos)
+                info.datos = datos;
             setData(info);
             console.log(datos);
 
@@ -45,6 +47,7 @@ function Coordinadores() {
     }
     
     useEffect(()=>{
+        abortController = new AbortController();
         getData();
 
         return () => {

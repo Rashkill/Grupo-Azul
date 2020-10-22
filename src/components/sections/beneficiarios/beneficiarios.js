@@ -8,9 +8,10 @@ const { Search } = Input;
 
 var ucds = [];
 var coords = [];
+var coordIndex = -1;
 var lastInfo = new FormData();
 var fileBlob, fileURL;
-const abortController = new AbortController();
+
 
 class Beneficiarios extends React.Component{
 
@@ -22,24 +23,29 @@ class Beneficiarios extends React.Component{
         editId: 0
     };
 
+    abortController = new AbortController();
+
     getData = () =>{
-        this.setState({isLoading: true})
-        this.loadAndGetData().then(this.setState({isLoading: false}));
+        this.loadAndGetData().then(() => this.setState({isLoading: false}));
     }
 
     loadAndGetData = async() => {
         try{
-            const resBenef = await fetch('http://localhost:4000/getBenef', {signal: abortController.signal});
+            const fields = "Id, Nombre, Apellido, DNI, CUIL, FechaNacimiento, Domicilio, Email, Telefono, Enfermedades"
+            const resBenef = await fetch('http://localhost:4000/getBenef', {signal: this.abortController.signal});
             const datosBenef = await resBenef.json();
-            ucds = datosBenef.data;
+            if(datosBenef)
+                ucds = datosBenef;
 
-            const res = await fetch('http://localhost:4000/getCoord', {signal: abortController.signal});
+            const res = await fetch('http://localhost:4000/getCoord/Nombre,Apellido,Id', {signal: this.abortController.signal});
             const datos = await res.json();
-            coords = datos.map(c => ({
-                value: c.Nombre + " " + c.Apellido
-            }));
+            if(datos)
+                coords = datos.map(c => ({
+                    value: c.Nombre + " " + c.Apellido,
+                    id: c.Id
+                }));
 
-            this.setState({cantidad: ucds.length})
+            this.setState({cantidad: ucds.length, isLoading: false})
         }catch(e){}
     }
 
@@ -50,7 +56,7 @@ class Beneficiarios extends React.Component{
 
     componentWillUnmount()
     {
-        abortController.abort();
+        this.abortController.abort();
     }
 
     openNotification = (msg, desc, succeed) => {
@@ -72,13 +78,13 @@ class Beneficiarios extends React.Component{
         this.setState({
         visible: true,
         });
+        coordIndex = -1;
     };
 
     
     //maneja boton ok del modal
     handleOk = e => {   
         if(this.state.editId <=0){
-
             lastInfo.set("FichaInicial", this.state.fileList[0])
             Axios.post('http://localhost:4000/addBenef', lastInfo, {
                 headers: {
@@ -127,7 +133,7 @@ class Beneficiarios extends React.Component{
     onEdit = (id) => {
         this.setState({editId: id, visible: true})
 
-        let index = ucds.findIndex(p => p.Id === id);
+        let index = ucds.findIndex(p => p.Id == id);
         for (var prop in ucds[index]) {
             lastInfo.set(prop, ucds[index][prop]);
             //console.log(ucds[id - 1][prop])
@@ -136,6 +142,7 @@ class Beneficiarios extends React.Component{
                 fileURL = URL.createObjectURL(fileBlob);
             }
         }
+        coordIndex = coords.findIndex(v => v.id == lastInfo.get("IdCoordinador"));
     }
 
     onDelete = (id) => {
@@ -293,7 +300,10 @@ class Beneficiarios extends React.Component{
                         </Col>
                         <Col span={12}>
                             <h4>Coordinador:</h4>
-                            <AutoComplete placeholder="Coordinador" id="IdCoordinador" 
+                            <AutoComplete 
+                                placeholder="Coordinador" 
+                                id="IdCoordinador"
+                                allowClear
                                 onChange={this.onChangeInput} 
                                 style={{ width: '100%' }}
                                 options={coords}
@@ -301,12 +311,11 @@ class Beneficiarios extends React.Component{
                                     option.value.toUpperCase().indexOf(inputValue.toUpperCase()) + 1 !== 0}
                                 onChange = {(e, value, reason) => {
                                     if(e === undefined) return;
-                                    var id = coords.findIndex(v => v.value == e);
-                                    if(id !== -1)
-                                        lastInfo.coordID = id+1;
-                                    console.log(lastInfo.coordID);
+                                    var prop = coords.find(v => v.value == e);
+                                    if(prop)
+                                        lastInfo.set("IdCoordinador",prop.id);
                                 }}
-                                defaultValue={this.state.editId <=0 ? this.value : lastInfo.get("IdCoordinador")}
+                                defaultValue={this.state.editId <=0 ? this.value : coordIndex > -1 ? coords[coordIndex].value : "[Coordinador Borrado]"}
                             />
                         </Col>
                         <Col span={12}>

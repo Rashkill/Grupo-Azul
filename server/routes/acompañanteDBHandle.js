@@ -71,8 +71,9 @@ const updAcomp = (req,res) =>{
 }
 
 const getAcomp = (req,res) =>{
+  let fields = req.params.fields ? req.params.fields : "*";
   let db = getConnection();
-    let sql = `SELECT * FROM Acompañante
+    let sql = `SELECT ${fields} FROM Acompañante
            ORDER BY Id`;
     var arrayData = [];
     db.all(sql, [], (err, rows) => {
@@ -89,8 +90,9 @@ const getAcomp = (req,res) =>{
 }
 
 const getAcompOnly = (req,res) =>{
+  let fields = req.params.fields ? req.params.fields : "*";
   let db = getConnection();
-  let sql = "SELECT * FROM Acompañante WHERE id="+req.params.id;
+    let sql = `SELECT ${fields} FROM Acompañante WHERE id=`+req.params.id;
 
   db.all(sql, [], (err, row) => {
       if (err) {

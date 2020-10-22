@@ -71,8 +71,9 @@ const updBenef = (req,res) =>{
 }
 
 const getBenef = (req,res,next) =>{
+  let fields = req.params.fields ? req.params.fields : "*";
   let db = getConnection();
-  let sql = `SELECT * FROM Beneficiario
+    let sql = `SELECT ${fields} FROM Beneficiario
          ORDER BY Id`;
   var arrayData = [];
   db.all(sql, [], (err, rows) => {
@@ -84,10 +85,7 @@ const getBenef = (req,res,next) =>{
           // console.log(row);
           arrayData.push(row);
       });
-      res.json({
-          "message":"Exito",
-          "data":rows
-      })
+      res.json(rows)
   });
 }
 

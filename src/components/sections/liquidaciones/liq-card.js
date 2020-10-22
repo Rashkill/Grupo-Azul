@@ -18,11 +18,11 @@ function LiqCard(props) {
     }
     
     const titleClick = () => {
-        getDatos().then(() =>
-            props.history.push({
-                pathname: props.linkto,
-                state: datos[0]
-            }))
+        // getDatos().then(() =>
+        //     props.history.push({
+        //         pathname: props.linkto,
+        //         state: datos[0]
+        //     }))
     }
 
     const dropClick = ({ key }) => {
@@ -80,7 +80,7 @@ function LiqCard(props) {
                     </Dropdown>
                     <h4 className="card-subtitle">
                     {/* ids: {this.props.id}  */}
-                    {props.fecha} 21/10/2020
+                    {props.fecha}
                     </h4>
                 </div>
             </div>
