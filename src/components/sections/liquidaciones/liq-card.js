@@ -60,13 +60,24 @@ function LiqCard(props) {
             //Si lo encuentra, se le suma la hora con la propiedad del elemento actual
             if(infoElement)
                 infoElement.horasTotales += jorElem.CantHoras;
-            //Caso contrario, se agrega un nuevo elemento con los datos del actual
             else
-                infoPorAcomp.push({
-                    IdAcompañante: jorElem.IdAcompañante, 
-                    horasTotales: jorElem.CantHoras
-                })
+            {
+                //Caso contrario, se agrega un nuevo elemento con los datos del actual
+                //A su vez, se obtiene el valor por hora del acompañante
+                try{
+                    const res = await fetch('http://localhost:4000/getAcompOnly/'+ jorElem.IdAcompañante +'/ValorHora');
+                    const datos = await res.json();
+                    infoPorAcomp.push({
+                        IdAcompañante: jorElem.IdAcompañante, 
+                        valorHora: datos[0].ValorHora,
+                        horasTotales: jorElem.CantHoras,
+                        valorFinal: 0
+                    })
+                }catch(e){console.log(e)}
+            }
         }
+        //Mapeado para establecer el valor final
+        infoPorAcomp.map(i => {i.valorFinal = i.valorHora * i.horasTotales})
 
         console.log("Informacion separada por acompañante: ", infoPorAcomp);
         console.log("Horas totales del ciclo: " + totalhoras)
