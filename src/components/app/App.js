@@ -10,6 +10,7 @@ import Beneficiarios from '../sections/beneficiarios/beneficiarios.js'
 import BenefProfile from '../sections/beneficiarios/benef-profile.js'
 import Jornadas from '../sections/jornadas/jornadas.js'
 import Liquidaciones from '../sections/liquidaciones/liquidaciones.js'
+import LiqPreview from '../sections/liquidaciones/liq-preview.js'
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
             <Route path="/benefprofile" component={BenefProfile} />
             <Route path="/jornadas" component={Jornadas} />
             <Route path="/liquidaciones" component={Liquidaciones} />
+            <Route path="/liq-preview" component={LiqPreview} />
           </div>
         </div>
       </React.Fragment>

@@ -6,21 +6,25 @@ import LiqImg from '../../../images/image6.png'
 import '../../layout/cards.css'
 import Axios from 'axios';
 import { createHashHistory } from 'history';
-// import { format } from 'sequelize/types/lib/utils';
 export const history = createHashHistory();
-
 
 const dateFormat = 'DD/MM/YYYY';
 const moment = require('moment');
 
 function LiqCard(props) {
     
+    let state = {
+        valortotalhoras: 0
+    }
+
     var datos;
     const getDatos = async () =>{
         const res = await fetch('http://localhost:4000/acompOnly/' + props.id);
         datos = await res.json();
     }
 
+    //Array que almacena las horas totales divididas por id de acompañante
+    let infoPorAcomp = [];
 
     const getJor4Liq = async () => {
 
@@ -28,6 +32,8 @@ function LiqCard(props) {
         const hasta = moment(props.hasta, dateFormat).format("YYYY-MM-DD")
         let jornadas;
         let totalhoras = 0;
+
+        
 
         try{
             let fields = "Id,IdAcompañante,CantHoras";
@@ -39,15 +45,11 @@ function LiqCard(props) {
         }catch(e){
             console.log("MAL ", e)
         }
-
         
         jornadas.map(j => {
             console.log("CantidadHoras " + j.IdAcompañante + " :", j.CantHoras)
             totalhoras = totalhoras + j.CantHoras
         })
-
-        //Array que almacena las horas totales divididas por id de acompañante
-        let infoPorAcomp = [];
 
         //Se loopea el array de las jornadas obtenidas
         for (let index = 0; index < jornadas.length; index++) {
@@ -65,9 +67,11 @@ function LiqCard(props) {
                 //Caso contrario, se agrega un nuevo elemento con los datos del actual
                 //A su vez, se obtiene el valor por hora del acompañante
                 try{
-                    const res = await fetch('http://localhost:4000/getAcompOnly/'+ jorElem.IdAcompañante +'/ValorHora');
+                    const res = await fetch('http://localhost:4000/getAcompOnly/'+ jorElem.IdAcompañante +'/ValorHora,Nombre,Apellido,CUIL,EntidadBancaria,CBU');
                     const datos = await res.json();
+                    
                     infoPorAcomp.push({
+                        info: datos[0],
                         IdAcompañante: jorElem.IdAcompañante, 
                         valorHora: datos[0].ValorHora,
                         horasTotales: jorElem.CantHoras,
@@ -76,15 +80,37 @@ function LiqCard(props) {
                 }catch(e){console.log(e)}
             }
         }
+
+
+        const resBenef = await fetch('http://localhost:4000/getBenefOnly/'+ props.idbenef +'/IdCoordinador');
+        const datosBenef = await resBenef.json();
+
+        state.IdCoordinador = datosBenef[0].IdCoordinador
+
         //Mapeado para establecer el valor final
-        infoPorAcomp.map(i => {i.valorFinal = i.valorHora * i.horasTotales})
+        infoPorAcomp.map(i => {
+            i.valorFinal = i.valorHora * i.horasTotales;
+        })
+
+        infoPorAcomp.forEach(i => {
+            state.valortotalhoras += i.valorFinal
+        });
+
+        state.infoPorAcomp = infoPorAcomp
 
         console.log("Informacion separada por acompañante: ", infoPorAcomp);
         console.log("Horas totales del ciclo: " + totalhoras)
+
+
     }
     
     const titleClick = () => {
-        getJor4Liq()
+        getJor4Liq().then(() => {
+            props.history.push({
+                pathname: props.linkto,
+                state: state
+            })
+        })
     }
 
     const dropClick = ({ key }) => {

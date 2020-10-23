@@ -219,6 +219,7 @@ class Liquidaciones extends React.Component {
                                 fecha={v.FechaEmision}
                                 key={v.Id}
                                 id={v.Id}
+                                linkto="/liq-preview"
                             />
                             )}
                             <LoadingOutlined style={{ padding: 16, fontSize: 24, display: this.state.isLoading ? "inline" : "none" }} spin />
