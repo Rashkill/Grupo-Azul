@@ -33,7 +33,7 @@ class Liquidaciones extends React.Component {
     state = { 
         visible: false,
         isLoading: true,
-        editId: 0,
+        id: 0,
         benefIndex: -1
     };
 
@@ -84,7 +84,7 @@ class Liquidaciones extends React.Component {
     showModal = () => {     
         this.setState({
         visible: true,
-        editId: 0,
+        id: 0,
         benefIndex: -1
         });
     };
@@ -98,7 +98,7 @@ class Liquidaciones extends React.Component {
         let fecha = `${d}/${m}/${a}`;
         lastInfo.set("FechaEmision", fecha)
 
-        if(this.state.editId <=0){
+        if(this.state.id <=0){
             Axios.post('http://localhost:4000/addLiq', lastInfo, {
                     headers: {
                         Accept: 'application/json'
@@ -116,7 +116,7 @@ class Liquidaciones extends React.Component {
         }
         else{
             console.log(lastInfo.get("IdBeneficiario"))
-            Axios.post('http://localhost:4000/updLiq/' + this.state.editId, lastInfo, {
+            Axios.post('http://localhost:4000/updLiq/' + this.state.id, lastInfo, {
                     headers: {
                         Accept: 'application/json'
                     }
@@ -134,18 +134,19 @@ class Liquidaciones extends React.Component {
     };
 
     //cancelar modal
-    handleCancel = e => {   
-        var confirm = window.confirm('¿Desea cerrar el formulario? Se perderán los cambios no guardados')
-        if(confirm){
-            this.setState({visible: false})
-
-        }
+    handleCancel = e => {
+        Modal.confirm({
+            title:'¿Desea cerrar el formulario?',
+            content: 'Se perderán los cambios no guardados',
+            okText: 'Si', cancelText: 'No',
+            onOk:(()=>{this.setState({visible: false, id:0})})
+        })
     };
 
 
     onEdit = (id) => {
         this.setState({
-            editId: id, 
+            id: id, 
             visible: true
         })
 
@@ -158,16 +159,21 @@ class Liquidaciones extends React.Component {
     }
 
     onDelete = (id) => {
-        if(window.confirm('¿Realmente desea eliminar esta tabla?'))
-        Axios.delete('http://localhost:4000/liq/' + id).then(() => {
+        Modal.confirm({
+            title:'Eliminacion',
+            content: '¿Realmente desea eliminar esta liquidación?',
+            okText: 'Si', cancelText: 'No',
+            onOk:(()=>{
+                Axios.delete('http://localhost:4000/liq/' + id).then(() => {
                 this.openNotification(
                     "Eliminación exitosa",
                     "La Liquidación se borró correctamente",
                     true
                 )
                 this.getData();
-            }
-        );
+                });
+            })
+        })
     }
 
 
@@ -236,7 +242,7 @@ class Liquidaciones extends React.Component {
                     </Col>
                 </Row>
                 <Modal
-                    title={this.state.editId <=0 ? "Nueva Liquidación" : "Modificar Liquidación"}
+                    title={this.state.id <=0 ? "Nueva Liquidación" : "Modificar Liquidación"}
                     visible={this.state.visible}
                     onOk={this.handleOk}
                     onCancel={this.handleCancel}
@@ -263,7 +269,7 @@ class Liquidaciones extends React.Component {
                                             lastInfo.set("IdBeneficiario",prop.id);
                                         console.log(prop.id);
                                     }}
-                                    defaultValue={this.state.editId <=0 ? this.value : this.state.benefIndex > -1 ? ucds[this.state.benefIndex].value : "[Beneficiario Borrado]"}
+                                    defaultValue={this.state.id <=0 ? this.value : this.state.benefIndex > -1 ? ucds[this.state.benefIndex].value : "[Beneficiario Borrado]"}
                                     allowClear
                                 />
                             </Col>
@@ -276,7 +282,7 @@ class Liquidaciones extends React.Component {
                                     style={{width: '100%'}} 
                                     format={"DD/MM/YYYY"}
                                     onChange={(e) => lastInfo.set("Desde", e.format(dateFormat))}
-                                    defaultValue={this.state.editId <=0 ? this.value : moment(lastInfo.get("Desde"), "DD/MM/YYYY")}
+                                    defaultValue={this.state.id <=0 ? this.value : moment(lastInfo.get("Desde"), "DD/MM/YYYY")}
                                 />
                             </Col>
                             <Col span={11}>
@@ -286,7 +292,7 @@ class Liquidaciones extends React.Component {
                                     style={{width: '100%'}}
                                     format={"DD/MM/YYYY"}
                                     onChange={(e) => lastInfo.set("Hasta", e.format(dateFormat))}
-                                    defaultValue={this.state.editId <=0 ? this.value : moment(lastInfo.get("Hasta"), "DD/MM/YYYY")}
+                                    defaultValue={this.state.id <=0 ? this.value : moment(lastInfo.get("Hasta"), "DD/MM/YYYY")}
                                     />
                             </Col>
                         </Row>

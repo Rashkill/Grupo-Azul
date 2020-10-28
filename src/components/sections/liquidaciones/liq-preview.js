@@ -20,6 +20,11 @@ const LiqPreview = (props) => {
     const info = props.location.state
     console.log(info)
 
+    if(!info){
+        props.history.goBack();
+        return(<div></div>)
+    }
+    else
     return (
         <div className="content-cont prot-shadow">
 
@@ -35,7 +40,7 @@ const LiqPreview = (props) => {
                     <Page size="A4" style={styles.page}>
                         {info.infoPorAcomp.map((a) => {
                             return(
-                                <Text>{a.info.Apellido.toString()}</Text>
+                                <Text>{a.info.Apellido.toString()} hola</Text>
                             )
                         })}
                     </Page>

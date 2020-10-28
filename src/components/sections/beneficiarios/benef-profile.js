@@ -49,16 +49,8 @@ const menu = (
 
 const BenefCard = (props) =>{
 
-    const vacio = "..."
-    const info = props.location.state !== undefined ? props.location.state :
-    {
-        Id: vacio,
-        Nombre: vacio,
-        Apellido: vacio,
-        Telefono: vacio,
-        Direccion: vacio
-    };
-    console.log(info);
+    const info = props.location.state;
+    //console.log(info);
 
     const columns = [
         {
@@ -118,6 +110,11 @@ const BenefCard = (props) =>{
         props.history.goBack()
     }
 
+    if(!info){
+        props.history.goBack();
+        return(<div></div>)
+    }
+    else
     return(
         <React.Fragment>
             <div className="header-bg prot-shadow">

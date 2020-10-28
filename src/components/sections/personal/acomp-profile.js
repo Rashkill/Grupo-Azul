@@ -46,15 +46,7 @@ const menu = (
 
 const AcompProfile = (props) =>{
 
-    const vacio = "..."
-    const info = props.location.state !== undefined ? props.location.state :
-    {
-        Id: vacio,
-        Nombre: vacio,
-        Apellido: vacio,
-        Telefono: vacio,
-        Direccion: vacio
-    };
+    const info = props.location.state;
     //console.log(info);
 
 
@@ -156,7 +148,11 @@ const AcompProfile = (props) =>{
     const goBack = () =>{
         props.history.goBack()
     }
-
+    if(!info){
+        props.history.goBack();
+        return(<div></div>)
+    }
+    else
     return(
         <React.Fragment>
             <div className="header-bg prot-shadow">

@@ -14,13 +14,7 @@ const moment = require('moment');
 function LiqCard(props) {
     
     let state = {
-        valortotalhoras: 0
-    }
-
-    var datos;
-    const getDatos = async () =>{
-        const res = await fetch('http://localhost:4000/acompOnly/' + props.id);
-        datos = await res.json();
+        valorTotalHoras: 0
     }
 
     //Array que almacena las horas totales divididas por id de acompañante
@@ -81,25 +75,20 @@ function LiqCard(props) {
             }
         }
 
-
+        //Se obtiene el Id del Coordinador desde la base de datos
         const resBenef = await fetch('http://localhost:4000/getBenefOnly/'+ props.idbenef +'/IdCoordinador');
         const datosBenef = await resBenef.json();
-
-        state.IdCoordinador = datosBenef[0].IdCoordinador
+        state.IdCoordinador = datosBenef[0].IdCoordinador;
 
         //Mapeado para establecer el valor final
         infoPorAcomp.map(i => {
             i.valorFinal = i.valorHora * i.horasTotales;
+            state.valorTotalHoras += i.valorFinal;
         })
-
-        infoPorAcomp.forEach(i => {
-            state.valortotalhoras += i.valorFinal
-        });
-
-        state.infoPorAcomp = infoPorAcomp
+        state.infoPorAcomp = infoPorAcomp;
 
         console.log("Informacion separada por acompañante: ", infoPorAcomp);
-        console.log("Horas totales del ciclo: " + totalhoras)
+        console.log("Horas totales del ciclo: " + totalhoras);
 
 
     }

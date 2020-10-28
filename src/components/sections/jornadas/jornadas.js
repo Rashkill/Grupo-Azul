@@ -45,7 +45,7 @@ class Jornadas extends React.Component{
         visible: false,
         isLoading: true,
         horas: 0,
-        editId: 0,
+        id: 0,
         acompIndex: -1,
         benefIndex: -1
     };
@@ -115,7 +115,7 @@ class Jornadas extends React.Component{
     showModal = () => {     
         this.setState({
         visible: true,
-        editId: 0,
+        id: 0,
         acompIndex: -1,
         benefIndex: -1
         });
@@ -126,7 +126,7 @@ class Jornadas extends React.Component{
 
         lastInfo.set("CantHoras", this.state.horas);
 
-        if(this.state.editId <=0){
+        if(this.state.id <=0){
             Axios.post('http://localhost:4000/addJornada', lastInfo, {
                     headers: {
                         Accept: 'application/json'
@@ -143,7 +143,7 @@ class Jornadas extends React.Component{
             });
         }
         else{
-            Axios.post('http://localhost:4000/updJornada/' + this.state.editId, lastInfo, {
+            Axios.post('http://localhost:4000/updJornada/' + this.state.id, lastInfo, {
                     headers: {
                         Accept: 'application/json'
                     }
@@ -161,11 +161,13 @@ class Jornadas extends React.Component{
     };
 
     //cancelar modal
-    handleCancel = e => {   
-        var confirm = window.confirm('¿Desea cerrar el formulario? Se perderán los cambios no guardados')
-        if(confirm){
-            this.setState({visible: false})
-        }
+    handleCancel = e => {
+        Modal.confirm({
+            title:'¿Desea cerrar el formulario?',
+            content: 'Se perderán los cambios no guardados',
+            okText: 'Si', cancelText: 'No',
+            onOk:(()=>{this.setState({visible: false, id:0})})
+        })
     };
 
 
@@ -180,23 +182,28 @@ class Jornadas extends React.Component{
         this.setState({benefIndex: ucds.findIndex(v => v.id == lastInfo.get("IdBeneficiario"))});
 
         this.setState({
-            editId: id, 
+            id: id, 
             visible: true,
             horas: lastInfo.get("CantHoras")
         })
     }
 
     onDelete = (id) => {
-        if(window.confirm('¿Realmente desea eliminar esta tabla?'))
-        Axios.delete('http://localhost:4000/jornada/' + id).then(() => {
+        Modal.confirm({
+            title:'Eliminacion',
+            content: '¿Realmente desea eliminar esta jornada?',
+            okText: 'Si', cancelText: 'No',
+            onOk:(()=>{
+                Axios.delete('http://localhost:4000/jornada/' + id).then(() => {
                 this.openNotification(
                     "Eliminación exitosa",
                     "La Jornada se borró correctamente",
                     true
                 )
                 this.getData();
-            }
-        );
+                });
+            })
+        })
     }
 
     rangeOk = (value) => {
@@ -312,7 +319,7 @@ class Jornadas extends React.Component{
                                         if(prop)
                                             lastInfo.set("IdBeneficiario", prop.id);
                                     }}
-                                    defaultValue={this.state.editId <=0 ? this.value : this.state.benefIndex > -1 ? ucds[this.state.benefIndex].value : "[Beneficiario Borrado]"}
+                                    defaultValue={this.state.id <=0 ? this.value : this.state.benefIndex > -1 ? ucds[this.state.benefIndex].value : "[Beneficiario Borrado]"}
                                     allowClear
                                 />
                             </Col>
@@ -332,7 +339,7 @@ class Jornadas extends React.Component{
                                         if(prop)
                                             lastInfo.set("IdAcompañante", prop.id);
                                     }}
-                                    defaultValue={this.state.editId <=0 ? this.value : this.state.acompIndex > -1 ? agds[this.state.acompIndex].value : "[Acompañante Borrado]"}
+                                    defaultValue={this.state.id <=0 ? this.value : this.state.acompIndex > -1 ? agds[this.state.acompIndex].value : "[Acompañante Borrado]"}
                                     allowClear
                                 />
                             </Col>
@@ -349,7 +356,7 @@ class Jornadas extends React.Component{
                                     minuteStep={30}
                                     placeholder={['Desde', 'Hasta']}
                                     style={{width: '100%'}}
-                                    defaultValue = {this.state.editId <=0 ? this.value : 
+                                    defaultValue = {this.state.id <=0 ? this.value : 
                                         [moment(moment(lastInfo.get("FechaIngreso"), dateFormat + " HH:mm").format("DD/MM/YYYY HH:mm"), "DD/MM/YYYY HH:mm"), 
                                         moment(moment(lastInfo.get("FechaEgreso"), dateFormat + " HH:mm").format("DD/MM/YYYY HH:mm"), "DD/MM/YYYY HH:mm")]}
                                     allowClear
