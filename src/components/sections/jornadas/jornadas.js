@@ -1,6 +1,7 @@
 import React from 'react';
 import { Divider, Row, Col, Input, Modal, AutoComplete, DatePicker, notification , Empty } from 'antd';
 import { PlusOutlined, LoadingOutlined , CheckCircleOutlined, AlertOutlined } from '@ant-design/icons';
+import InfiniteScroll from "react-infinite-scroll-component";
 import JornadaCard from './jornada-card';
 import Axios from 'axios';
 
@@ -16,6 +17,9 @@ const { confirm } = Modal;
 
 var agds = [];
 var ucds = [];
+
+const maxRows = 5;
+var rowOffset = 0;
 
 function nombreJornada (agdID, ucdID, fecha)
 {
@@ -44,6 +48,7 @@ class Jornadas extends React.Component{
     state = { 
         visible: false,
         isLoading: true,
+        cantidad: 0,
         horas: 0,
         id: 0,
         acompIndex: -1,
@@ -54,11 +59,12 @@ class Jornadas extends React.Component{
 
     getData = async () => {
         try{            
-            const res = await fetch('http://localhost:4000/getJornadas/*', {signal: this.abortController.signal});
+            const res = await fetch('http://localhost:4000/getJornadas/*' + '/' + maxRows + '/' + rowOffset, {signal: this.abortController.signal});
             const datos = await res.json();
-            if(datos)
+            if(datos.length > 0)
             {
-                jornadasIn = datos;
+                Array.prototype.push.apply(jornadasIn, datos);
+
                 jornadasIn.forEach(v => {
                     if(v.FechaIngreso)
                         v.FechaIngreso = moment(v.FechaIngreso, dateFormat + " HH:mm").format("DD/MM/YYYY");
@@ -66,6 +72,8 @@ class Jornadas extends React.Component{
                         v.FechaEgreso = moment(v.FechaEgreso, dateFormat + " HH:mm").format("DD/MM/YYYY");
                 })
             }
+            this.setState({cantidad: jornadasIn.length})
+            rowOffset += maxRows;
         }catch(e){
             jornadasIn = [];
             console.log(e);
@@ -96,6 +104,12 @@ class Jornadas extends React.Component{
             console.log(e);
         }
     }
+
+    fetchMoreData = () => {
+        this.setState({isLoading:true});
+        this.getData().then(
+            () => this.setState({isLoading: false}));
+    };
 
     cargarTodo = () =>{
         this.getAcompBenef().then(
@@ -190,8 +204,8 @@ class Jornadas extends React.Component{
 
     onDelete = (id) => {
         Modal.confirm({
-            title:'Eliminacion',
-            content: '¿Realmente desea eliminar esta jornada?',
+            title:'¿Realmente desea eliminar este elemento?',
+            content: 'Esta acción no se puede deshacer.',
             okText: 'Si', cancelText: 'No',
             onOk:(()=>{
                 Axios.delete('http://localhost:4000/jornada/' + id).then(() => {
@@ -260,22 +274,29 @@ class Jornadas extends React.Component{
                         
                         <div className="cards-container">
                             <Empty style={{display: this.state.isLoading ? "none" : jornadasIn.length > 0 ? "none" : "inline"}} description={false} />
-                            {jornadasIn.map(jornadaInfo => {
-                                return(
-                                    <JornadaCard
-                                        title={nombreJornada(jornadaInfo.IdAcompañante, jornadaInfo.IdBeneficiario, jornadaInfo.FechaIngreso)}
-                                        agd={getName(jornadaInfo.IdAcompañante, agds)}
-                                        ucd={getName(jornadaInfo.IdBeneficiario, ucds)}
-                                        horas={jornadaInfo.CantHoras}
-                                        ingreso={jornadaInfo.FechaIngreso}
-                                        egreso={jornadaInfo.FechaEgreso}
-                                        id={jornadaInfo.Id}
-                                        key={jornadaInfo.Id}
-                                        OnEdit={this.onEdit}
-                                        OnDelete={this.onDelete}
-                                    />
-                                )
-                            })}
+                            <InfiniteScroll
+                                dataLength={this.state.cantidad}
+                                next={this.fetchMoreData}
+                                hasMore={true}
+                                style={{margin: 6, padding: 8}}
+                            >
+                                {jornadasIn.map(jornadaInfo => {
+                                    return(
+                                        <JornadaCard
+                                            title={nombreJornada(jornadaInfo.IdAcompañante, jornadaInfo.IdBeneficiario, jornadaInfo.FechaIngreso)}
+                                            agd={getName(jornadaInfo.IdAcompañante, agds)}
+                                            ucd={getName(jornadaInfo.IdBeneficiario, ucds)}
+                                            horas={jornadaInfo.CantHoras}
+                                            ingreso={jornadaInfo.FechaIngreso}
+                                            egreso={jornadaInfo.FechaEgreso}
+                                            id={jornadaInfo.Id}
+                                            key={jornadaInfo.Id}
+                                            OnEdit={this.onEdit}
+                                            OnDelete={this.onDelete}
+                                        />
+                                    )
+                                })}
+                            </InfiniteScroll>
                             <LoadingOutlined style={{ padding: 16, fontSize: 24, display: this.state.isLoading ? "inline" : "none" }} spin />
                         </div>
 

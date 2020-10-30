@@ -160,8 +160,8 @@ class Liquidaciones extends React.Component {
 
     onDelete = (id) => {
         Modal.confirm({
-            title:'Eliminacion',
-            content: '¿Realmente desea eliminar esta liquidación?',
+            title:'¿Realmente desea eliminar este elemento?',
+            content: 'Esta acción no se puede deshacer.',
             okText: 'Si', cancelText: 'No',
             onOk:(()=>{
                 Axios.delete('http://localhost:4000/liq/' + id).then(() => {

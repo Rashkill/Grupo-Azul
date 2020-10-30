@@ -72,9 +72,9 @@ const updAcomp = (req,res) =>{
 
 const getAcomp = (req,res) =>{
   let fields = req.params.fields ? req.params.fields : "*";
+  let limitOffset = req.params.limit ? `LIMIT ${req.params.limit} OFFSET ${req.params.offset ? req.params.offset : 0}` : "";
   let db = getConnection();
-    let sql = `SELECT ${fields} FROM Acompañante
-           ORDER BY Id`;
+    let sql = `SELECT ${fields} FROM Acompañante ORDER BY Id ${limitOffset}`;
     var arrayData = [];
     db.all(sql, [], (err, rows) => {
         if (err) {

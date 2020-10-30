@@ -40,6 +40,11 @@ app.get('/getJornadas/:fields',  (req, res) => {
    getJornadas(req,res);
 })
 
+//Obtener Jornadas
+app.get('/getJornadas/:fields/:limit/:offset',  (req, res) => {
+   getJornadas(req,res);
+})
+
 //Actualizando Jornada
 app.post('/updJornada/:id', upload.none(), (req, res) => {
    updJornada(req,res);
@@ -78,6 +83,10 @@ app.get('/getAcomp',  (req, res) => {
 app.get('/getAcomp/:fields',  (req, res) => {
    getAcomp(req,res);
  })
+
+app.get('/getAcomp/:fields/:limit/:offset',  (req, res) => {
+   getAcomp(req,res);
+})
 
 //Get Un Acompañante
 app.get('/getAcompOnly/:id',  (req, res, next) => {
@@ -124,6 +133,11 @@ app.get('/getBenef/:fields',  (req, res) => {
    getBenef(req,res);
 })
 
+//Obteniendo Beneficiarios con campos especificos y limite
+app.get('/getBenef/:fields/:limit/:offset',  (req, res) => {
+   getBenef(req,res);
+})
+
 //Obteniendo Un Solo Beneficiario
 app.get('/getBenefOnly/:id',  (req, res) => {
    getBenefOnly(req,res);
@@ -164,6 +178,10 @@ app.get('/getCoord/:fields',  (req, res) => {
    getCoord(req,res)
 })
 
+app.get('/getCoord/:fields/:limit/:offset',  (req, res) => {
+   getCoord(req,res);
+})
+
 //Get Un Coordinador
 app.get('/getCoordOnly/:id',  (req, res) => {
    getCoordOnly(req,res)
@@ -201,6 +219,10 @@ app.get('/getLiq',  (req, res) => {
 //Get Liquidaciones con campos especificos
 app.get('/getLiq/:fields',  (req, res) => {
    getLiq(req,res)
+})
+
+app.get('/getLiq/:fields/:limit/:offset',  (req, res) => {
+   getLiq(req,res);
 })
 
 //Get Un Liquidacion

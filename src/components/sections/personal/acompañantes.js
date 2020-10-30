@@ -91,8 +91,8 @@ class Acompañantes extends React.Component {
     //Se llama al presionar el boton 'Eliminar' en la tarjeta
     onDelete = (id) => {
         Modal.confirm({
-            title:'Eliminacion',
-            content: '¿Realmente desea eliminar este acompañante?',
+            title:'¿Realmente desea eliminar este elemento?',
+            content: 'Esta acción no se puede deshacer.',
             okText: 'Si', cancelText: 'No',
             onOk:(()=>{
                 Axios.delete('http://localhost:4000/acomp/' + id).then(() => {
@@ -367,7 +367,7 @@ class Acompañantes extends React.Component {
                     title="Visor PDF"
                     visible={this.state.pdfViewer}
                     cancelText="Cerrar"
-                    onCancel={()=> this.setState({pdfViewer: false})}
+                    onCancel={()=> this.setState({pdfViewer: false, actualPage:1})}
                     onOk={() => {
                         let fileName = info.datos[this.state.id - 1].Apellido + this.state.pdf===1?"_ConstanciaAFIP":"_CV" + ".pdf";
                         let link = document.createElement("a");
