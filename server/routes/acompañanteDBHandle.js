@@ -74,19 +74,20 @@ const getAcomp = (req,res) =>{
   let fields = req.params.fields ? req.params.fields : "*";
   let limitOffset = req.params.limit ? `LIMIT ${req.params.limit} OFFSET ${req.params.offset ? req.params.offset : 0}` : "";
   let db = getConnection();
-    let sql = `SELECT ${fields} FROM Acompañante ORDER BY Id ${limitOffset}`;
-    var arrayData = [];
-    db.all(sql, [], (err, rows) => {
-        if (err) {
-            res.status(400).json({"error":err.message});
-            return;
-        }
-        rows.forEach((row) => {
-            // console.log(row);
-            arrayData.push(row);
-        });
-        res.json(rows)
-    });
+  let sql = `SELECT ${fields} FROM Acompañante ORDER BY Id ${limitOffset}`;
+  
+  var arrayData = [];
+  db.all(sql, [], (err, rows) => {
+      if (err) {
+          res.status(400).json({"error":err.message});
+          return;
+      }
+      rows.forEach((row) => {
+          // console.log(row);
+          arrayData.push(row);
+      });
+      res.json(rows)
+  });
 }
 
 const getAcompOnly = (req,res) =>{

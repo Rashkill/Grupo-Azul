@@ -1,8 +1,7 @@
 import React from 'react';
-import { Divider, Row, Col, Input, Modal, Empty, Form, AutoComplete, Upload, Button, DatePicker, notification} from 'antd';
+import { Divider, Row, Col, Input, Modal, Empty, Form, AutoComplete, Upload, Button, DatePicker, notification, Pagination, Spin} from 'antd';
 import { PlusOutlined, LoadingOutlined, UploadOutlined, CheckCircleOutlined, AlertOutlined } from '@ant-design/icons';
 import { Document, Page, pdfjs } from 'react-pdf';
-import InfiniteScroll from "react-infinite-scroll-component";
 import BenefCard from './benef-card'
 import Axios from 'axios';
 
@@ -14,6 +13,7 @@ var coordIndex = -1;
 var lastInfo = new FormData();
 var fileBlob, fileURL;
 
+var maxItems;
 const maxRows = 5;
 var rowOffset = 0;
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
@@ -28,26 +28,32 @@ class Beneficiarios extends React.Component{
         id: 0,
         pdfViewer: false,
         numPages: 0,
-        actualPage: 1
+        actualPage: 1,
+        filterSearch: "",
+        loadingModal: false
     };
     
     abortController = new AbortController();
 
     //Secuencia que obtiene la informacion y luego desactiva el icono de carga
     getData = () =>{
+        window.scrollTo(0,0);
         this.loadAndGetData().then(() => this.setState({isLoading: false}));
     }
 
     //Obtiene la informacion de la base de datos
     loadAndGetData = async() => {
         try{
+            const result = await fetch('http://localhost:4000/getBenef/Id', {signal: this.abortController.signal});
+            const data = await result.json();
+            maxItems = data.length;
+
             const fields = "Id, Nombre, Apellido, DNI, CUIL, FechaNacimiento, Domicilio, Localidad, CodigoPostal, Email, Telefono, Enfermedades, IdCoordinador"
             const resBenef = await fetch('http://localhost:4000/getBenef/' + fields + '/' + maxRows + '/' + rowOffset, {signal: this.abortController.signal});
             const datosBenef = await resBenef.json();
             
-            if(datosBenef.length > 0)
-                Array.prototype.push.apply(ucds, datosBenef);
-            
+            if(datosBenef)
+                ucds = datosBenef;
             ucdsFilter = ucds;
 
             const res = await fetch('http://localhost:4000/getCoord/Nombre,Apellido,Id', {signal: this.abortController.signal});
@@ -59,7 +65,6 @@ class Beneficiarios extends React.Component{
                 }));
 
             this.setState({cantidad: ucdsFilter.length, isLoading: false})
-            rowOffset += maxRows;
         }catch(e){}
     }
 
@@ -90,6 +95,7 @@ class Beneficiarios extends React.Component{
     componentWillUnmount()
     {
         rowOffset = 0;
+        ucds = [];
         this.abortController.abort();
     }
 
@@ -172,21 +178,25 @@ class Beneficiarios extends React.Component{
             title:'¿Desea cerrar el formulario?',
             content: 'Se perderán los cambios no guardados',
             okText: 'Si', cancelText: 'No',
-            onOk:(()=>{this.setState({visible: false, id:0})})
+            onOk:(()=>{this.setState({visible: false, id:0, loadingModal: false}, this.abortController.abort())})
         })
     };
 
     //Buscador
     handleSearch = (v) => {
+        this.setState({filterSearch: v});
+        this.makeSearch();
+    }
 
+    makeSearch = () =>{
         //Se comprueba que el valor ingresado no esté vacio
-        if(v !== undefined || v !== "")
+        if(this.state.filterSearch !== undefined || this.state.filterSearch !== "")
         {
             // if(p.Nombre.toUpperCase().includes(v.toUpperCase())||
             // p.Apellido.toUpperCase().includes(v.toUpperCase()))
 
             ucdsFilter = [];    //Se vacia el array
-            var k = v.split(':');   //Se separa la 'key'(0) y el valor(1), si es que hay ":"
+            var k = this.state.filterSearch.split(':');   //Se separa la 'key'(0) y el valor(1), si es que hay ":"
             ucds.map(p => {
                 if(k.length === 2 && p[k[0]] !== undefined){
                     //Si los valores separados son 2 y la 'key'(0) es valida
@@ -200,7 +210,7 @@ class Beneficiarios extends React.Component{
                     //Se busca en cada elemento dentro del objeto la coincidencia
                     var f = false;
                     Object.keys(p).forEach(key => { 
-                        if(p[key].toString().toUpperCase().includes(v.toUpperCase()) && !f) 
+                        if(p[key].toString().toUpperCase().includes(this.state.filterSearch.toUpperCase()) && !f) 
                         {
                             ucdsFilter.push(p);
                             f = true;
@@ -223,8 +233,10 @@ class Beneficiarios extends React.Component{
         for (var prop in ucds[index]) {
             lastInfo.set(prop, ucds[index][prop]);
         }
-        coordIndex = coords.findIndex(v => v.id == lastInfo.get("IdCoordinador"));
-        this.getPdf(id).then(() => {this.setState({id:id, visible: true}); console.log(fileBlob, fileURL)});
+
+        this.abortController = new AbortController();
+        this.setState({id:id, visible: true, loadingModal: true})
+        this.getPdf(id).then(() => this.setState({loadingModal: false}));
     }
 
     //Se llama al presionar el boton 'Eliminar' en la tarjeta
@@ -277,14 +289,10 @@ class Beneficiarios extends React.Component{
                             </h1>
                         </Divider>
 
+                        {/* CARTAS BENEFICIARIOS */}
                         <div className="cards-container">
                         <Empty style={{display: this.state.isLoading ? "none" : ucdsFilter.length > 0 ? "none" : "inline"}} description={false} />
-                        <InfiniteScroll
-                            dataLength={this.state.cantidad}
-                            next={this.fetchMoreData}
-                            hasMore={true}
-                            style={{margin: 6, padding: 8}}
-                        >
+                        
                         {ucdsFilter.map(p =>{
                             return(
                             <BenefCard 
@@ -298,10 +306,15 @@ class Beneficiarios extends React.Component{
                                 OnDelete={this.onDelete}
                             />)
                         })}
-                        </InfiniteScroll>
                         <LoadingOutlined style={{ padding: 16, fontSize: 24, display: this.state.isLoading ? "inline" : "none" }} spin />
                         </div>
-
+                        <Pagination 
+                            style={{textAlign:"center", visibility:maxItems<5?"hidden":"visible"}} 
+                            defaultCurrent={1} 
+                            total={maxItems} 
+                            pageSize={maxRows}
+                            onChange={(page)=>{rowOffset=maxRows*(page-1); this.getData();}}
+                        />
                     </Col>
                     <Col span={6}>
                         <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onChange={e => this.handleSearch(e.target.value)} allowClear={true}/>
@@ -326,6 +339,8 @@ class Beneficiarios extends React.Component{
                     centered={true}
                     width={800}
                 >
+                
+                <Spin spinning={this.state.loadingModal} tip="Cargando Archivos...">
                 <Form>
                     <Row gutter={[48,20]}>
                         <Col span={12}>
@@ -425,6 +440,7 @@ class Beneficiarios extends React.Component{
                         </Col>
                     </Row>
                 </Form>
+                </Spin>
                 </Modal>
                 {/*VISOR PDF*/}
                 <Modal

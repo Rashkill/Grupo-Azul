@@ -69,6 +69,7 @@ const getCoord = (req,res,next) =>{
   let limitOffset = req.params.limit ? `LIMIT ${req.params.limit} OFFSET ${req.params.offset ? req.params.offset : 0}` : "";
   let db = getConnection();
   let sql = `SELECT ${fields} FROM Coordinador ORDER BY Id ${limitOffset}`;
+  
   var arrayData = [];
   db.all(sql, [], (err, rows) => {
       if (err) {

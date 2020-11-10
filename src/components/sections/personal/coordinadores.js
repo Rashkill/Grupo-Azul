@@ -1,5 +1,5 @@
 import React,{ useState, useEffect } from 'react';
-import { Divider, Row, Col, Input, Modal, Form, Empty, Upload, Button, notification } from 'antd';
+import { Divider, Row, Col, Input, Modal, Form, Empty, Upload, Button, notification, Pagination, Spin } from 'antd';
 import { PlusOutlined, FileDoneOutlined, LoadingOutlined, UploadOutlined, CheckCircleOutlined, AlertOutlined} from '@ant-design/icons';
 import CoordCard from './coord-card.js';
 import { Document, Page, pdfjs } from 'react-pdf';
@@ -19,6 +19,10 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/$
 
 var abortController = new AbortController();
 
+var maxItems = 0;
+const maxRows = 5;
+var rowOffset = 0;
+
 class Coordinadores extends React.Component {
     state = {
         id:0,
@@ -29,16 +33,22 @@ class Coordinadores extends React.Component {
         pdfViewer: false,
         numPages: 0,
         actualPage: 1,
+        loadingModal: false
     };
 
 
     getData = () =>{
-        this.loadAndGetData().then(() => this.setState({isLoading: false, id: 0}))
+        window.scrollTo(0,0);
+        this.loadAndGetData().then(() => this.setState({isLoading: false, id: 0}));
     }
     loadAndGetData = async() => {
         try{
+            const result = await fetch('http://localhost:4000/getCoord/Id', {signal: this.abortController.signal});
+            const data = await result.json();
+            maxItems = data.length;
+
             const fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, ValorMes"
-            const res = await fetch('http://localhost:4000/getCoord/' + fields, {signal: this.abortController.signal});
+            const res = await fetch('http://localhost:4000/getCoord/' + fields + '/' + maxRows + '/' + rowOffset, {signal: this.abortController.signal});
             const datos = await res.json();
             if(datos)
                 info.datos = datos;
@@ -85,7 +95,9 @@ class Coordinadores extends React.Component {
             lastInfo.set(prop, info.datos[index][prop]);
         }
         
-        this.getPdfs(id).then(() => this.setState({id:id, visible: true}));
+        this.abortController = new AbortController();
+        this.setState({id:id, visible: true, loadingModal: true})
+        this.getPdfs(id).then(() => this.setState({loadingModal: false}));
     };
 
     onDelete = (id) => {
@@ -153,7 +165,7 @@ class Coordinadores extends React.Component {
             title:'¿Desea cerrar el formulario?',
             content: 'Se perderán los cambios no guardados',
             okText: 'Si', cancelText: 'No',
-            onOk:(()=>{this.setState({visible: false, id:0})})
+            onOk:(()=>{this.setState({visible: false, id:0, loadingModal: false}, this.abortController.abort())})
         })
     };
 
@@ -228,6 +240,13 @@ class Coordinadores extends React.Component {
                         })}   
                         <LoadingOutlined style={{ padding: 16, fontSize: 24, display: this.stateisLoading ? "inline" : "none" }} spin />
                     </div>
+                    <Pagination 
+                            style={{textAlign:"center", visibility:maxItems<=5?"hidden":"visible"}} 
+                            defaultCurrent={1} 
+                            total={maxItems} 
+                            pageSize={maxRows}
+                            onChange={(page)=>{rowOffset=maxRows*(page-1); this.getData();}}
+                    />
                 </Col>
                 <Col span={6}>
                     <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onSearch={value => this.handleSearch(value)} allowClear={true}/>
@@ -256,8 +275,8 @@ class Coordinadores extends React.Component {
                 width='70%'
             >
 
+            <Spin spinning={this.state.loadingModal} tip="Cargando Archivos...">
             <Form>
-
             <Row gutter={[48,20]}>
                 <Col span={12}>
                     <Divider orientation="left">Datos Principales</Divider>
@@ -335,7 +354,8 @@ class Coordinadores extends React.Component {
                     >Ver CV Actual</Button>
                 </Col>
             </Row>        
-            </Form>              
+            </Form> 
+            </Spin>             
             </Modal>
             {/*VISOR PDF*/}
             <Modal

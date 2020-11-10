@@ -74,7 +74,8 @@ const getBenef = (req,res,next) =>{
   let fields = req.params.fields ? req.params.fields : "*";
   let limitOffset = req.params.limit ? `LIMIT ${req.params.limit} OFFSET ${req.params.offset ? req.params.offset : 0}` : "";
   let db = getConnection();
-    let sql = `SELECT ${fields} FROM Beneficiario ORDER BY Id ${limitOffset}`;
+  let sql = `SELECT ${fields} FROM Beneficiario ORDER BY Id ${limitOffset}`;
+  
   var arrayData = [];
   db.all(sql, [], (err, rows) => {
       if (err) {

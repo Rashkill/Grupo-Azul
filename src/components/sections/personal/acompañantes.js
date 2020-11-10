@@ -1,9 +1,10 @@
 import React,{ useState, useEffect } from 'react';
-import { Form, Divider, Row, Col, Input, Modal, Button, Upload, Spin ,notification , Empty } from 'antd';
+import { Form, Divider, Row, Col, Input, Modal, Button, Upload, Spin ,notification , Empty, Pagination } from 'antd';
 import { PlusOutlined, FileDoneOutlined, UploadOutlined, CheckCircleOutlined, AlertOutlined, LoadingOutlined, PaperClipOutlined } from '@ant-design/icons';
 import { Document, Page, pdfjs } from 'react-pdf';
 import AcompCard from './acomp-card.js';
 import Axios from 'axios';
+import { wait } from '@testing-library/react';
 
 const { Search } = Input;
 
@@ -15,6 +16,10 @@ var lastInfo = new FormData();
 var fileBlobAFIP, fileUrlAFIP;
 var fileBlobCV, fileUrlCV;
 
+var maxItems = 0;
+const maxRows = 5;
+var rowOffset = 0;
+
 class Acompañantes extends React.Component {
     state = {
         id:0,
@@ -25,18 +30,24 @@ class Acompañantes extends React.Component {
         pdfViewer: false,
         numPages: 0,
         actualPage: 1,
+        loadingModal: false
     };
     
     abortController = new AbortController();
 
     //Secuencia que obtiene la informacion y luego desactiva el icono de carga
     getData = () =>{
+        window.scrollTo(0,0)
         this.loadAndGetData().then(() => this.setState({isLoading: false, id:0}))
     }
     loadAndGetData = async() => {
         try{
+            const result = await fetch('http://localhost:4000/getAcomp/Id', {signal: this.abortController.signal});
+            const data = await result.json();
+            maxItems = data.length;
+
             const fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, Email, Telefono, ValorHora, NumeroPoliza, NombreSeguros"
-            const res = await fetch('http://localhost:4000/getAcomp/' + fields, {signal: this.abortController.signal});
+            const res = await fetch('http://localhost:4000/getAcomp/' + fields + '/' + maxRows + '/' + rowOffset, {signal: this.abortController.signal});
             const datos = await res.json();
             if(datos)
                 info.datos = datos;            
@@ -84,8 +95,10 @@ class Acompañantes extends React.Component {
         for (var prop in info.datos[index]) {
             lastInfo.set(prop, info.datos[index][prop]);
         }
-        
-        this.getPdfs(id).then(() => this.setState({id:id, visible: true}));
+
+        this.abortController = new AbortController();
+        this.setState({id:id, visible: true, loadingModal: true})
+        this.getPdfs(id).then(() => this.setState({loadingModal: false}));
     };
 
     //Se llama al presionar el boton 'Eliminar' en la tarjeta
@@ -163,7 +176,7 @@ class Acompañantes extends React.Component {
             title:'¿Desea cerrar el formulario?',
             content: 'Se perderán los cambios no guardados',
             okText: 'Si', cancelText: 'No',
-            onOk:(()=>{this.setState({visible: false, id:0})})
+            onOk:(()=>{this.setState({visible: false, id:0, loadingModal: false}, this.abortController.abort())})
         })
     };
 
@@ -243,6 +256,13 @@ class Acompañantes extends React.Component {
                     })}
                     <LoadingOutlined style={{ padding: 16, fontSize: 24, display: this.state.isLoading ? "inline" : "none" }} spin />
                     </div>
+                    <Pagination 
+                            style={{textAlign:"center", visibility:maxItems<=5?"hidden":"visible"}} 
+                            defaultCurrent={1} 
+                            total={maxItems} 
+                            pageSize={maxRows}
+                            onChange={(page)=>{rowOffset=maxRows*(page-1); this.getData();}}
+                    />
                 </Col>
                 <Col span={6}>
                     <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onSearch={value => this.handleSearch(value)} allowClear={true}/>
@@ -259,6 +279,7 @@ class Acompañantes extends React.Component {
                 </Col>
             </Row>
             
+            
             {/* //Agregar Acomp MODAL */}     
             <Modal
                 title={this.state.id === 0 ? "Nuevo Acompañante" : "Modificar Acompañante"}
@@ -270,7 +291,7 @@ class Acompañantes extends React.Component {
                 okText="Ok"
                 width='70%'
             >
-
+            <Spin spinning={this.state.loadingModal} tip="Cargando Archivos...">
             <Form>
 
                 <Row gutter={[48,20]}>
@@ -360,8 +381,10 @@ class Acompañantes extends React.Component {
                         >Ver CV Actual</Button>
                     </Col>
                 </Row>        
-            </Form>              
+            </Form>
+            </Spin>             
             </Modal>
+            
             {/*VISOR PDF*/}
             <Modal
                     title="Visor PDF"

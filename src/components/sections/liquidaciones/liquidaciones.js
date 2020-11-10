@@ -1,12 +1,12 @@
 import React from 'react';
-import { Divider, Row, Col, Input, Modal, AutoComplete, DatePicker, Empty, notification } from 'antd';
+import { Divider, Row, Col, Input, Modal, AutoComplete, DatePicker, Empty, notification, Pagination } from 'antd';
 import { PlusOutlined, LoadingOutlined, CheckCircleOutlined, AlertOutlined } from '@ant-design/icons';
 import LiqCard from './liq-card.js'
 import Axios from 'axios';
 
 const moment = require('moment');
 const { Search } = Input;
-const dateFormat = 'YYYY-MM-DD';
+const dateFormat = 'DD/MM/YYYY';
 const mesesNombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
 ];
@@ -14,6 +14,10 @@ const mesesNombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
 var liq = [];
 var ucds = [];
 var lastInfo = new FormData();
+
+var maxItems = 0;
+const maxRows = 5;
+var rowOffset = 0;
 
 const getTitle = (ucdId, fecha) => {
 
@@ -40,11 +44,16 @@ class Liquidaciones extends React.Component {
     abortController = new AbortController();
 
     getData = async () => {
-        try{            
-            const res = await fetch('http://localhost:4000/getLiq', {signal: this.abortController.signal});
+        try{  
+            const result = await fetch('http://localhost:4000/getLiq/Id', {signal: this.abortController.signal});
+            const data = await result.json();
+            maxItems = data.length;
+
+            const res = await fetch('http://localhost:4000/getLiq/*' + '/' + maxRows + '/' + rowOffset, {signal: this.abortController.signal});
             const datos = await res.json();
             if(datos)
                 liq = datos;
+
         }catch(e){
             liq = [];
             console.log(e);
@@ -67,6 +76,7 @@ class Liquidaciones extends React.Component {
     }
 
     cargarTodo = () =>{
+        window.scrollTo(0,0)
         this.getBenef().then(
             () => this.getData().then(
                 () => this.setState({isLoading: false})))
@@ -230,6 +240,13 @@ class Liquidaciones extends React.Component {
                             )}
                             <LoadingOutlined style={{ padding: 16, fontSize: 24, display: this.state.isLoading ? "inline" : "none" }} spin />
                         </div>
+                        <Pagination 
+                            style={{textAlign:"center", visibility:maxItems<=5?"hidden":"visible"}} 
+                            defaultCurrent={1} 
+                            total={maxItems} 
+                            pageSize={maxRows}
+                            onChange={(page)=>{rowOffset=maxRows*(page-1); this.cargarTodo();}}
+                        />
                     </Col>
                     <Col span={6}>
                         <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onSearch={value => this.handleSearch(value)} allowClear={true}/>

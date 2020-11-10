@@ -1,7 +1,6 @@
 import React from 'react';
-import { Divider, Row, Col, Input, Modal, AutoComplete, DatePicker, notification , Empty } from 'antd';
+import { Divider, Row, Col, Input, Modal, AutoComplete, DatePicker, notification , Empty, Pagination } from 'antd';
 import { PlusOutlined, LoadingOutlined , CheckCircleOutlined, AlertOutlined } from '@ant-design/icons';
-import InfiniteScroll from "react-infinite-scroll-component";
 import JornadaCard from './jornada-card';
 import Axios from 'axios';
 
@@ -18,6 +17,7 @@ const { confirm } = Modal;
 var agds = [];
 var ucds = [];
 
+var maxItems = 0;
 const maxRows = 5;
 var rowOffset = 0;
 
@@ -38,7 +38,7 @@ function getName (id, array){
     return n;
 }
 
-var jornadasIn = []
+var jornadasIn = [], jornadasFilter = [];
 
 var lastInfo = new FormData();
 
@@ -52,28 +52,46 @@ class Jornadas extends React.Component{
         horas: 0,
         id: 0,
         acompIndex: -1,
-        benefIndex: -1
+        benefIndex: -1,
+        filterSearch: ""
     };
 
     abortController = new AbortController();
 
     getData = async () => {
-        try{            
+        try{
+            const result = await fetch('http://localhost:4000/getJornadas/Id', {signal: this.abortController.signal});
+            const data = await result.json();
+            maxItems = data.length;
+            
             const res = await fetch('http://localhost:4000/getJornadas/*' + '/' + maxRows + '/' + rowOffset, {signal: this.abortController.signal});
             const datos = await res.json();
             if(datos.length > 0)
             {
-                Array.prototype.push.apply(jornadasIn, datos);
+                // Array.prototype.push.apply(jornadasIn, datos);
 
-                jornadasIn.forEach(v => {
-                    if(v.FechaIngreso)
+                var d = [];
+                datos.map(v => {
+                    if(!jornadasIn.find(x =>x === v))
+                    {
                         v.FechaIngreso = moment(v.FechaIngreso, dateFormat + " HH:mm").format("DD/MM/YYYY");
-                    if(v.FechaEgreso)
                         v.FechaEgreso = moment(v.FechaEgreso, dateFormat + " HH:mm").format("DD/MM/YYYY");
+                        d.push(v);
+                    }
                 })
+                if(d.length > 0)
+                    jornadasIn = d;
+                
+                jornadasFilter = jornadasIn;
+                // jornadasIn.forEach(v => {
+                //     if(v.FechaIngreso)
+                //         v.FechaIngreso = moment(v.FechaIngreso, dateFormat + " HH:mm").format("DD/MM/YYYY");
+                //     if(v.FechaEgreso)
+                //         v.FechaEgreso = moment(v.FechaEgreso, dateFormat + " HH:mm").format("DD/MM/YYYY");
+                // })
             }
-            this.setState({cantidad: jornadasIn.length})
-            rowOffset += maxRows;
+
+            this.setState({cantidad: jornadasFilter.length})
         }catch(e){
             jornadasIn = [];
             console.log(e);
@@ -112,6 +130,7 @@ class Jornadas extends React.Component{
     };
 
     cargarTodo = () =>{
+        window.scrollTo(0,0)
         this.getAcompBenef().then(
             () => this.getData().then(
                 () => this.setState({isLoading: false})))
@@ -251,9 +270,46 @@ class Jornadas extends React.Component{
         });
     };
 
-    //Presionar enter al buscador
-    handleSearch = (v) => { 
-        console.log(v)
+    //Buscador
+    handleSearch = (v) => {
+        this.setState({filterSearch: v});
+        this.makeSearch();
+    }
+
+    makeSearch = () =>{
+        //Se comprueba que el valor ingresado no esté vacio
+        if(this.state.filterSearch !== undefined || this.state.filterSearch !== "")
+        {
+            // if(p.Nombre.toUpperCase().includes(v.toUpperCase())||
+            // p.Apellido.toUpperCase().includes(v.toUpperCase()))
+
+            jornadasFilter = [];    //Se vacia el array
+            var k = this.state.filterSearch.split(':');   //Se separa la 'key'(0) y el valor(1), si es que hay ":"
+            jornadasIn.map(p => {
+                if(k.length === 2 && p[k[0]] !== undefined){
+                    //Si los valores separados son 2 y la 'key'(0) es valida
+                    //Se busca a partir de la 'key'(0) el valor(1) ingresado
+                    //Si dentro del elemento existe dicho valor(1), se "pushea" el objeto
+                    if(p[k[0]].toString().toUpperCase().includes(k[1].toUpperCase()))
+                    jornadasFilter.push(p);
+                }
+                else{
+                    //En el caso de que haya menos valores separados
+                    //Se busca en cada elemento dentro del objeto la coincidencia
+                    var f = false;
+                    Object.keys(p).forEach(key => { 
+                        if(p[key].toString().toUpperCase().includes(this.state.filterSearch.toUpperCase()) && !f) 
+                        {
+                            jornadasFilter.push(p);
+                            f = true;
+                        }
+                    })
+                }
+            })
+        }
+        else jornadasFilter = jornadasIn;
+
+        this.setState({cantidad: jornadasFilter.length});
     }
     
 
@@ -273,36 +329,36 @@ class Jornadas extends React.Component{
                         </Divider>
                         
                         <div className="cards-container">
-                            <Empty style={{display: this.state.isLoading ? "none" : jornadasIn.length > 0 ? "none" : "inline"}} description={false} />
-                            <InfiniteScroll
-                                dataLength={this.state.cantidad}
-                                next={this.fetchMoreData}
-                                hasMore={true}
-                                style={{margin: 6, padding: 8}}
-                            >
-                                {jornadasIn.map(jornadaInfo => {
+                            <Empty style={{display: this.state.isLoading ? "none" : jornadasFilter.length > 0 ? "none" : "inline"}} description={false} />
+                            
+                                {jornadasFilter.map(j => {
                                     return(
                                         <JornadaCard
-                                            title={nombreJornada(jornadaInfo.IdAcompañante, jornadaInfo.IdBeneficiario, jornadaInfo.FechaIngreso)}
-                                            agd={getName(jornadaInfo.IdAcompañante, agds)}
-                                            ucd={getName(jornadaInfo.IdBeneficiario, ucds)}
-                                            horas={jornadaInfo.CantHoras}
-                                            ingreso={jornadaInfo.FechaIngreso}
-                                            egreso={jornadaInfo.FechaEgreso}
-                                            id={jornadaInfo.Id}
-                                            key={jornadaInfo.Id}
+                                            title={nombreJornada(j.IdAcompañante, j.IdBeneficiario, j.FechaIngreso)}
+                                            agd={getName(j.IdAcompañante, agds)}
+                                            ucd={getName(j.IdBeneficiario, ucds)}
+                                            horas={j.CantHoras}
+                                            ingreso={j.FechaIngreso}
+                                            egreso={j.FechaEgreso}
+                                            id={j.Id}
+                                            key={j.Id}
                                             OnEdit={this.onEdit}
                                             OnDelete={this.onDelete}
                                         />
                                     )
                                 })}
-                            </InfiniteScroll>
                             <LoadingOutlined style={{ padding: 16, fontSize: 24, display: this.state.isLoading ? "inline" : "none" }} spin />
                         </div>
-
+                        <Pagination 
+                            style={{textAlign:"center", visibility:maxItems<=5?"hidden":"visible"}} 
+                            defaultCurrent={1} 
+                            total={maxItems} 
+                            pageSize={maxRows}
+                            onChange={(page)=>{rowOffset=maxRows*(page-1); this.cargarTodo();}}
+                        />
                     </Col>
                     <Col span={6}>
-                        <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onSearch={value => this.handleSearch(value)} allowClear={true}/>
+                        <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onChange={e => this.handleSearch(e.target.value)} allowClear={true}/>
                         <div className="right-menu">
                             <div className="right-btn" hidden={this.state.isLoading} onClick={this.showModal}>
                                 <PlusOutlined />

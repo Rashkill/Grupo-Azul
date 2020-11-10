@@ -27,9 +27,11 @@ const addLiq = (req,res,next) =>{
 }
 
 const getLiq = (req,res,next) =>{
+  let fields = req.params.fields ? req.params.fields : "*";
+  let limitOffset = req.params.limit ? `LIMIT ${req.params.limit} OFFSET ${req.params.offset ? req.params.offset : 0}` : "";
   let db = getConnection();
-  let sql = `SELECT * FROM Liquidacion
-         ORDER BY id`;
+  let sql = `SELECT ${fields} FROM Liquidacion ORDER BY Id ${limitOffset}`;
+
   var arrayData = [];
   db.all(sql, [], (err, rows) => {
       if (err) {
