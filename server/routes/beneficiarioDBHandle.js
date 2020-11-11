@@ -70,6 +70,29 @@ const updBenef = (req,res) =>{
 
 }
 
+const updBenefSeg = (req,res) =>{
+
+  let db = getConnection();
+  let sql = `UPDATE Beneficiario SET Seguimientos=? WHERE id=?`; 
+
+  const seguimientos = Buffer.from(JSON.stringify(req.body));
+
+  // insert one row into the langs table
+  db.run(sql, 
+    seguimientos,
+    req.params.id,
+    function(err) {
+      if (err) {
+        res.status(400).json({"error":err.message});
+        console.log(err.message);
+        return;
+      }
+      res.status(200).json("Beneficiario " + req.params.id + " actualizado con exito");
+      console.log("Beneficiario " + req.params.id + " actualizado con exito");
+  });
+
+}
+
 const getBenef = (req,res,next) =>{
   let fields = req.params.fields ? req.params.fields : "*";
   let limitOffset = req.params.limit ? `LIMIT ${req.params.limit} OFFSET ${req.params.offset ? req.params.offset : 0}` : "";
@@ -116,4 +139,4 @@ const delBenef = (req,res) =>{
   });
 }
 
-module.exports={addBenef, getBenef, getBenefOnly, updBenef, delBenef}
+module.exports={addBenef, getBenef, getBenefOnly, updBenef, updBenefSeg, delBenef}

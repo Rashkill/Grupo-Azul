@@ -3,7 +3,7 @@ const cors = require('cors');
 const port = 4000
 const compression = require('compression');
 const {addAcomp, updAcomp, getAcomp, getAcompOnly, delAcomp} = require('./routes/acompañanteDBHandle');
-const {addBenef, updBenef, getBenef, getBenefOnly, delBenef} = require('./routes/beneficiarioDBHandle');
+const {addBenef, updBenef, updBenefSeg, getBenef, getBenefOnly, delBenef} = require('./routes/beneficiarioDBHandle');
 const {addCoord, updCoord, getCoord, getCoordOnly, delCoord} = require('./routes/coordinadorDBHandle')
 const {addJornada, updJornada, getJornadas, getJornadaOnly, delJornada, getJor4Liq} = require('./routes/jornadaDBHandle');
 const {addLiq, updLiq, getLiq, getLiqOnly, delLiq} = require('./routes/liquidacionDBHandle');
@@ -122,6 +122,11 @@ app.delete('/acomp/:id', (req,res)=>{
 app.post('/updBenef/:id', upload.single("FichaInicial"), (req, res) => {
   updBenef(req,res);
 })
+
+//Actualizando Beneficiario
+app.post('/updBenefSeg/:id', upload.single("Seguimientos"), (req, res) => {
+   updBenefSeg(req,res);
+ })
 
 //Obteniendo Beneficiarios
 app.get('/getBenef',  (req, res) => {

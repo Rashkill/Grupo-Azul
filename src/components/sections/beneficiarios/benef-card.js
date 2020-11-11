@@ -36,9 +36,14 @@ const BenefCard = (props) =>{
 
     var datos;
     const getDatos = async () =>{
-        const fields = "Id, Nombre, Apellido, DNI, CUIL, FechaNacimiento, Domicilio, Localidad, CodigoPostal, Email, Telefono, Enfermedades, IdCoordinador"
+        const fields = "Id, Nombre, Apellido, DNI, CUIL, FechaNacimiento, Domicilio, Localidad, CodigoPostal, Email, Telefono, Enfermedades, IdCoordinador, Seguimientos"
             const res = await fetch('http://localhost:4000/getBenefOnly/' + props.id + '/' + fields);
             datos = await res.json();
+            
+            if(datos && datos[0].Seguimientos){
+                var jsonObject = JSON.parse(Buffer.from(JSON.parse(JSON.stringify(datos[0].Seguimientos)).data).toString('utf8'));
+                datos[0].Seguimientos = jsonObject;
+            }
     }
     
     const titleClick = () => {

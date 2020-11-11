@@ -1,14 +1,16 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { withRouter } from 'react-router-dom';
-import { Tabs, PageHeader, Menu, Dropdown, Divider, Table, Timeline, Row, Col, Button } from 'antd';
-import { SettingFilled, EditFilled, DeleteFilled, PlusOutlined } from '@ant-design/icons';
+import { Tabs, PageHeader, Menu, Dropdown, Divider, Table, Timeline, Row, Col, Button, Typography, Input } from 'antd';
+import { SettingFilled, EditFilled, DeleteFilled, DeleteOutlined, PlusOutlined, MinusCircleOutlined, MinusOutlined, SaveFilled } from '@ant-design/icons';
 import UserImg from '../../../images/image4-5.png'
 import DataRow from  '../../layout/data-row'
+import Axios from 'axios';
+const { Paragraph } = Typography;
+const { TextArea } = Input;
 
 const alertRow = (fecha) =>{
     alert(fecha)
 }
-
 
 const { TabPane } = Tabs;
 const TabStyles = {
@@ -45,12 +47,119 @@ const menu = (
         </Menu.Item>
     </Menu>
 );
-
+var delInfo = [];
 
 const BenefCard = (props) =>{
 
     const info = props.location.state;
     //console.log(info);
+
+    const [getSeguimientos, setSeguimientos] = useState(info?info.Seguimientos?info.Seguimientos:[]:[]);
+    const [newInfo, setNewInfo] = useState({visible: false})
+    const [inputVal, setInputVal] = useState('')
+    const [getDelInfo, setDelInfo] = useState(delInfo)
+
+
+    useEffect(() => {
+        setDel();
+    },[])
+
+    const setDel = () =>{
+        if(getSeguimientos){
+            delInfo = [];
+            for (let i = 0; i < getSeguimientos.length; i++) {
+                    delInfo.push({delete: false})   
+            }
+            setDelInfo([...delInfo]);
+        }
+    }
+
+    const onEndCreate = () => {
+
+        let f = new Date();
+        let d = String(f.getDate()).padStart(2,0);
+        let m = String(f.getMonth() + 1).padStart(2,0);
+        let a = f.getFullYear();
+        let fecha = `${d}-${m}-${a}`;
+
+        var arraySeguimientos = getSeguimientos;
+        arraySeguimientos.push({label: fecha, text: inputVal})
+        setSeguimientos([...arraySeguimientos]);
+
+        setNewInfo({visible: false});
+        setInputVal('');
+        setDel();
+    }
+
+    const seguimiento = (
+        <div style={{marginTop: 24, padding: 32, marginLeft: '-25%', width: '100%'}}>
+            <Timeline mode='left' reverse>
+                {getSeguimientos.map((i, index) =>{
+                    return(
+                        <Timeline.Item label={i.label} key={index}>
+                            <Paragraph 
+                                editable={{
+                                    onChange:(text) => {
+                                            var arraySeguimientos = getSeguimientos;
+                                            arraySeguimientos[index].text = text;
+                                            setSeguimientos([...arraySeguimientos]);
+                                    },
+                                    tooltip: 'Modificar seguimiento'
+                                }}
+                                copyable={{
+                                    icon:[<DeleteOutlined/>],
+                                    tooltips: getDelInfo.length>0? [getDelInfo[index].delete?'Cancelar Eliminación':'Eliminar Seguimiento', 
+                                              !getDelInfo[index].delete?'No se eliminará':'Se eliminará al guardar'] : ['',''],
+                                    onCopy:()=>{
+                                        var delInfo = getDelInfo;
+                                        delInfo[index].delete = !delInfo[index].delete;
+                                        setDelInfo([...delInfo]);
+                                        setSeguimientos([...getSeguimientos]);
+                                    }
+                                }}
+                                delete={getDelInfo.length>0?getDelInfo[index].delete:false}
+                            >
+                                    {i.text}
+                            </Paragraph>
+                        </Timeline.Item>
+                    )
+                })}
+                {/* NUEVO SEGUIMIENTO */}
+                <Timeline.Item style={{display: newInfo.visible ? "block" : "none"}} label="Nuevo Seguimiento" key="n">
+                    <TextArea autoFocus={true}
+                        value={inputVal}
+                        onChange={(e) => setInputVal(e.target.value)}
+                        onPressEnter={onEndCreate}
+                    >
+                    </TextArea>
+                    <a onClick={onEndCreate}>Aceptar</a>
+                </Timeline.Item>
+            </Timeline>
+        </div>
+    );
+
+
+    const saveToBD = () => {
+        //const jsonArray = JSON.stringify(arraySeguimientos);
+        
+        var arraySeguimientos = getSeguimientos;
+        for (let i = 0; i < getDelInfo.length; i++) {
+            if(getDelInfo[i].delete){
+                arraySeguimientos.splice(i,1);
+                delInfo.splice(i,1);
+            }
+            setSeguimientos([...arraySeguimientos]);
+            setDelInfo([...delInfo]);
+        }
+
+        Axios.post('http://localhost:4000/updBenefSeg/' + info.Id, getSeguimientos, {
+                headers: {
+                    Accept: 'application/json'
+                }
+        })
+        info.Seguimientos = getSeguimientos;
+        //console.log(jsonArray);
+    }
 
     const columns = [
         {
@@ -209,23 +318,26 @@ const BenefCard = (props) =>{
                     </TabPane>
                     <TabPane tab="Seguimientos" key="2" style={TabStyles}>
                         <div className="buttons">
-                            <Button block type="secondary" icon={<EditFilled/>}>Editar</Button>
-                            <Button block type="primary" icon={<PlusOutlined/>}>Nuevo</Button>
+                            <Button 
+                                hidden={info?info.Seguimientos===getSeguimientos?true:false:true} 
+                                onClick={saveToBD} 
+                                icon={<SaveFilled/>}
+                            >
+                                Guardar Cambios
+                            </Button>
+                            <Button 
+                                block type="primary" 
+                                style={{backgroundColor: newInfo.visible?'#FF4F33':'#33ACFF'}}
+                                icon={newInfo.visible?<MinusOutlined/>:<PlusOutlined/>} 
+                                onClick={()=>{
+                                    setNewInfo({visible: !newInfo.visible});
+                                    setInputVal('');
+                                }}
+                            >
+                                {newInfo.visible?"Cancelar Nuevo":"Nuevo"}
+                            </Button>
                         </div>
-                        <div 
-                        style={{marginTop: 24, padding: 32, marginLeft: '-25%', width: '100%'}}
-                        >
-                            <Timeline mode='left' reverse>
-                                <Timeline.Item label="2015-09-01" key="">Seguimiento n°1</Timeline.Item>
-                                <Timeline.Item label="2015-09-03">Lorem Ipsum es un texto de marcador de posición comúnmente utilizado en las industrias gráficas, gráficas 
-                                y editoriales para previsualizar diseños y maquetas visuales.</Timeline.Item>
-                                <Timeline.Item label="2015-09-04">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-                                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
-                                Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
-                                Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</Timeline.Item>
-                            </Timeline>
-
-                        </div>
+                        {seguimiento}
                     </TabPane>
                     <TabPane tab="Mapa" key="3" style={TabStyles}>
                         
