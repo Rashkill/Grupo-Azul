@@ -216,7 +216,7 @@ const BenefCard = (props) =>{
                         style={{marginTop: 24, padding: 32, marginLeft: '-25%', width: '100%'}}
                         >
                             <Timeline mode='left' reverse>
-                                <Timeline.Item label="2015-09-01" key="">Seguimiento n°1</Timeline.Item>
+                                <Timeline.Item label="2015-09-01" key={1}>Seguimiento n°1</Timeline.Item>
                                 <Timeline.Item label="2015-09-03">Lorem Ipsum es un texto de marcador de posición comúnmente utilizado en las industrias gráficas, gráficas 
                                 y editoriales para previsualizar diseños y maquetas visuales.</Timeline.Item>
                                 <Timeline.Item label="2015-09-04">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
