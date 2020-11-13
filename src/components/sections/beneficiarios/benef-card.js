@@ -34,23 +34,20 @@ const BenefCard = (props) =>{
         </Menu>
     );
 
-    var datos;
+    var info = [];
     const getDatos = async () =>{
-        const fields = "Id, Nombre, Apellido, DNI, CUIL, FechaNacimiento, Domicilio, Localidad, CodigoPostal, Email, Telefono, Enfermedades, IdCoordinador, Seguimientos"
-            const res = await fetch('http://localhost:4000/getBenefOnly/' + props.id + '/' + fields);
-            datos = await res.json();
-            
-            if(datos && datos[0].Seguimientos){
-                var jsonObject = JSON.parse(Buffer.from(JSON.parse(JSON.stringify(datos[0].Seguimientos)).data).toString('utf8'));
-                datos[0].Seguimientos = jsonObject;
-            }
+        const fields = "Id, Nombre, Apellido, DNI, CUIL, FechaNacimiento, Domicilio, Localidad, CodigoPostal, Email, Telefono, Enfermedades, IdCoordinador"
+        const res = await fetch('http://localhost:4000/getBenefOnly/' + props.id + '/' + fields);
+        const datos = await res.json();
+        info = datos[0];
+        info.Seguimientos = [];
     }
     
     const titleClick = () => {
         getDatos().then(() =>
             props.history.push({
                 pathname: props.linkto,
-                state: datos[0]
+                state: info
             }))
     }
     

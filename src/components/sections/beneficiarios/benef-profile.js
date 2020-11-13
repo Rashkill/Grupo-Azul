@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { withRouter } from 'react-router-dom';
-import { Tabs, PageHeader, Menu, Dropdown, Divider, Table, Timeline, Row, Col, Button, Typography, Input } from 'antd';
-import { SettingFilled, EditFilled, DeleteFilled, DeleteOutlined, PlusOutlined, MinusCircleOutlined, MinusOutlined, SaveFilled } from '@ant-design/icons';
+import { Tabs, PageHeader, Menu, Dropdown, Divider, Table, Timeline, Row, Col, Button, Typography, Input, notification } from 'antd';
+import { SettingFilled, EditFilled, DeleteFilled, DeleteOutlined, PlusOutlined, MinusOutlined, SaveFilled, CheckCircleOutlined, AlertOutlined } from '@ant-design/icons';
 import UserImg from '../../../images/image4-5.png'
 import DataRow from  '../../layout/data-row'
 import Axios from 'axios';
@@ -47,32 +47,55 @@ const menu = (
         </Menu.Item>
     </Menu>
 );
+
 var delInfo = [];
 
 const BenefCard = (props) =>{
 
-    const info = props.location.state;
+    var info = []; 
+    info = props.location.state;
     //console.log(info);
 
-    const [getSeguimientos, setSeguimientos] = useState(info?info.Seguimientos?info.Seguimientos:[]:[]);
+    const [getSeguimientos, setSeguimientos] = useState([]);
     const [newInfo, setNewInfo] = useState({visible: false})
     const [inputVal, setInputVal] = useState('')
-    const [getDelInfo, setDelInfo] = useState(delInfo)
+    const [getDelInfo, setDelInfo] = useState([])
 
+    const getDatos = async () =>{
+        const res = await fetch('http://localhost:4000/getBenefOnly/' + props.location.state.Id + '/' + 'Seguimientos');
+        const datos = await res.json();
+        
+        if(datos.length>0 && datos[0].Seguimientos){
+            var jsonObject = JSON.parse(Buffer.from(JSON.parse(JSON.stringify(datos[0].Seguimientos)).data).toString('utf8'));
+            info.Seguimientos = jsonObject;
+        }
 
-    useEffect(() => {
-        setDel();
-    },[])
-
-    const setDel = () =>{
-        if(getSeguimientos){
+        if(info && info.Seguimientos){
             delInfo = [];
-            for (let i = 0; i < getSeguimientos.length; i++) {
+            for (let i = 0; i < info.Seguimientos.length; i++) {
                     delInfo.push({delete: false})   
             }
-            setDelInfo([...delInfo]);
         }
+        
+        setDelInfo([...delInfo]);
+        setSeguimientos([...info.Seguimientos]);
     }
+
+    useEffect(() => {
+        if(info)
+            getDatos().then(() => console.log(getDelInfo));
+    },[info])
+
+    //Notificacion (duh)
+    const openNotification = (msg, desc, succeed) => {
+        notification.open({
+            message: msg,
+            description: desc,
+            icon: succeed ? 
+            <CheckCircleOutlined style={{ color: '#52C41A' }} /> : 
+            <AlertOutlined style={{ color: '#c4251a' }} />
+        });
+    };
 
     const onEndCreate = () => {
 
@@ -85,10 +108,12 @@ const BenefCard = (props) =>{
         var arraySeguimientos = getSeguimientos;
         arraySeguimientos.push({label: fecha, text: inputVal})
         setSeguimientos([...arraySeguimientos]);
+        
+        delInfo.push({delete: false});
+        setDelInfo([...delInfo]);
 
         setNewInfo({visible: false});
         setInputVal('');
-        setDel();
     }
 
     const seguimiento = (
@@ -139,10 +164,9 @@ const BenefCard = (props) =>{
     );
 
 
-    const saveToBD = () => {
-        //const jsonArray = JSON.stringify(arraySeguimientos);
-        
+    const saveToBD = () => {        
         var arraySeguimientos = getSeguimientos;
+        //Se borran los seguimientos tachados del array
         for (let i = 0; i < getDelInfo.length; i++) {
             if(getDelInfo[i].delete){
                 arraySeguimientos.splice(i,1);
@@ -152,13 +176,19 @@ const BenefCard = (props) =>{
             setDelInfo([...delInfo]);
         }
 
+        //Se guarda el array en la base de datos
         Axios.post('http://localhost:4000/updBenefSeg/' + info.Id, getSeguimientos, {
                 headers: {
                     Accept: 'application/json'
                 }
-        })
-        info.Seguimientos = getSeguimientos;
-        //console.log(jsonArray);
+        }).then(()=>{
+            openNotification(
+                'Seguimiento guardado',
+                'Los datos fueron guardados correctamente!',
+                true
+            )
+            getDatos();
+        });
     }
 
     const columns = [
@@ -217,6 +247,23 @@ const BenefCard = (props) =>{
 
     const goBack = () =>{
         props.history.goBack()
+    }
+
+
+    function arrayEquals(a, b) {
+        return Array.isArray(a) &&
+          Array.isArray(b) &&
+          a.length === b.length &&
+          a.every((val, index) => val === b[index]);
+    }
+
+    function delInfoCheck (){
+        var f = true;
+        getDelInfo.map(i => {
+            if(f && i.delete)
+                f = false;
+        })
+        return f;
     }
 
     if(!info){
@@ -319,7 +366,7 @@ const BenefCard = (props) =>{
                     <TabPane tab="Seguimientos" key="2" style={TabStyles}>
                         <div className="buttons">
                             <Button 
-                                hidden={info?info.Seguimientos===getSeguimientos?true:false:true} 
+                                hidden={info?info.Seguimientos?arrayEquals(info.Seguimientos, getSeguimientos)&&delInfoCheck():false:false} 
                                 onClick={saveToBD} 
                                 icon={<SaveFilled/>}
                             >
