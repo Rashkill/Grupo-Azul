@@ -79,6 +79,7 @@ class Coordinadores extends React.Component {
     };
 
     componentWillUnmount=()=>{
+        rowOffset = 0;
         this.abortController.abort();
     }
     showModal = () => {     //Mostrar modal
@@ -242,7 +243,7 @@ class Coordinadores extends React.Component {
                         <LoadingOutlined style={{ padding: 16, fontSize: 24, display: this.stateisLoading ? "inline" : "none" }} spin />
                     </div>
                     <Pagination 
-                            style={{textAlign:"center", visibility:maxItems<=5?"hidden":"visible"}} 
+                            style={{textAlign:"center", visibility:maxItems<=maxRows?"hidden":"visible"}} 
                             defaultCurrent={1} 
                             total={maxItems} 
                             pageSize={maxRows}
@@ -334,12 +335,13 @@ class Coordinadores extends React.Component {
                     defaultValue={this.state.id <= 0 ? undefined : lastInfo.get("CBU")} />
                 </Col>
                 <Col span={12}>
+                    <h1>Constancia AFIP</h1>
                     <Upload {...this.propsConstanciaAFIP} accept="application/pdf">
-                        <Button type="primary" disabled={this.state.afipFiles.length>0} icon={<UploadOutlined />}>Constancia AFIP</Button>
+                        <Button type="primary" disabled={this.state.afipFiles.length>0} icon={<UploadOutlined />}>Subir PDF</Button>
                     </Upload>
                     <Button onClick={() => this.setState({pdf:1, pdfViewer: true})}
                         hidden={this.state.id <= 0 || !fileUrlAFIP}
-                    >Ver Constancia Actual</Button>
+                    >Ver Actual</Button>
                 </Col>
                 <Col span={12}>
                     <h1>Valor por Mes</h1>
@@ -347,12 +349,13 @@ class Coordinadores extends React.Component {
                     defaultValue={this.state.id <= 0 ? undefined : lastInfo.get("ValorMes")} />
                 </Col>
                 <Col span={12}>
+                    <h1>CV</h1>
                     <Upload {...this.propsCV} accept="application/pdf">
-                        <Button type="primary" disabled={this.state.cvFiles.length>0} icon={<UploadOutlined />}>CV</Button>
+                        <Button type="primary" disabled={this.state.cvFiles.length>0} icon={<UploadOutlined />}>Subir PDF</Button>
                     </Upload>
                     <Button onClick={() => this.setState({pdf:2, pdfViewer: true})}
                         hidden={this.state.id <= 0 || !fileUrlCV}
-                    >Ver CV Actual</Button>
+                    >Ver Actual</Button>
                 </Col>
             </Row>        
             </Form> 

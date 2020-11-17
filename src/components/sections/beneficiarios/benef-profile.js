@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { withRouter } from 'react-router-dom';
-import { Tabs, PageHeader, Menu, Dropdown, Divider, Table, Timeline, Row, Col, Button, Typography, Input, notification } from 'antd';
-import { SettingFilled, EditFilled, DeleteFilled, DeleteOutlined, PlusOutlined, MinusOutlined, SaveFilled, CheckCircleOutlined, AlertOutlined } from '@ant-design/icons';
+import { Modal, Upload, Tabs, PageHeader, Menu, Dropdown, Divider, Table, Timeline, Row, Col, Button, Typography, Input, notification, Popconfirm } from 'antd';
+import { SettingFilled, EditFilled, DeleteFilled, DeleteOutlined, PlusOutlined, MinusOutlined, SaveFilled, CheckCircleOutlined, AlertOutlined, UploadOutlined, SaveOutlined, FileAddOutlined } from '@ant-design/icons';
 import UserImg from '../../../images/image4-5.png'
 import DataRow from  '../../layout/data-row'
+import { Document, Page, pdfjs } from 'react-pdf';
 import Axios from 'axios';
 const { Paragraph } = Typography;
 const { TextArea } = Input;
@@ -48,18 +49,33 @@ const menu = (
     </Menu>
 );
 
+var maxItems = 0;
+const maxRows = 5;
+var rowOffset = 0;
+
 var delInfo = [];
+
+function getFecha(){
+    let f = new Date();
+    let d = String(f.getDate()).padStart(2,0);
+    let m = String(f.getMonth() + 1).padStart(2,0);
+    let a = f.getFullYear();
+    return `${d}-${m}-${a}`;
+}
 
 const BenefCard = (props) =>{
 
     var info = []; 
+
     info = props.location.state;
-    //console.log(info);
 
     const [getSeguimientos, setSeguimientos] = useState([]);
     const [newInfo, setNewInfo] = useState({visible: false})
     const [inputVal, setInputVal] = useState('')
     const [getDelInfo, setDelInfo] = useState([])
+
+    const [dataSource, setDataSource] = useState([])
+    const [archivos, setArchivos] = useState([])
 
     const getDatos = async () =>{
         const res = await fetch('http://localhost:4000/getBenefOnly/' + props.location.state.Id + '/' + 'Seguimientos');
@@ -73,7 +89,7 @@ const BenefCard = (props) =>{
         if(info && info.Seguimientos){
             delInfo = [];
             for (let i = 0; i < info.Seguimientos.length; i++) {
-                    delInfo.push({delete: false})   
+                    delInfo.push({delete: false})
             }
         }
         
@@ -81,9 +97,37 @@ const BenefCard = (props) =>{
         setSeguimientos([...info.Seguimientos]);
     }
 
+
+    //Obtiene los archivos
+    const getPdfs = async() =>{
+        try{
+            const resNotasCant = await fetch('http://localhost:4000/getNotasBenef/Id/' + props.location.state.Id);
+            const notasCant = await resNotasCant.json();
+            maxItems = notasCant.length;
+
+            const resNotas = await fetch('http://localhost:4000/getNotasBenef/Id,Fecha,NombreArchivo/' + props.location.state.Id + '/' + maxRows + '/' + rowOffset);
+            const notas = await resNotas.json();
+
+            var data = [];
+            notas.forEach((e, index) => {
+                data.push({
+                    fecha: e.Fecha, 
+                    pdf: e.NombreArchivo, 
+                    key: e.Id});
+            });
+            setDataSource([...data]);
+        } 
+        catch(e){console.log(e)}
+    }
+
     useEffect(() => {
-        if(info)
-            getDatos().then(() => console.log(getDelInfo));
+        if(info){
+            getDatos();
+            getPdfs();
+        }
+        return () =>{
+            rowOffset = 0;
+        }
     },[info])
 
     //Notificacion (duh)
@@ -99,11 +143,7 @@ const BenefCard = (props) =>{
 
     const onEndCreate = () => {
 
-        let f = new Date();
-        let d = String(f.getDate()).padStart(2,0);
-        let m = String(f.getMonth() + 1).padStart(2,0);
-        let a = f.getFullYear();
-        let fecha = `${d}-${m}-${a}`;
+        let fecha = getFecha();
 
         var arraySeguimientos = getSeguimientos;
         arraySeguimientos.push({label: fecha, text: inputVal})
@@ -163,7 +203,6 @@ const BenefCard = (props) =>{
         </div>
     );
 
-
     const saveToBD = () => {        
         var arraySeguimientos = getSeguimientos;
         //Se borran los seguimientos tachados del array
@@ -191,6 +230,50 @@ const BenefCard = (props) =>{
         });
     }
 
+    const subirArchivo = async(index) =>{
+        try{
+            var datos = new FormData();
+            datos.set('IdBeneficiario', info.Id)
+            datos.set('Fecha', getFecha());
+            datos.set('Archivo', archivos[index]);
+            datos.set('NombreArchivo', archivos[index].name);
+            //Se guarda el array en la base de datos
+            await Axios.post('http://localhost:4000/addNotaBenef', datos, {
+                headers: {
+                    Accept: 'application/json'
+                }
+            })
+            return true;
+        } catch(e){ return false };
+    }
+
+    const guardarNotas = async() =>{
+        var f = archivos.length;
+        for (let index = 0; index < archivos.length; index++) {
+            let v = await subirArchivo(index);
+            if(!v) f--;
+        }
+        if(f > 0){
+            openNotification(
+                archivos.length>1?'Notas creadas'
+                    :'Nota creada',
+                archivos.length>1?`Los archivos fueron creados correctamente!(${f}/${archivos.length})`
+                    :'El archivo se creó correctamente',
+                true
+            )
+            setArchivos([]);
+            getPdfs();
+        }
+        else{
+            openNotification(
+                'Error al crear nota',
+                'No fue posible subir los archivos, compruebe que el PDF sea valido',
+                false
+            )
+        }
+        return f;
+    }
+
     const columns = [
         {
             title: 'Fecha',
@@ -210,43 +293,95 @@ const BenefCard = (props) =>{
             key: 'acciones',
             render: (text, record) => (
                 <div>
-                    <a>Abrir </a>
-                    <a>Editar </a>
-                    <a>Eliminar </a>
+                    <Popconfirm
+                        title={`Por el momento no hay visor PDF ¿Desea descargar el archivo?`}
+                        okText= 'Si' cancelText= 'No'
+                        onConfirm={async()=>{
+                            let link = document.createElement("a");
+                            link.download = `${record.pdf}`;
+                            link.href = URL.createObjectURL(await getPDFBlob(record.key));
+                            link.click();
+                            URL.revokeObjectURL(link.href);
+                        }}
+                    >
+                        <a>Abrir </a>
+                    </Popconfirm>
+
+                    <Popconfirm
+                        title={`Esta accion sobreescribirá el archivo actual ¿Desea continuar?`}
+                        okText= 'Si' cancelText= 'No'
+                        onConfirm={()=>updNota(record)}
+                    >
+                        <a>Editar </a>
+                    </Popconfirm>
+
+                    <Popconfirm
+                        title={`¿Desea eliminar el archivo ${record.pdf}?`}
+                        okText= 'Si' cancelText= 'No'
+                        onConfirm={()=>delNota(record)}
+                    >
+                        <a>Eliminar </a>
+                    </Popconfirm>
                 </div>
             )
         }
     ];
-    
-    const data = [
-        {
-            fecha: "15/5",
-            pdf: "archivo1.pdf"
-        },
-        {
-            fecha: "16/5",
-            pdf: "archivo2.pdf"
-        },
-        {
-            fecha: "15/5",
-            pdf: "archivo1.pdf"
-        },
-        {
-            fecha: "16/5",
-            pdf: "archivo2.pdf"
-        },
-        {
-            fecha: "15/5",
-            pdf: "archivo1.pdf"
-        },
-        {
-            fecha: "16/5",
-            pdf: "archivo2.pdf"
-        }
-    ]
+
+    const getPDFBlob = async(id) =>{
+        const res = await fetch('http://localhost:4000/getNotasBenef/Archivo/' + id);
+        const datos = await res.json();
+        return new Blob([Buffer.from(datos[0].Archivo.data)], {type: "application/pdf"})
+    }
+
+    const updNota = (record) =>{
+        let upload = document.createElement("input");
+        upload.type = "file";
+        upload.accept = "application/pdf"
+        upload.multiple = false;
+        upload.click();
+        upload.onchange=(e)=>{
+            var datos = new FormData();
+            datos.set('Fecha', getFecha());
+            datos.set('Archivo', e.target.files[0]);
+            datos.set('NombreArchivo', e.target.files[0].name);
+            //Se guarda el array en la base de datos
+            Axios.post('http://localhost:4000/updNotaBenef/' + record.key, datos, {
+                headers: {
+                    Accept: 'application/json'
+                }
+            }).then(()=>{
+                openNotification(
+                    'Nota actualizada',
+                    `La nota ${record.pdf} fue sustituida exitosamente`,
+                    true
+                )
+                getPdfs();
+            })
+        };
+    }
+
+    const delNota = (record) =>{
+        Axios.delete('http://localhost:4000/notaBenef/' + record.key).then(()=>{
+            openNotification(
+                'Nota eliminada',
+                `La nota ${record.pdf} fue removida con exito`,
+                true
+            )
+            getPdfs();
+        })
+    }
 
     const goBack = () =>{
-        props.history.goBack()
+        if(arrayEquals(info.Seguimientos, getSeguimientos)&&delInfoCheck()&&archivos.length<=0){
+            props.history.goBack()
+        }else{
+            Modal.confirm({
+                title:'¿Desea volver atrás?',
+                content: 'Se perderán los cambios no guardados',
+                okText: 'Si', cancelText: 'No',
+                onOk:(()=>{props.history.goBack()})
+            })
+        }
     }
 
 
@@ -265,6 +400,21 @@ const BenefCard = (props) =>{
         })
         return f;
     }
+
+    
+    //Se asigna o elimina el archivo
+    const ArchivoPDF = {
+        onRemove: file => {
+                let fileL = archivos; fileL.splice(archivos.findIndex(x => x=== file, 1));
+                setArchivos([...fileL]);
+                return true;
+        },
+        beforeUpload: file => {
+            let fileL = archivos; fileL.push(file);
+            setArchivos([...fileL]);
+          return false;
+        }
+    };
 
     if(!info){
         props.history.goBack();
@@ -359,7 +509,35 @@ const BenefCard = (props) =>{
                             </h1>
                         </Divider>
                         <div className="tablewrap">
-                            <Table dataSource={data} columns={columns} bordered/>
+                            <Upload {...ArchivoPDF} 
+                                id="ArchivoPDF" 
+                                accept="application/pdf"
+                                multiple={true}
+                                fileList={archivos}
+                            >
+                                <Button type="primary" icon={<FileAddOutlined />}>Elegir Archivo/s</Button>
+                            </Upload>
+                            <Button 
+                                type="link"
+                                icon={<UploadOutlined />} 
+                                onClick={guardarNotas}
+                                style={{color:"green"}}
+                                hidden={archivos.length<=0}
+                            >
+                                Guardar Archivos
+                            </Button>
+                            <Table 
+                                dataSource={dataSource} 
+                                columns={columns} 
+                                bordered 
+                                pagination={{
+                                    style:{visibility:maxItems<=maxRows?"hidden":"visible"}, 
+                                    defaultCurrent: 1,
+                                    total: maxItems,
+                                    pageSize: maxRows,
+                                    onChange:(page)=>{rowOffset=maxRows*(page-1); getPdfs();}
+                                }}
+                            />
                         </div>
                             
                     </TabPane>
@@ -370,7 +548,7 @@ const BenefCard = (props) =>{
                                 onClick={saveToBD} 
                                 icon={<SaveFilled/>}
                             >
-                                Guardar Cambios
+                                Subir Cambios
                             </Button>
                             <Button 
                                 block type="primary" 
@@ -390,7 +568,6 @@ const BenefCard = (props) =>{
                         
                     </TabPane>
                 </Tabs>
-
             </div>
 
         </React.Fragment>
