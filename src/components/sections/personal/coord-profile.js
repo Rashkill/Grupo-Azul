@@ -194,52 +194,29 @@ const CoordProfile = (props) =>{
                                 />
                                 
                                 <DataRow 
-                                    title="Teléfono"
-                                    value={info.Telefono}
+                                    title="CUIL"
+                                    value={info.CUIL}
+                                />
+
+                                <DataRow 
+                                    title="Valor / Mes"
+                                    value={"$" + info.ValorMes}
                                 />
                                 
-                                <DataRow 
-                                    title="E-mail"
-                                    value="asd"
-                                />
-                                
-                                <DataRow 
-                                    title="Valor Hora"
-                                    value="asd"
-                                />
-                                
-                                <DataRow 
-                                    title="Unidad de cuidado actual"
-                                    value="asd"
-                                />
                             </div>
 
 
                             <div className="data-col-wrap">
                                 <DataRow 
-                                    title="Comp. de seguros"
-                                    value="Nombre"
-                                />
-
-                                <DataRow 
-                                    title="N° Póliza"
-                                    value="asd"
-                                />
-                                
-                                <DataRow 
                                     title="Banco"
-                                    value="asd"
+                                    value={info.EntidadBancaria}
                                 />
 
                                 <DataRow 
-                                    title="CBU / Alias"
-                                    value="asd"
+                                    title="CBU"
+                                    value={info.CBU}
                                 />
-                                
-                                <DataRow 
-                                    title="Enfermedades y comorbilidades"
-                                    value="asd"
-                                />
+
                             </div>
                             
                         </div>

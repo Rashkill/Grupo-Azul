@@ -22,6 +22,11 @@ const TabStyles = {
     borderBottom: '1px solid #f0f0f0',
 }
 
+const botones = {
+    display: 'flex',
+    flexDirection: 'row'
+}
+
 const dropClick = ({ key }) => {
     //Key de <Menu.Item>
     if (key === 'edit') {
@@ -509,23 +514,25 @@ const BenefCard = (props) =>{
                             </h1>
                         </Divider>
                         <div className="tablewrap">
-                            <Upload {...ArchivoPDF} 
-                                id="ArchivoPDF" 
-                                accept="application/pdf"
-                                multiple={true}
-                                fileList={archivos}
-                            >
-                                <Button type="primary" icon={<FileAddOutlined />}>Elegir Archivo/s</Button>
-                            </Upload>
-                            <Button 
-                                type="link"
-                                icon={<UploadOutlined />} 
-                                onClick={guardarNotas}
-                                style={{color:"green"}}
-                                hidden={archivos.length<=0}
-                            >
-                                Guardar Archivos
-                            </Button>
+                            <div className="botones-wrap">
+                                <Upload {...ArchivoPDF} 
+                                    id="ArchivoPDF" 
+                                    accept="application/pdf"
+                                    multiple={true}
+                                    fileList={archivos}
+                                >
+                                    <Button type="primary" icon={<FileAddOutlined />}>Elegir Archivo/s</Button>
+                                </Upload>
+                                <Button 
+                                    type="link"
+                                    icon={<UploadOutlined />} 
+                                    onClick={guardarNotas}
+                                    style={{color:"green"}}
+                                    hidden={archivos.length<=0}
+                                >
+                                    Guardar Archivos
+                                </Button>
+                            </div>
                             <Table 
                                 dataSource={dataSource} 
                                 columns={columns} 

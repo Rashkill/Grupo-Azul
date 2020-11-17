@@ -65,6 +65,10 @@ app.get('/getJor4Liq/:fields/:idbenef/:desde/:hasta',  (req, res) => {
    getJor4Liq(req,res);
 })
 
+//Buscar Jornadas para filtrar
+
+
+
 /*-------------
   ACOMPAÑANTES
 ---------------*/

@@ -110,3 +110,8 @@ code {
   align-items: center;
   margin-top: 16px;
 }
+
+.botones-wrap{
+  display: flex;
+  flex-direction: row;
+}
