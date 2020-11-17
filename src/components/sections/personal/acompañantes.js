@@ -239,13 +239,13 @@ class Acompañantes extends React.Component {
                     {info.datos.map((i , index)=>{
                         return(
                             <AcompCard 
-                                OnEdit={this.onEdit} 
-                                OnDelete={this.onDelete} 
-                                title={i.Nombre + " " + i.Apellido} 
-                                price={i.ValorHora} 
-                                email={i.Email} 
-                                telefono={i.Telefono} 
-                                domicilio={i.Domicilio} 
+                                OnEdit={this.onEdit}
+                                OnDelete={this.onDelete}
+                                title={i.Nombre + " " + i.Apellido}
+                                price={i.ValorHora}
+                                email={i.Email}
+                                telefono={i.Telefono}
+                                domicilio={i.Domicilio}
                                 id={i.Id}
                                 // ucd= {info.ucd[i.IdBeneficiario - 1]}
                                 key={index}

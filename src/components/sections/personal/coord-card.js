@@ -1,17 +1,30 @@
 import React,{ useState, useEffect } from 'react';
+import { withRouter } from 'react-router-dom';
 import { Row, Col, Menu, Dropdown } from 'antd';
 import { EllipsisOutlined, EditFilled, DeleteFilled } from '@ant-design/icons';
 import UserImg from '../../../images/image3.png'
 import '../../layout/cards.css'
-
+import Axios from 'axios';
+import { createHashHistory } from 'history';
+export const history = createHashHistory();
 
 function CoordCard(props) {
-    const [state, setState] = useState({
-        ucd: { 
-            Nombre: "...",
-            Apellido: "..."
-        }
-    })
+
+    var datos;
+    const getDatos = async () =>{
+        const fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, ValorMes"
+        const res = await fetch('http://localhost:4000/getCoordOnly/' + props.id + "/" + fields);
+        datos = await res.json();
+    }
+    
+    const titleClick = () => {
+        getDatos().then(() =>
+            props.history.push({
+                pathname: props.linkto,
+                state: datos[0]
+            })
+            )
+    }
 
 
     const dropClick = ({ key }) => {
@@ -50,7 +63,7 @@ function CoordCard(props) {
                 <div className="card-mid-col">
                     <Row>
                         <div className="card-title-container">
-                            <h1 className="name-title">
+                            <h1 className="name-title" onClick={titleClick}>
                             {props.Nombre + " " + props.Apellido}
                             </h1>
                         </div>
@@ -71,4 +84,4 @@ function CoordCard(props) {
 }
 
 
-export default CoordCard
+export default withRouter(CoordCard)

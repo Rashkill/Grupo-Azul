@@ -235,6 +235,7 @@ class Coordinadores extends React.Component {
                                 Apellido= {i.Apellido}
                                 ValorMes= {i.ValorMes}
                                 key= {i.Id}
+                                linkto="coordprofile"
                                 />
                             )
                         })}   
