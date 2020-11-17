@@ -19,7 +19,6 @@ var rowOffset = 0;
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 class Beneficiarios extends React.Component{
-
     state = {
         visible: false,
         isLoading: true,
@@ -309,7 +308,7 @@ class Beneficiarios extends React.Component{
                         <LoadingOutlined style={{ padding: 16, fontSize: 24, display: this.state.isLoading ? "inline" : "none" }} spin />
                         </div>
                         <Pagination 
-                            style={{textAlign:"center", visibility:maxItems<5?"hidden":"visible"}} 
+                            style={{textAlign:"center", visibility:maxItems<=maxRows?"hidden":"visible"}} 
                             defaultCurrent={1} 
                             total={maxItems} 
                             pageSize={maxRows}

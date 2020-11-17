@@ -139,4 +139,100 @@ const delBenef = (req,res) =>{
   });
 }
 
-module.exports={addBenef, getBenef, getBenefOnly, updBenef, updBenefSeg, delBenef}
+/* NOTAS BENEFICIARIOS */
+
+const addNotaBenef = (req,res) =>{
+  let db = getConnection();
+  let sql = `INSERT INTO NotaBeneficiario(IdBeneficiario,Fecha,Archivo,NombreArchivo) VALUES(?,?,?,?)`; 
+
+  // insert one row into the langs table
+  db.run(sql,
+    req.body.IdBeneficiario,
+    req.body.Fecha,
+    req.file.buffer,
+    req.body.NombreArchivo,
+    req.params.id,
+    function(err) {
+      if (err) {
+        res.status(400).json({"error":err.message});
+        console.log(err.message);
+        return;
+      }
+      res.status(200).json("Nota añadida con exito");
+      console.log("Nota añadida con exito");
+  });
+}
+
+const getNotaBenef = (req,res) =>{
+  let fields = req.params.fields ? req.params.fields : "*";
+  let db = getConnection();
+  let sql = `SELECT ${fields} FROM NotaBeneficiario WHERE Id=${req.params.id}`;
+  
+  var arrayData = [];
+  db.all(sql, [], (err, rows) => {
+      if (err) {
+          res.status(400).json({"error":err.message});
+          return;
+      }
+      rows.forEach((row) => {
+          // console.log(row);
+          arrayData.push(row);
+      });
+      res.json(rows)
+  });
+}
+
+const getNotasBenef = (req,res) =>{
+  let fields = req.params.fields ? req.params.fields : "*";
+  let limitOffset = req.params.limit ? `LIMIT ${req.params.limit} OFFSET ${req.params.offset ? req.params.offset : 0}` : "";
+  let db = getConnection();
+  let sql = `SELECT ${fields} FROM NotaBeneficiario WHERE IdBeneficiario=${req.params.idbenef} ORDER BY Id ${limitOffset}`;
+  
+  var arrayData = [];
+  db.all(sql, [], (err, rows) => {
+      if (err) {
+          res.status(400).json({"error":err.message});
+          return;
+      }
+      rows.forEach((row) => {
+          // console.log(row);
+          arrayData.push(row);
+      });
+      res.json(rows)
+  });
+}
+
+const updNotaBenef = (req,res) =>{
+
+  let db = getConnection();
+  let sql = `UPDATE NotaBeneficiario SET Fecha=?,Archivo=?,NombreArchivo=? WHERE id=?`; 
+
+  // insert one row into the langs table
+  db.run(sql, 
+    req.body.Fecha,
+    req.file.buffer,
+    req.body.NombreArchivo,
+    req.params.id,
+    function(err) {
+      if (err) {
+        res.status(400).json({"error":err.message});
+        console.log(err.message);
+        return;
+      }
+      res.status(200).json("Nota " + req.params.id + " actualizada con exito");
+      console.log("Nota " + req.params.id + " actualizada con exito");
+  });
+}
+
+const delNotaBenef = (req,res) =>{
+  let db = getConnection();
+  let sql = `DELETE FROM NotaBeneficiario WHERE id="${req.params.id}"`;
+  db.run(sql, function(err) {
+    if (err) {
+      return console.error(err.message);
+    }
+    console.log(`Se ha borrado la fila`);
+    res.json("Se ha borrado la fila");
+  });
+}
+module.exports={addBenef, getBenef, getBenefOnly, updBenef, updBenefSeg, delBenef, addNotaBenef, getNotaBenef, getNotasBenef, updNotaBenef, delNotaBenef}

@@ -141,6 +141,7 @@ class Jornadas extends React.Component{
     }
 
     componentWillUnmount(){
+        rowOffset = 0;
         this.abortController.abort();
     }
 
@@ -350,7 +351,7 @@ class Jornadas extends React.Component{
                             <LoadingOutlined style={{ padding: 16, fontSize: 24, display: this.state.isLoading ? "inline" : "none" }} spin />
                         </div>
                         <Pagination 
-                            style={{textAlign:"center", visibility:maxItems<=5?"hidden":"visible"}} 
+                            style={{textAlign:"center", visibility:maxItems<=maxRows?"hidden":"visible"}} 
                             defaultCurrent={1} 
                             total={maxItems} 
                             pageSize={maxRows}

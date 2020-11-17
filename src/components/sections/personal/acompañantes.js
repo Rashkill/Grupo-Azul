@@ -37,7 +37,7 @@ class Acompañantes extends React.Component {
 
     //Secuencia que obtiene la informacion y luego desactiva el icono de carga
     getData = () =>{
-        window.scrollTo(0,0)
+        window.scrollTo(0,0);
         this.loadAndGetData().then(() => this.setState({isLoading: false, id:0}))
     }
     loadAndGetData = async() => {
@@ -79,6 +79,7 @@ class Acompañantes extends React.Component {
         this.getData();
     }
     componentWillUnmount = () =>{
+        rowOffset = 0;
         this.abortController.abort();
     }
 
@@ -257,7 +258,7 @@ class Acompañantes extends React.Component {
                     <LoadingOutlined style={{ padding: 16, fontSize: 24, display: this.state.isLoading ? "inline" : "none" }} spin />
                     </div>
                     <Pagination 
-                            style={{textAlign:"center", visibility:maxItems<=5?"hidden":"visible"}} 
+                            style={{textAlign:"center", visibility:maxItems<=maxRows?"hidden":"visible"}} 
                             defaultCurrent={1} 
                             total={maxItems} 
                             pageSize={maxRows}
@@ -360,12 +361,13 @@ class Acompañantes extends React.Component {
                         defaultValue={this.state.id === 0 ? undefined : lastInfo.get("CBU")} />
                     </Col>
                     <Col span={12}>
+                        <h1>Constancia AFIP</h1>
                         <Upload {...this.propsConstanciaAFIP} accept="application/pdf">
-                            <Button type="primary" disabled={this.state.afipFiles.length>0} icon={<UploadOutlined />}>Constancia AFIP</Button>
+                            <Button type="primary" disabled={this.state.afipFiles.length>0} icon={<UploadOutlined />}>Subir PDF</Button>
                         </Upload>
                         <Button onClick={() => this.setState({pdf:1, pdfViewer: true})}
                                 hidden={this.state.editId <= 0 || !fileUrlAFIP}
-                        >Ver Constancia Actual</Button>
+                        >Ver Actual</Button>
                     </Col>
                     <Col span={12}>
                         <h1>Valor por Hora</h1>
@@ -373,12 +375,13 @@ class Acompañantes extends React.Component {
                         defaultValue={this.state.id === 0 ? undefined : lastInfo.get("ValorHora")} />
                     </Col>
                     <Col span={12}>
+                        <h1>CV</h1>
                         <Upload {...this.propsCV} accept="application/pdf">
-                            <Button type="primary" disabled={this.state.cvFiles.length>0} icon={<UploadOutlined />}>CV</Button>
+                            <Button type="primary" disabled={this.state.cvFiles.length>0} icon={<UploadOutlined />}>Subir PDF</Button>
                         </Upload>
                         <Button onClick={() => this.setState({pdf:2, pdfViewer: true})}
                                 hidden={this.state.editId <= 0 || !fileUrlCV}
-                        >Ver CV Actual</Button>
+                        >Ver Actual</Button>
                     </Col>
                 </Row>        
             </Form>

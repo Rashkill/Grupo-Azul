@@ -3,7 +3,7 @@ const cors = require('cors');
 const port = 4000
 const compression = require('compression');
 const {addAcomp, updAcomp, getAcomp, getAcompOnly, delAcomp} = require('./routes/acompañanteDBHandle');
-const {addBenef, updBenef, updBenefSeg, getBenef, getBenefOnly, delBenef} = require('./routes/beneficiarioDBHandle');
+const {addBenef, updBenef, updBenefSeg, getBenef, getBenefOnly, delBenef,addNotaBenef, getNotaBenef, getNotasBenef, updNotaBenef, delNotaBenef} = require('./routes/beneficiarioDBHandle');
 const {addCoord, updCoord, getCoord, getCoordOnly, delCoord} = require('./routes/coordinadorDBHandle')
 const {addJornada, updJornada, getJornadas, getJornadaOnly, delJornada, getJor4Liq} = require('./routes/jornadaDBHandle');
 const {addLiq, updLiq, getLiq, getLiqOnly, delLiq} = require('./routes/liquidacionDBHandle');
@@ -158,6 +158,36 @@ app.delete('/benef/:id',  (req, res) => {
    delBenef(req,res);
 })
 
+/* NOTAS */
+//Agregando Nota Beneficiario
+app.post('/addNotaBenef', upload.single("Archivo"),  (req,res)=>{
+   addNotaBenef(req,res);
+})
+
+//Obteniendo Una sola Nota de Beneficiario con campos especificos
+app.get('/getNotasBenef/:fields/:id',  (req, res) => {
+   getNotaBenef(req,res);
+})
+
+//Obteniendo Notas de Beneficiario con campos especificos
+app.get('/getNotasBenef/:fields/:idbenef',  (req, res) => {
+   getNotasBenef(req,res);
+})
+
+//Obteniendo Notas de Beneficiario con campos especificos y limite
+app.get('/getNotasBenef/:fields/:idbenef/:limit/:offset',  (req, res) => {
+   getNotasBenef(req,res);
+})
+
+//Actualizando Nota Beneficiario
+app.post('/updNotaBenef/:id', upload.single("Archivo"), (req, res) => {
+   updNotaBenef(req,res);
+ })
+
+//Borrando Nota Beneficiario
+app.delete('/notaBenef/:id',  (req, res) => {
+   delNotaBenef(req,res);
+})
 
 /*-------------
   COORDINADORES
