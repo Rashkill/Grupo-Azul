@@ -1,17 +1,14 @@
 import React,{ useState, useEffect } from 'react';
 import { Form, Divider, Row, Col, Input, Modal, Button, Upload, Spin ,notification , Empty, Pagination } from 'antd';
 import { PlusOutlined, FileDoneOutlined, UploadOutlined, CheckCircleOutlined, AlertOutlined, LoadingOutlined, PaperClipOutlined } from '@ant-design/icons';
-import { Document, Page, pdfjs } from 'react-pdf';
+
+import VisorPDF from '../util/visorPDF'
 import AcompCard from './acomp-card.js';
 import Axios from 'axios';
-import { wait } from '@testing-library/react';
 
 const { Search } = Input;
 
-var info = {
-    datos: []
-};
-
+var infoDatos =[], infoFiltro = []; 
 var lastInfo = new FormData();
 var fileBlobAFIP, fileUrlAFIP;
 var fileBlobCV, fileUrlCV;
@@ -28,8 +25,6 @@ class Acompañantes extends React.Component {
         afipFiles:[],
         cvFiles:[],
         pdfViewer: false,
-        numPages: 0,
-        actualPage: 1,
         loadingModal: false
     };
     
@@ -50,7 +45,8 @@ class Acompañantes extends React.Component {
             const res = await fetch('http://localhost:4000/getAcomp/' + fields + '/' + maxRows + '/' + rowOffset, {signal: this.abortController.signal});
             const datos = await res.json();
             if(datos)
-                info.datos = datos;            
+                infoDatos = datos;
+            infoFiltro = infoDatos;          
             //this.setData(info);
 
         }catch(e){console.log(e)}
@@ -92,9 +88,9 @@ class Acompañantes extends React.Component {
     //Se llama al presionar el boton 'Editar' en la tarjeta
     onEdit = async(id) =>{ 
 
-        let index = info.datos.findIndex(p => p.Id === id);
-        for (var prop in info.datos[index]) {
-            lastInfo.set(prop, info.datos[index][prop]);
+        let index = infoDatos.findIndex(p => p.Id === id);
+        for (var prop in infoDatos[index]) {
+            lastInfo.set(prop, infoDatos[index][prop]);
         }
 
         this.abortController = new AbortController();
@@ -181,9 +177,27 @@ class Acompañantes extends React.Component {
         })
     };
 
-    handleSearch = (v) => { //Presionar enter al buscador
-        console.log(v)
-    }  
+    //Buscador
+    handleSearch = async(v) => {
+        if(v !== null && v !== ""){
+            let pattern = v.replace(/^\s+/g, '');;
+            let table = "Acompañante";
+            let column = "Nombre,Apellido";
+            let k = v.split(':');
+            if(k.length > 1){
+                column = k[0];
+                pattern = k[1].replace(/^\s+/g, '');
+            }
+            const fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, Email, Telefono, ValorHora, NumeroPoliza, NombreSeguros"
+            const result = await fetch('http://localhost:4000/find/' + fields + '/' + table + '/' + column + '/' + pattern, {signal: this.abortController.signal});
+            const data = await result.json();
+            infoFiltro = data;
+        }
+        else infoFiltro = infoDatos;
+        
+        this.setState({cantidad: infoFiltro.length});
+    } 
+
     onChangeInput = e =>{
         lastInfo.set([e.target.id], e.target.value);
     }
@@ -236,8 +250,8 @@ class Acompañantes extends React.Component {
                     </Divider>
                     <div className="cards-container">                 
                     {/* Display de acompañantes */}
-                    <Empty style={{display: this.state.isLoading ? "none" : info.datos.length > 0 ? "none" : "inline"}} description={false} />
-                    {info.datos.map((i , index)=>{
+                    <Empty style={{display: this.state.isLoading ? "none" : infoFiltro.length > 0 ? "none" : "inline"}} description={false} />
+                    {infoFiltro.map((i , index)=>{
                         return(
                             <AcompCard 
                                 OnEdit={this.onEdit}
@@ -388,67 +402,13 @@ class Acompañantes extends React.Component {
             </Spin>             
             </Modal>
             
-            {/*VISOR PDF*/}
-            <Modal
-                    title="Visor PDF"
+            <VisorPDF
+                    fileURL={this.state.pdf===1?fileUrlAFIP:fileUrlCV}
+                    fileName={this.state.id>0?infoDatos[this.state.id - 1].Apellido + this.state.pdf===1?"_ConstanciaAFIP":"_CV" + ".pdf":""}
                     visible={this.state.pdfViewer}
-                    cancelText="Cerrar"
-                    onCancel={()=> this.setState({pdfViewer: false, actualPage:1})}
-                    onOk={() => {
-                        let fileName = info.datos[this.state.id - 1].Apellido + this.state.pdf===1?"_ConstanciaAFIP":"_CV" + ".pdf";
-                        let link = document.createElement("a");
-                        link.download = `${fileName}`;
-                        link.href = this.state.pdf===1?fileUrlAFIP:fileUrlCV;
-                        link.click();
-                        URL.revokeObjectURL(link.href);
-                    }}
-                    destroyOnClose={false}
-                    okText="Descargar"
-                    centered={true}
-                    width={800}
-                    height={600}
-                    >
-                    <div style={{backgroundColor: '#E4E4E4', overflowY:"scroll", 
-                                minHeight: "400", maxHeight: "400",
-                                display: "flex", justifyContent: "center"}}>
-                        <Document
-                            file={this.state.pdf===1?fileUrlAFIP:fileUrlCV}
-                            loading={'Cargando PDF...'}
-                            onLoadSuccess={({numPages}) => this.setState({numPages: numPages})}
-                            onLoadError={(e) => console.log(e)}
-                        >
-                            <Page loading={'Cargando página...'} pageNumber={this.state.actualPage} />
-                        </Document>
-                    </div>
-                    <Divider />
-                    <div style={{display: "flex", justifyContent: "center"}}>
-                        <Button 
-                            disabled={this.state.actualPage <= 1}
-                            onClick={()=>this.setState({actualPage: 1})} 
-                        >
-                            {"<<"}
-                        </Button>
-                        <Button 
-                            disabled={this.state.actualPage <= 1}
-                            onClick={()=>this.setState({actualPage: this.state.actualPage - 1})} 
-                        >
-                            {"<"}
-                        </Button>
-                        <Button 
-                            disabled={this.state.actualPage >= this.state.numPages}
-                            onClick={()=>this.setState({actualPage: this.state.actualPage + 1})} 
-                        >
-                            {">"}
-                        </Button>
-                        <Button 
-                            disabled={this.state.actualPage >= this.state.numPages}
-                            onClick={()=>this.setState({actualPage: this.state.numPages})} 
-                        >
-                            {">>"}
-                        </Button>
-                    </div>
-                </Modal>
-                {/*FIN VISOR PDF*/}
+                    onCancel={()=> this.setState({pdfViewer: false})}
+            />
+            
         </div>
         )
     }

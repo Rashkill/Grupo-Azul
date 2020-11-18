@@ -1,13 +1,16 @@
 import React from 'react';
 import { Divider, Row, Col, Input, Modal, Empty, Form, AutoComplete, Upload, Button, DatePicker, notification, Pagination, Spin} from 'antd';
 import { PlusOutlined, LoadingOutlined, UploadOutlined, CheckCircleOutlined, AlertOutlined } from '@ant-design/icons';
-import { Document, Page, pdfjs } from 'react-pdf';
+
+import VisorPDF from '../util/visorPDF';
 import BenefCard from './benef-card'
+
 import Axios from 'axios';
+
 
 const { Search } = Input;
 
-var ucds = [], ucdsFilter = [];
+var infoDatos = [], infoFiltro = [];
 var coords = [];
 var coordIndex = -1;
 var lastInfo = new FormData();
@@ -16,7 +19,6 @@ var fileBlob, fileURL;
 var maxItems;
 const maxRows = 5;
 var rowOffset = 0;
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 class Beneficiarios extends React.Component{
     state = {
@@ -26,8 +28,6 @@ class Beneficiarios extends React.Component{
         fileList: [],
         id: 0,
         pdfViewer: false,
-        numPages: 0,
-        actualPage: 1,
         filterSearch: "",
         loadingModal: false
     };
@@ -52,8 +52,8 @@ class Beneficiarios extends React.Component{
             const datosBenef = await resBenef.json();
             
             if(datosBenef)
-                ucds = datosBenef;
-            ucdsFilter = ucds;
+                infoDatos = datosBenef;
+            infoFiltro = infoDatos;
 
             const res = await fetch('http://localhost:4000/getCoord/Nombre,Apellido,Id', {signal: this.abortController.signal});
             const datos = await res.json();
@@ -63,7 +63,7 @@ class Beneficiarios extends React.Component{
                     id: c.Id
                 }));
 
-            this.setState({cantidad: ucdsFilter.length, isLoading: false})
+            this.setState({cantidad: infoFiltro.length, isLoading: false})
         }catch(e){}
     }
 
@@ -94,7 +94,7 @@ class Beneficiarios extends React.Component{
     componentWillUnmount()
     {
         rowOffset = 0;
-        ucds = [];
+        infoDatos = [];
         this.abortController.abort();
     }
 
@@ -182,56 +182,36 @@ class Beneficiarios extends React.Component{
     };
 
     //Buscador
-    handleSearch = (v) => {
-        this.setState({filterSearch: v});
-        this.makeSearch();
-    }
-
-    makeSearch = () =>{
-        //Se comprueba que el valor ingresado no esté vacio
-        if(this.state.filterSearch !== undefined || this.state.filterSearch !== "")
-        {
-            // if(p.Nombre.toUpperCase().includes(v.toUpperCase())||
-            // p.Apellido.toUpperCase().includes(v.toUpperCase()))
-
-            ucdsFilter = [];    //Se vacia el array
-            var k = this.state.filterSearch.split(':');   //Se separa la 'key'(0) y el valor(1), si es que hay ":"
-            ucds.map(p => {
-                if(k.length === 2 && p[k[0]] !== undefined){
-                    //Si los valores separados son 2 y la 'key'(0) es valida
-                    //Se busca a partir de la 'key'(0) el valor(1) ingresado
-                    //Si dentro del elemento existe dicho valor(1), se "pushea" el objeto
-                    if(p[k[0]].toString().toUpperCase().includes(k[1].toUpperCase()))
-                        ucdsFilter.push(p);
-                }
-                else{
-                    //En el caso de que haya menos valores separados
-                    //Se busca en cada elemento dentro del objeto la coincidencia
-                    var f = false;
-                    Object.keys(p).forEach(key => { 
-                        if(p[key].toString().toUpperCase().includes(this.state.filterSearch.toUpperCase()) && !f) 
-                        {
-                            ucdsFilter.push(p);
-                            f = true;
-                        }
-                    })
-                }
-            })
+    handleSearch = async(v) => {
+        if(v !== null && v !== ""){
+            let pattern = v.replace(/^\s+/g, '');;
+            let table = "Beneficiario";
+            let column = "Nombre,Apellido";
+            let k = v.split(':');
+            if(k.length > 1){
+                column = k[0];
+                pattern = k[1].replace(/^\s+/g, '');
+            }
+            const fields = "Id, Nombre, Apellido, DNI, CUIL, FechaNacimiento, Domicilio, Localidad, CodigoPostal, Email, Telefono, Enfermedades, IdCoordinador"
+            const result = await fetch('http://localhost:4000/find/' + fields + '/' + table + '/' + column + '/' + pattern, {signal: this.abortController.signal});
+            const data = await result.json();
+            infoFiltro = data;
         }
-        else ucdsFilter = ucds;
-
-        this.setState({cantidad: ucdsFilter.length});
+        else infoFiltro = infoDatos;
+        
+        this.setState({cantidad: infoFiltro.length});
     }
-    
+
     //Se llama al presionar el boton 'Editar' en la tarjeta
     onEdit = (id) => {
 
         //Se obtiene el index del array, segun la Id a editar
         //Luego se rellenan los campos correspondientes
-        let index = ucds.findIndex(p => p.Id == id);
-        for (var prop in ucds[index]) {
-            lastInfo.set(prop, ucds[index][prop]);
+        let index = infoDatos.findIndex(p => p.Id == id);
+        for (var prop in infoDatos[index]) {
+            lastInfo.set(prop, infoDatos[index][prop]);
         }
+        coordIndex = coords.findIndex(x => x.id == lastInfo.get('IdCoordinador'));
 
         this.abortController = new AbortController();
         this.setState({id:id, visible: true, loadingModal: true})
@@ -290,9 +270,9 @@ class Beneficiarios extends React.Component{
 
                         {/* CARTAS BENEFICIARIOS */}
                         <div className="cards-container">
-                        <Empty style={{display: this.state.isLoading ? "none" : ucdsFilter.length > 0 ? "none" : "inline"}} description={false} />
+                        <Empty style={{display: this.state.isLoading ? "none" : infoFiltro.length > 0 ? "none" : "inline"}} description={false} />
                         
-                        {ucdsFilter.map(p =>{
+                        {infoFiltro.map(p =>{
                             return(
                             <BenefCard 
                                 title={p.Nombre + " " + p.Apellido}
@@ -316,7 +296,7 @@ class Beneficiarios extends React.Component{
                         />
                     </Col>
                     <Col span={6}>
-                        <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onChange={e => this.handleSearch(e.target.value)} allowClear={true}/>
+                        <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onSearch={e => this.handleSearch(e)} allowClear={true}/>
                         <div className="right-menu">
                             <div className="right-btn" onClick={this.showModal}>
                                 <PlusOutlined />
@@ -441,67 +421,13 @@ class Beneficiarios extends React.Component{
                 </Form>
                 </Spin>
                 </Modal>
-                {/*VISOR PDF*/}
-                <Modal
-                    title="Visor PDF"
+
+                <VisorPDF
+                    fileURL={fileURL}
+                    fileName={this.state.id>0?infoDatos[this.state.id - 1].Apellido + "_FichaInicial.pdf":""}
                     visible={this.state.pdfViewer}
-                    cancelText="Cerrar"
-                    onCancel={()=> this.setState({pdfViewer: false, actualPage:1})}
-                    onOk={() => {
-                        let fileName = ucds[this.state.id - 1].Apellido + "_FichaInicial.pdf";
-                        let link = document.createElement("a");
-                        link.download = `${fileName}`;
-                        link.href = fileURL;
-                        link.click();
-                        URL.revokeObjectURL(link.href);
-                    }}
-                    destroyOnClose={false}
-                    okText="Descargar"
-                    centered={true}
-                    width={800}
-                    height={600}
-                    >
-                    <div style={{backgroundColor: '#E4E4E4', overflowY:"scroll", 
-                                minHeight: "400", maxHeight: "400",
-                                display: "flex", justifyContent: "center"}}>
-                        <Document
-                            file={fileURL}
-                            loading={'Cargando PDF...'}
-                            onLoadSuccess={({numPages}) => this.setState({numPages: numPages})}
-                            onLoadError={(e) => console.log(e)}
-                        >
-                            <Page loading={'Cargando página...'} pageNumber={this.state.actualPage} />
-                        </Document>
-                    </div>
-                    <Divider />
-                    <div style={{display: "flex", justifyContent: "center"}}>
-                        <Button 
-                            disabled={this.state.actualPage <= 1}
-                            onClick={()=>this.setState({actualPage: 1})} 
-                        >
-                            {"<<"}
-                        </Button>
-                        <Button 
-                            disabled={this.state.actualPage <= 1}
-                            onClick={()=>this.setState({actualPage: this.state.actualPage - 1})} 
-                        >
-                            {"<"}
-                        </Button>
-                        <Button 
-                            disabled={this.state.actualPage >= this.state.numPages}
-                            onClick={()=>this.setState({actualPage: this.state.actualPage + 1})} 
-                        >
-                            {">"}
-                        </Button>
-                        <Button 
-                            disabled={this.state.actualPage >= this.state.numPages}
-                            onClick={()=>this.setState({actualPage: this.state.numPages})} 
-                        >
-                            {">>"}
-                        </Button>
-                    </div>
-                </Modal>
-                {/*FIN VISOR PDF*/}
+                    onCancel={()=> this.setState({pdfViewer: false})}
+                />
             </div>
         )
     }

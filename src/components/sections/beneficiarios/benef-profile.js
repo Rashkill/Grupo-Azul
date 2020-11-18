@@ -4,8 +4,11 @@ import { Modal, Upload, Tabs, PageHeader, Menu, Dropdown, Divider, Table, Timeli
 import { SettingFilled, EditFilled, DeleteFilled, DeleteOutlined, PlusOutlined, MinusOutlined, SaveFilled, CheckCircleOutlined, AlertOutlined, UploadOutlined, SaveOutlined, FileAddOutlined } from '@ant-design/icons';
 import UserImg from '../../../images/image4-5.png'
 import DataRow from  '../../layout/data-row'
-import { Document, Page, pdfjs } from 'react-pdf';
+
+import VisorPDF from '../util/visorPDF'
+
 import Axios from 'axios';
+
 const { Paragraph } = Typography;
 const { TextArea } = Input;
 
@@ -71,7 +74,6 @@ function getFecha(){
 const BenefCard = (props) =>{
 
     var info = []; 
-
     info = props.location.state;
 
     const [getSeguimientos, setSeguimientos] = useState([]);
@@ -81,6 +83,11 @@ const BenefCard = (props) =>{
 
     const [dataSource, setDataSource] = useState([])
     const [archivos, setArchivos] = useState([])
+    const [pdfViewer, setPdfViewer] = useState({
+        visible: false,
+        fileURL: null,
+        fileName: ""
+    })
 
     const getDatos = async () =>{
         const res = await fetch('http://localhost:4000/getBenefOnly/' + props.location.state.Id + '/' + 'Seguimientos');
@@ -146,6 +153,7 @@ const BenefCard = (props) =>{
         });
     };
 
+    //Creacion Seguimiento
     const onEndCreate = () => {
 
         let fecha = getFecha();
@@ -235,6 +243,7 @@ const BenefCard = (props) =>{
         });
     }
 
+    //Sube un archivo en especifico
     const subirArchivo = async(index) =>{
         try{
             var datos = new FormData();
@@ -252,6 +261,7 @@ const BenefCard = (props) =>{
         } catch(e){ return false };
     }
 
+    //Guarda varias notas
     const guardarNotas = async() =>{
         var f = archivos.length;
         for (let index = 0; index < archivos.length; index++) {
@@ -298,19 +308,14 @@ const BenefCard = (props) =>{
             key: 'acciones',
             render: (text, record) => (
                 <div>
-                    <Popconfirm
-                        title={`Por el momento no hay visor PDF ¿Desea descargar el archivo?`}
-                        okText= 'Si' cancelText= 'No'
-                        onConfirm={async()=>{
-                            let link = document.createElement("a");
-                            link.download = `${record.pdf}`;
-                            link.href = URL.createObjectURL(await getPDFBlob(record.key));
-                            link.click();
-                            URL.revokeObjectURL(link.href);
-                        }}
-                    >
-                        <a>Abrir </a>
-                    </Popconfirm>
+                    <a onClick={async()=>{
+                        let url = URL.createObjectURL(await getPDFBlob(record.key));
+                        setPdfViewer({
+                            fileURL: url,
+                            fileName: `${record.pdf}`,
+                            visible: true
+                        })
+                    }}>Abrir </a>
 
                     <Popconfirm
                         title={`Esta accion sobreescribirá el archivo actual ¿Desea continuar?`}
@@ -421,6 +426,7 @@ const BenefCard = (props) =>{
         }
     };
 
+    
     if(!info){
         props.history.goBack();
         return(<div></div>)
@@ -428,6 +434,13 @@ const BenefCard = (props) =>{
     else
     return(
         <React.Fragment>
+            <VisorPDF
+                fileURL={pdfViewer.fileURL}
+                fileName={pdfViewer.fileName}
+                visible={pdfViewer.visible}
+                onCancel={()=> setPdfViewer({visible: false})}
+            />
+
             <div className="header-bg prot-shadow">
                 <PageHeader
                     className="site-page-header"
@@ -575,6 +588,8 @@ const BenefCard = (props) =>{
                         
                     </TabPane>
                 </Tabs>
+
+
             </div>
 
         </React.Fragment>

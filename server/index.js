@@ -2,9 +2,14 @@ const express = require('express');
 const cors = require('cors');
 const port = 4000
 const compression = require('compression');
-const {addAcomp, updAcomp, getAcomp, getAcompOnly, delAcomp} = require('./routes/acompañanteDBHandle');
-const {addBenef, updBenef, updBenefSeg, getBenef, getBenefOnly, delBenef,addNotaBenef, getNotaBenef, getNotasBenef, updNotaBenef, delNotaBenef} = require('./routes/beneficiarioDBHandle');
-const {addCoord, updCoord, getCoord, getCoordOnly, delCoord} = require('./routes/coordinadorDBHandle')
+const {addAcomp, updAcomp, getAcomp, getAcompOnly, delAcomp, 
+      addMonoAcomp, getMonoAcomp, getMonoAcompOnly, updMonoAcomp, delMonoAcomp, 
+      addConAcomp, getConAcomp, getConAcompOnly, updConAcomp, delConAcomp} = require('./routes/acompañanteDBHandle');
+const {addBenef, updBenef, updBenefSeg, getBenef, getBenefOnly, delBenef,
+      addNotaBenef, getNotaBenef, getNotasBenef, updNotaBenef, delNotaBenef} = require('./routes/beneficiarioDBHandle');
+const {addCoord, updCoord, getCoord, getCoordOnly, delCoord, 
+      addMonoCoord, getMonoCoord, getMonoCoordOnly, updMonoCoord, delMonoCoord, 
+      addConCoord, getConCoord, getConCoordOnly, updConCoord, delConCoord} = require('./routes/coordinadorDBHandle')
 const {addJornada, updJornada, getJornadas, getJornadaOnly, delJornada, getJor4Liq} = require('./routes/jornadaDBHandle');
 const {addLiq, updLiq, getLiq, getLiqOnly, delLiq} = require('./routes/liquidacionDBHandle');
 //const {getConnection} = require('./db/conn');
@@ -25,6 +30,41 @@ app.use(express.json());
 
 var upload = multer();
 
+
+//Busqueda
+app.get('/find/:fields/:table/:column/:pattern',  (req, res) => {
+   let fields = req.params.fields;
+   let table = req.params.table;
+   let pattern = req.params.pattern;
+
+   let column = req.params.column.split(',');
+   let sentence = '';
+   if(column.length<=1)
+      sentence = `${column[0]} LIKE '%${pattern}%'`;
+   else
+      for (let i = 0; i < column.length; i++) {
+         sentence += `${column[i]} LIKE '%${pattern}%'`
+
+         if(i != column.length - 1)
+            sentence += ' OR ';
+      }
+
+   let db = getConnection();
+   let sql = `SELECT ${fields} FROM ${table} WHERE ${sentence}`;
+
+   var arrayData = [];
+   db.all(sql, [], (err, rows) => {
+       if (err) {
+           res.status(400).json({"error":err.message});
+           return;
+       }
+       rows.forEach((row) => {
+           // console.log(row);
+           arrayData.push(row);
+       });
+       res.json(rows)
+   });
+})
 
 /*-------------
     JORNADAS
@@ -112,10 +152,71 @@ app.delete('/acomp/:id', (req,res)=>{
   delAcomp(req,res);
 })
 
+/* - - - MONOTRIBUTOS - - - */
 
-/*-------------
-  BENEFICIARIOS
----------------*/
+//Agregando Monotributo Acompañante
+app.post('/addMonoAcomp', upload.single("Archivo"),  (req,res)=>{
+   addMonoAcomp(req,res);
+})
+
+//Obteniendo Un solo monotributo de Acompañante con campos especificos
+app.get('/getMonoAcompOnly/:fields/:id',  (req, res) => {
+   getMonoAcompOnly(req,res);
+})
+
+//Obteniendo Monotributos de Acompañante con campos especificos
+app.get('/getMonoAcomp/:fields/:idacomp',  (req, res) => {
+   getMonoAcomp(req,res);
+})
+
+//Obteniendo Monotributo de Acompañante con campos especificos y limite
+app.get('/getMonoAcomp/:fields/:idacomp/:limit/:offset',  (req, res) => {
+   getMonoAcomp(req,res);
+})
+
+//Actualizando Monotributo Acompañante
+app.post('/updMonoAcomp/:id', upload.single("Archivo"), (req, res) => {
+   updMonoAcomp(req,res);
+ })
+
+//Borrando Monotributo Acompañante
+app.delete('/monoAcomp/:id',  (req, res) => {
+   delMonoAcomp(req,res);
+})
+/* - - - CONTRATOS - - - */
+
+//Agregando Contrato Acompañante
+app.post('/addConAcomp', upload.single("Archivo"),  (req,res)=>{
+   addConAcomp(req,res);
+})
+
+//Obteniendo Un solo Contrato de Acompañante con campos especificos
+app.get('/getConAcompOnly/:fields/:id',  (req, res) => {
+   getConAcompOnly(req,res);
+})
+
+//Obteniendo Contratos de Acompañante con campos especificos
+app.get('/getConAcomp/:fields/:idacomp',  (req, res) => {
+   getConAcomp(req,res);
+})
+
+//Obteniendo Contrato de Acompañante con campos especificos y limite
+app.get('/getConAcomp/:fields/:idacomp/:limit/:offset',  (req, res) => {
+   getConAcomp(req,res);
+})
+
+//Actualizando Contrato Acompañante
+app.post('/updConAcomp/:id', upload.single("Archivo"), (req, res) => {
+   updConAcomp(req,res);
+ })
+
+//Borrando Contrato Acompañante
+app.delete('/conAcomp/:id',  (req, res) => {
+   delConAcomp(req,res);
+})
+/*-   ----- -----    -
+      BENEFICIARIOS
+-   ----- -----    -*/
 
  //Agregando Beneficiario
  app.post('/addBenef', upload.single("FichaInicial"),  (req,res)=>{
@@ -235,7 +336,68 @@ app.get('/getCoordOnly/:id/:fields',  (req, res) => {
 app.delete('/coord/:id',  (req, res)=>{
    delCoord(req,res);
 })
+/* - - - MONOTRIBUTOS - - - */
 
+//Agregando Monotributo Coordinador
+app.post('/addMonoCoord', upload.single("Archivo"),  (req,res)=>{
+   addMonoCoord(req,res);
+})
+
+//Obteniendo Un solo monotributo de Coordinador con campos especificos
+app.get('/getMonoCoordOnly/:fields/:id',  (req, res) => {
+   getMonoCoordOnly(req,res);
+})
+
+//Obteniendo Monotributos de Coordinador con campos especificos
+app.get('/getMonoCoord/:fields/:idcoord',  (req, res) => {
+   getMonoCoord(req,res);
+})
+
+//Obteniendo Monotributo de Coordinador con campos especificos y limite
+app.get('/getMonoCoord/:fields/:idcoord/:limit/:offset',  (req, res) => {
+   getMonoCoord(req,res);
+})
+
+//Actualizando Monotributo Coordinador
+app.post('/updMonoCoord/:id', upload.single("Archivo"), (req, res) => {
+   updMonoCoord(req,res);
+ })
+
+//Borrando Monotributo Coordinador
+app.delete('/monoCoord/:id',  (req, res) => {
+   delMonoCoord(req,res);
+})
+/* - - - CONTRATOS - - - */
+
+//Agregando Contrato Coordinador
+app.post('/addConCoord', upload.single("Archivo"),  (req,res)=>{
+   addConCoord(req,res);
+})
+
+//Obteniendo Un solo Contrato de Coordinador con campos especificos
+app.get('/getConCoordOnly/:fields/:id',  (req, res) => {
+   getConCoordOnly(req,res);
+})
+
+//Obteniendo Contratos de Coordinador con campos especificos
+app.get('/getConCoord/:fields/:idcoord',  (req, res) => {
+   getConCoord(req,res);
+})
+
+//Obteniendo Contrato de Coordinador con campos especificos y limite
+app.get('/getConCoord/:fields/:idcoord/:limit/:offset',  (req, res) => {
+   getConCoord(req,res);
+})
+
+//Actualizando Contrato Coordinador
+app.post('/updConCoord/:id', upload.single("Archivo"), (req, res) => {
+   updConCoord(req,res);
+ })
+
+//Borrando Contrato Coordinador
+app.delete('/conCoord/:id',  (req, res) => {
+   delConCoord(req,res);
+})
 /*-------------
   LIQUIDACIONES
 ---------------*/

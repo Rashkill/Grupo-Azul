@@ -139,7 +139,7 @@ const delBenef = (req,res) =>{
   });
 }
 
-/* NOTAS BENEFICIARIOS */
+/*--- NOTAS BENEFICIARIOS ---*/
 
 const addNotaBenef = (req,res) =>{
   let db = getConnection();
