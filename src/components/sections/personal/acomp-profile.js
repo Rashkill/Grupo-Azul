@@ -188,7 +188,7 @@ const AcompProfile = (props) =>{
             }).then(()=>{
                 openNotification(
                     'Monotributo actualizado',
-                    `El archivo ${record.pdf} fue sustituida exitosamente`,
+                    `El archivo ${record.pdf} fue sustituido exitosamente`,
                     true
                 )
                 getPdfsMono();
@@ -199,8 +199,8 @@ const AcompProfile = (props) =>{
     const delMonotributo = (record) =>{
         Axios.delete('http://localhost:4000/monoAcomp/' + record.key).then(()=>{
             openNotification(
-                'Monotributo eliminado',
-                `El archivo ${record.pdf} fue removido con exito`,
+                'Archivo eliminado',
+                `Pago de monotributo eliminado exitosamente`,
                 true
             )
             getPdfsMono();
@@ -390,8 +390,8 @@ const AcompProfile = (props) =>{
     const delContrato = (record) =>{
         Axios.delete('http://localhost:4000/conAcomp/' + record.key).then(()=>{
             openNotification(
-                'Contrato eliminado',
-                `El archivo ${record.pdf} fue removido con exito`,
+                'Archivo eliminado',
+                `Contrato eliminado exitosamente`,
                 true
             )
             getPdfsCon();
@@ -507,7 +507,7 @@ const AcompProfile = (props) =>{
                         <div className="profile-banner">
                             <img src={UserImg} style={{height: 125}}/>
                             <h1 className="profile-name">{info.Nombre + " " + info.Apellido}</h1>
-                            <p className="card-subtitle" style={{fontSize: 16}}>27-06320624-0</p>
+                            <p className="card-subtitle" style={{fontSize: 16}}>{info.CUIL}</p>
                         </div>
                         
                         <Divider/>
@@ -533,46 +533,38 @@ const AcompProfile = (props) =>{
                                 
                                 <DataRow 
                                     title="E-mail"
-                                    value="asd"
+                                    value={info.Email}
                                 />
                                 
                                 <DataRow 
                                     title="Valor Hora"
-                                    value="asd"
+                                    value={info.ValorHora}
                                 />
                                 
-                                <DataRow 
-                                    title="Unidad de cuidado actual"
-                                    value="asd"
-                                />
                             </div>
 
 
                             <div className="data-col-wrap">
                                 <DataRow 
                                     title="Comp. de seguros"
-                                    value="Nombre"
+                                    value={info.NombreSeguros}
                                 />
 
                                 <DataRow 
                                     title="N° Póliza"
-                                    value="asd"
+                                    value={info.NumeroPoliza}
                                 />
                                 
                                 <DataRow 
                                     title="Banco"
-                                    value="asd"
+                                    value={info.EntidadBancaria}
                                 />
 
                                 <DataRow 
                                     title="CBU / Alias"
-                                    value="asd"
+                                    value={info.CBU}
                                 />
                                 
-                                <DataRow 
-                                    title="Enfermedades y comorbilidades"
-                                    value="asd"
-                                />
                             </div>
                             
                         </div>

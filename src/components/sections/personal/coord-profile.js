@@ -201,8 +201,8 @@ const CoordProfile = (props) =>{
     const delMonotributo = (record) =>{
         Axios.delete('http://localhost:4000/monoCoord/' + record.key).then(()=>{
             openNotification(
-                'Monotributo eliminado',
-                `El archivo ${record.pdf} fue removido con exito`,
+                'Archivo eliminado',
+                `Pago de monotributo eliminado exitosamente`,
                 true
             )
             getPdfsMono();
@@ -412,8 +412,8 @@ const CoordProfile = (props) =>{
     const delContrato = (record) =>{
         Axios.delete('http://localhost:4000/conCoord/' + record.key).then(()=>{
             openNotification(
-                'Contrato eliminado',
-                `El archivo ${record.pdf} fue removido con exito`,
+                'Archivo eliminado',
+                `Contrato eliminado exitosamente`,
                 true
             )
             getPdfsCon();

@@ -3,9 +3,13 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './components/app/App';
 import * as serviceWorker from './serviceWorker';
+import { ConfigProvider } from 'antd';
+import esES from 'antd/lib/locale/es_ES';
 
 ReactDOM.render(
-    <App />,
+  <ConfigProvider locale={esES}>
+    <App />
+  </ConfigProvider>,
   document.getElementById('root')
 );
 

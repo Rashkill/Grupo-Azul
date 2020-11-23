@@ -115,3 +115,13 @@ code {
   display: flex;
   flex-direction: row;
 }
+
+.range-wrap{
+  margin-left: 16px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: space-between;
+  width: 380px;
+}

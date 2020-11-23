@@ -1,2 +1,0 @@
--Comprobar que el 'infinite scroll' funciona bien e implementarlo en todas las divisiones.
--Adaptar la busqueda para que funcione acorde el 'infinite scroll'

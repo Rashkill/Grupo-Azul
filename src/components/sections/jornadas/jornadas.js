@@ -1,6 +1,7 @@
 import React from 'react';
 import { Divider, Row, Col, Input, Modal, AutoComplete, DatePicker, notification , Empty, Pagination } from 'antd';
 import { PlusOutlined, LoadingOutlined , CheckCircleOutlined, AlertOutlined } from '@ant-design/icons';
+import esES from 'antd/lib/locale/es_ES';
 import JornadaCard from './jornada-card';
 import Axios from 'axios';
 
@@ -53,7 +54,8 @@ class Jornadas extends React.Component{
         id: 0,
         acompIndex: -1,
         benefIndex: -1,
-        filterSearch: ""
+        filterSearch: "",
+        filter: []
     };
 
     abortController = new AbortController();
@@ -74,8 +76,8 @@ class Jornadas extends React.Component{
                 datos.map(v => {
                     if(!jornadasIn.find(x =>x === v))
                     {
-                        v.FechaIngreso = moment(v.FechaIngreso, dateFormat + " HH:mm").format("DD/MM/YYYY");
-                        v.FechaEgreso = moment(v.FechaEgreso, dateFormat + " HH:mm").format("DD/MM/YYYY");
+                        v.FechaIngreso = moment(v.FechaIngreso, dateFormat + " HH:mm").format("DD/MM/YYYY HH:mm");
+                        v.FechaEgreso = moment(v.FechaEgreso, dateFormat + " HH:mm").format("DD/MM/YYYY HH:mm");
                         d.push(v);
                     }
                 })
@@ -150,6 +152,7 @@ class Jornadas extends React.Component{
         this.setState({
         visible: true,
         id: 0,
+        horas: 0,
         acompIndex: -1,
         benefIndex: -1
         });
@@ -252,8 +255,8 @@ class Jornadas extends React.Component{
             if(hs > 0)
                 this.setState({horas: hs});
 
-            lastInfo.set("FechaIngreso", value[0].format(dateFormat + " HH:MM"));
-            lastInfo.set("FechaEgreso", value[1].format(dateFormat + " HH:MM"));
+            lastInfo.set("FechaIngreso", value[0].format(dateFormat + " HH:mm"));
+            lastInfo.set("FechaEgreso", value[1].format(dateFormat + " HH:mm"));
         }
     }
 
@@ -312,6 +315,10 @@ class Jornadas extends React.Component{
 
         this.setState({cantidad: jornadasFilter.length});
     }
+
+    filterOk = () => {
+
+    }
     
 
     // onChangeInput = (e) => {
@@ -328,6 +335,18 @@ class Jornadas extends React.Component{
                                 Jornadas
                             </h1>
                         </Divider>
+                        
+                        <div className="range-wrap">
+                            <h3 className="data-attr">Filtrar por fecha: </h3>
+                            <RangePicker
+                                size="small"
+                                format="DD/MM/YYYY"
+                                separator=">"
+                                allowClear
+                                locale={esES}
+                                onOk={this.filterOk}
+                            />
+                        </div>
                         
                         <div className="cards-container">
                             <Empty style={{display: this.state.isLoading ? "none" : jornadasFilter.length > 0 ? "none" : "inline"}} description={false} />
@@ -429,10 +448,9 @@ class Jornadas extends React.Component{
                                 <h4 style={{marginTop: 24}}>Ingreso y Egreso</h4>
                                 <RangePicker 
                                     showTime={{ format: 'HH:mm' }} 
-                                    format={"DD/MM/YYYY HH:MM"}
+                                    format={"DD/MM/YYYY HH:mm"}
                                     onOk={this.rangeOk}
                                     minuteStep={30}
-                                    placeholder={['Desde', 'Hasta']}
                                     style={{width: '100%'}}
                                     defaultValue = {this.state.id <=0 ? this.value : 
                                         [moment(moment(lastInfo.get("FechaIngreso"), dateFormat + " HH:mm").format("DD/MM/YYYY HH:mm"), "DD/MM/YYYY HH:mm"), 
