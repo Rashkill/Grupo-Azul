@@ -13,29 +13,35 @@ var lastInfo = new FormData();
 var fileBlobAFIP, fileUrlAFIP;
 var fileBlobCV, fileUrlCV;
 
-
-var abortController = new AbortController();
 var index = -1;
 var maxItems = 0;
 const maxRows = 5;
 var rowOffset = 0;
 
-class Coordinadores extends React.Component {
+class Coordinadores extends React.Component{
     state = {
-        id:0,
-        visible : false,
-        isLoading:true,
+        visible: false,
+        isLoading: true,
+        cantidad: 0,
         afipFiles:[],
         cvFiles:[],
-        pdfViewer: false,
+        id: 0,
+        pdfViewer1: false,
+        pdfViewer2: false,
+        pdfFileName: "",
+        filterSearch: "",
         loadingModal: false
     };
+    
+    abortController = new AbortController();
 
-
+    //Secuencia que obtiene la informacion y luego desactiva el icono de carga
     getData = () =>{
         window.scrollTo(0,0);
-        this.loadAndGetData().then(() => this.setState({isLoading: false, id: 0}));
+        this.loadAndGetData().then(() => this.setState({isLoading: false}));
     }
+
+    //Obtiene la informacion de la base de datos
     loadAndGetData = async() => {
         try{
             const result = await fetch('http://localhost:4000/getCoord/Id', {signal: this.abortController.signal});
@@ -45,20 +51,20 @@ class Coordinadores extends React.Component {
             const fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, ValorMes"
             const res = await fetch('http://localhost:4000/getCoord/' + fields + '/' + maxRows + '/' + rowOffset, {signal: this.abortController.signal});
             const datos = await res.json();
+            
             if(datos)
                 infoDatos = datos;
             infoFiltro = infoDatos;
 
-        }catch(e){console.log(e)}
+            this.setState({cantidad: infoFiltro.length, isLoading: false})
+        }catch(e){}
     }
 
     //Obtiene los archivos
-    getPdfs = async(id) =>{
+    getPdf = async(id) =>{
         try{
             const res = await fetch('http://localhost:4000/getCoordOnly/'+ id +'/ConstanciaAFIP,CV', {signal: this.abortController.signal});
             const datos = await res.json();
-            console.log(datos);
-            console.log(this.state.id);
 
             fileBlobAFIP = new Blob([Buffer.from(datos[0].ConstanciaAFIP)], {type: "application/pdf"})
             fileUrlAFIP = URL.createObjectURL(fileBlobAFIP)
@@ -69,71 +75,70 @@ class Coordinadores extends React.Component {
         catch(e){console.log(e)}
     }
     
-    componentDidMount=()=>{
-        this.abortController = new AbortController();
+    //Se ejecuta al montar el componente
+    componentDidMount(){
         this.getData();
-    };
+    }
 
-    componentWillUnmount=()=>{
+    //Se ejecuta al desmontar el componente
+    componentWillUnmount(){
         rowOffset = 0;
+        infoDatos = [];
         this.abortController.abort();
     }
-    showModal = () => {     //Mostrar modal
+
+    //Notificacion (duh)
+    openNotification = (msg, desc, succeed) => {
+        this.setState({
+            editVisible: false,
+        });
+
+        notification.open({
+            message: msg,
+            description: desc,
+            icon: succeed ? 
+            <CheckCircleOutlined style={{ color: '#52C41A' }} /> : 
+            <AlertOutlined style={{ color: '#c4251a' }} />
+        });
+    };
+    
+    //Mostrar modal
+    showModal = () => {     
         this.setState({
         visible: true,
         });
     };
 
-    //Se llama al presionar el boton 'Editar' en la tarjeta
-    onEdit = async(id) =>{ 
-
-        index = infoDatos.findIndex(p => p.Id == id);
-        for (var prop in infoDatos[index]) {
-            lastInfo.set(prop, infoDatos[index][prop]);
-        }
-        
-
-        this.abortController = new AbortController();
-        this.setState({id:id, visible: true, loadingModal: true})
-        this.getPdfs(id).then(() => this.setState({loadingModal: false}));
-    };
-
-    onDelete = (id) => {
-        Modal.confirm({
-            title:'¿Realmente desea eliminar este elemento?',
-            content: 'Esta acción no se puede deshacer.',
-            okText: 'Si', cancelText: 'No',
-            onOk:(()=>{
-                Axios.delete('http://localhost:4000/coord/' + id).then(() => {
-                this.openNotification(
-                    "Eliminación exitosa",
-                    "El Coordinador se borró correctamente",
-                    true
-                )
-                this.getData();
-                });
-            })
-        })
-    }
-
-    handleOk = e => {       //maneja boton ok del modal
-        if(this.state.id <= 0 || this.state.id <= 0)
+    
+    //Se llama al presionar el boton OK
+    handleOk = e => {   
+        //Si la 'id' es menor o igual a 0, significa que se esta agregando uno nuevo
+        if(this.state.id <=0)
         {
+            //Se asigna el archivo desde la lista y se llama a la base de datos
             lastInfo.set("ConstanciaAFIP", this.state.afipFiles[0])
             lastInfo.set("CV", this.state.cvFiles[0])
-            Axios.post('http://localhost:4000/addCoord',lastInfo,{
+            lastInfo.set("CUIL", lastInfo.get("CUIL1")+"-"+lastInfo.get("CUIL2"))
+            Axios.post('http://localhost:4000/addCoord', lastInfo, {
                 headers: {
                     Accept: 'application/json'
                 }
-            }).then(res=>{
-                this.setState({visible: false})
+            }).then(() => {
+                //Se establecen los valores por defecto y se abre la notificacion
+                this.setState({
+                    visible: false,
+                    id: 0,
+                    fileList: []
+                })
                 this.openNotification("Datos Agregados",
-                "El Coordinador " + lastInfo.get("Apellido") + " ahora se encuentra en la lista", true);
+                "El coordinador " + lastInfo.get("Apellido") + " ahora se encuentra en la lista", true);
                 this.getData();
-            }).catch((error) => this.openNotification("Error","Algunos campos están vacios", false));
+            });
         }
-        else
-        {
+        else    //Parte de la actualizacion
+        {   
+            //Se comprueba que no se haya subido un archivo nuevo.
+            //De lo contrario, se utiliza el que ya estaba
             if(this.state.afipFiles>0)
                 lastInfo.set("ConstanciaAFIP", this.state.afipFiles[0])
             else
@@ -144,14 +149,20 @@ class Coordinadores extends React.Component {
             else
                 lastInfo.set("CV", fileBlobCV)
 
-            Axios.post('http://localhost:4000/updCoord/' + this.state.id ,lastInfo,{
+            lastInfo.set("CUIL", lastInfo.get("CUIL1")+"-"+lastInfo.get("CUIL2"))
+            Axios.post('http://localhost:4000/updCoord/' + this.state.id, lastInfo, {
                 headers: {
                     Accept: 'application/json'
                 }
-            }).then(res=>{
-                this.setState({visible: false})
+            }).then(() => {
+                //Se establecen los valores por defecto y se abre la notificacion
+                this.setState({
+                    visible: false,
+                    id: 0,
+                    fileList: []
+                })
                 this.openNotification("Datos Actualizados",
-                "El Coordinador fue actualizado correctamente", true);
+                "El coordinador fue actualizado correctamente", true);
                 this.getData();
             });
         }
@@ -178,30 +189,66 @@ class Coordinadores extends React.Component {
                 column = k[0];
                 pattern = k[1].replace(/^\s+/g, '');
             }
-            const fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, ValorMes"
-            const result = await fetch('http://localhost:4000/find/' + fields + '/' + table + '/' + column + '/' + pattern, {signal: this.abortController.signal});
-            const data = await result.json();
-            infoFiltro = data;
+            try{
+                const fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, ValorMes"
+                const result = await fetch('http://localhost:4000/find/' + fields + '/' + table + '/' + column + '/' + pattern, {signal: this.abortController.signal});
+                const data = await result.json();
+                if(data.error)
+                    this.openNotification('Error de busqueda', `"${column}" no es un criterio de busqueda valido`, false);
+                else
+                    infoFiltro = data;
+            }
+            catch(e){console.log(e); infoFiltro = infoDatos;}
         }
         else infoFiltro = infoDatos;
         
         this.setState({cantidad: infoFiltro.length});
     } 
-    
-    onChangeInput = e =>{
-        lastInfo.set([e.target.id], e.target.value);
+
+    //Se llama al presionar el boton 'Editar' en la tarjeta
+    onEdit = (id) => {
+
+        //Se obtiene el index del array, segun la Id a editar
+        //Luego se rellenan los campos correspondientes
+        index = infoDatos.findIndex(p => p.Id == id);
+        for (var prop in infoDatos[index]) {
+            if(prop != "CUIL")
+                lastInfo.set(prop, infoDatos[index][prop]);
+            else{
+                let cuil = infoDatos[index].CUIL.split('-');
+                lastInfo.set("CUIL1", cuil[0]);
+                if(cuil.length>1)
+                    lastInfo.set("CUIL2", cuil[1]);
+                else
+                    lastInfo.set("CUIL2", "");
+            }
+        }
+
+        this.abortController = new AbortController();
+        this.setState({id:id, visible: true, loadingModal: true})
+        this.getPdf(id).then(() => this.setState({loadingModal: false}));
     }
 
-    openNotification = (msg, desc, succeed) => {
-        notification.open({
-            message: msg,
-            description: desc,
-            icon: succeed ? 
-            <CheckCircleOutlined style={{ color: '#52C41A' }} /> : 
-            <AlertOutlined style={{ color: '#c4251a' }} />
-        });
-    };
+    //Se llama al presionar el boton 'Eliminar' en la tarjeta
+    onDelete = (id) => {
+        Modal.confirm({
+            title:'¿Realmente desea eliminar este elemento?',
+            content: 'Esta acción no se puede deshacer.',
+            okText: 'Si', cancelText: 'No',
+            onOk:(()=>{
+                Axios.delete('http://localhost:4000/acomp/' + id).then(() => {
+                this.openNotification(
+                    "Eliminación exitosa",
+                    "El Coordinador se borró correctamente",
+                    true
+                )
+                this.getData();
+                });
+            })
+        })
+    }
 
+    //Se asigna o elimina el archivo
     propsConstanciaAFIP = {
         onRemove: file => {
                 this.setState({afipFiles:[]})
@@ -226,19 +273,27 @@ class Coordinadores extends React.Component {
         }
     };
 
+    //Se asignan los campos correspondientes
+    onChangeInput = (e) => {
+        lastInfo.set(e.target.id, e.target.value);
+    }
+
+
     render(){
-    return(
-        <div className="content-cont">
-            <Row>
-                <Col span={18}>
-                    <Divider orientation="left" plain>
-                        <h1 className="big-title">
-                            Coordinadores
-                        </h1>
-                    </Divider>
-                    <div className="cards-container">                 
-                        {/* Display de Coordinadores */}
-                        <Empty style={{display: this.stateisLoading ? "none" : infoFiltro.length > 0 ? "none" : "inline"}} description={false} />
+        return(
+            <div className="content-cont prot-shadow">
+                <Row>
+                    <Col span={18}>
+                        <Divider orientation="left">
+                            <h1 className="big-title">
+                                Coordinadores
+                            </h1>
+                        </Divider>
+
+                        {/* CARTAS COORDINADORES */}
+                        <div className="cards-container">
+                        <Empty style={{display: this.state.isLoading ? "none" : infoFiltro.length > 0 ? "none" : "inline"}} description={false} />
+                        
                         {infoFiltro.map((i , index)=>{
                             return(
                                 <CoordCard
@@ -248,142 +303,149 @@ class Coordinadores extends React.Component {
                                 Nombre= {i.Nombre}
                                 Apellido= {i.Apellido}
                                 ValorMes= {i.ValorMes}
+                                Domicilio= {i.Domicilio}
                                 key= {i.Id}
                                 linkto="coordprofile"
                                 />
                             )
-                        })}   
-                        <LoadingOutlined style={{ padding: 16, fontSize: 24, display: this.stateisLoading ? "inline" : "none" }} spin />
-                    </div>
-                    <Pagination 
+                        })}
+                        <LoadingOutlined style={{ padding: 16, fontSize: 24, display: this.state.isLoading ? "inline" : "none" }} spin />
+                        </div>
+                        <Pagination 
                             style={{textAlign:"center", visibility:maxItems<=maxRows?"hidden":"visible"}} 
                             defaultCurrent={1} 
                             total={maxItems} 
                             pageSize={maxRows}
                             onChange={(page)=>{rowOffset=maxRows*(page-1); this.getData();}}
-                    />
-                </Col>
-                <Col span={6}>
-                    <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onSearch={value => this.handleSearch(value)} allowClear={true}/>
-                    <div className="right-menu">
-                        <div className="right-btn" hidden={this.stateisLoading} onClick={this.showModal}>
-                            <PlusOutlined />
-                            <span className="right-btn-text">Nuevo</span>
+                        />
+                    </Col>
+                    <Col span={6}>
+                        <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onSearch={e => this.handleSearch(e)} allowClear={true}/>
+                        <div className="right-menu">
+                            <div className="right-btn" onClick={this.showModal}>
+                                <PlusOutlined />
+                                <span className="right-btn-text">Nuevo</span>
+                            </div>
                         </div>
-                        <div className="right-btn">
-                            <FileDoneOutlined />
-                            <span className="right-btn-text">Monotributo</span>
-                        </div>
-                    </div>
-                </Col>
-            </Row>
+                    </Col>
+                </Row>
 
 
-            <Modal
-                title={this.state.id <= 0 ? "Nuevo Coordinador" : "Modificar Coordinador"}
-                visible={this.state.visible}
-                onOk={this.handleOk}
-                onCancel={this.handleCancel}
-                cancelText="Cancelar"
-                destroyOnClose={true}
-                okText="Ok"
-                width='70%'
-            >
+                <Modal
+                    title={this.state.id <=0 ? "Nuevo Coordinador" : "Modificar Coordinador"}
+                    visible={this.state.visible}
+                    onOk={this.handleOk}
+                    onCancel={this.handleCancel}
+                    cancelText="Cancelar"
+                    destroyOnClose={true}
+                    okText="Ok"
+                    centered={true}
+                    width={800}
+                >
+                
+                <Spin spinning={this.state.loadingModal} tip="Cargando Archivos...">
+                <Form>
+                <Row gutter={[48,20]}>
+                    <Col span={12}>
+                        <Divider orientation="left">Datos Principales</Divider>
+                    </Col>
+                    <Col span={12}>
+                        <Divider orientation="left">Datos de Contacto</Divider>
+                    </Col>
+                    <Col span={12}>
+                        <h1>Nombre</h1>
+                        <Input placeholder="Nombre" id="Nombre"  onChange={this.onChangeInput} 
+                        defaultValue={this.state.id === 0 ? undefined : lastInfo.get("Nombre")} />
+                    </Col>
+                    <Col span={12}>
+                        <h1>Apellido</h1>
+                        <Input placeholder="Apellido" id="Apellido" onChange={this.onChangeInput} 
+                        defaultValue={this.state.id === 0 ? undefined : lastInfo.get("Apellido")} />
+                    </Col>
+                    <Col span={12}>
+                        <h1>Domicilio</h1>
+                        <Input placeholder="Domicilio" id="Domicilio" onChange={this.onChangeInput} 
+                        defaultValue={this.state.id === 0 ? undefined : lastInfo.get("Domicilio")} />
+                    </Col>
+                    <Col span={12}>
+                        <h4>DNI/CUIL:</h4>
+                            <Row gutter={12}>
+                            <Col span={5}>
+                                <Input placeholder="00" type="number" id="CUIL1" onChange={this.onChangeInput}
+                                defaultValue={this.state.id <=0 ? this.value : lastInfo.get("CUIL1")}/>
+                            </Col>
+                            -
+                            <Col span={12}>
+                                <Input placeholder="DNI" type="number" id="DNI" onChange={this.onChangeInput}
+                                defaultValue={this.state.id <=0 ? this.value : lastInfo.get("DNI")}/>
+                            </Col>
+                            -
+                            <Col span={4}>
+                                <Input placeholder="0" type="number" id="CUIL2" onChange={this.onChangeInput}
+                                defaultValue={this.state.id <=0 ? this.value : lastInfo.get("CUIL2")}/>
+                            </Col>
+                            </Row>
+                    </Col>
+                </Row>
+                <Divider orientation="left">Datos de Facturación</Divider>
+                <Row gutter={[48,20]}>
+                    <Col span={12}>
+                        <h1>Entidad Bancaria</h1>
+                        <Input placeholder="Entidad Bancaria" id="EntidadBancaria" onChange={this.onChangeInput}
+                        defaultValue={this.state.id === 0 ? undefined : lastInfo.get("EntidadBancaria")} />
+                    </Col>
+                    <Col span={12}>
+                        <h1>CBU/ALIAS</h1>
+                        <Input placeholder="CBU/ALIAS" id="CBU" onChange={this.onChangeInput}
+                        defaultValue={this.state.id === 0 ? undefined : lastInfo.get("CBU")} />
+                    </Col>
+                    <Col span={12}>
+                    <Row gutter={12}>
+                        <Col span={12}>
+                            <h1>Constancia AFIP</h1>
+                            <Upload {...this.propsConstanciaAFIP} accept="application/pdf">
+                                <Button type="primary" disabled={this.state.afipFiles.length>0} icon={<UploadOutlined />}>Subir PDF</Button>
+                            </Upload>
+                            <Button onClick={() => this.setState({pdfFileName: infoDatos[index].Apellido + "_ConstanciaAFIP" , pdfViewer1: true})}
+                                    hidden={this.state.editId <= 0 || !fileUrlAFIP}
+                            >Ver Actual</Button>
+                        </Col>
+                        <Col span={12}>
+                            <h1>CV</h1>
+                            <Upload {...this.propsCV} accept="application/pdf">
+                                <Button type="primary" disabled={this.state.cvFiles.length>0} icon={<UploadOutlined />}>Subir PDF</Button>
+                            </Upload>
+                            <Button onClick={() => this.setState({pdfFileName: infoDatos[index].Apellido + "_CV", pdfViewer2: true})}
+                                    hidden={this.state.editId <= 0 || !fileUrlCV}
+                            >Ver Actual</Button>
+                        </Col>
+                    </Row>
+                    </Col>
+                    <Col span={12}>
+                        <h1>Valor por Mes</h1>
+                        <Input placeholder="Valor Mes" type="number" id="ValorMes" onChange={this.onChangeInput}
+                        defaultValue={this.state.id === 0 ? undefined : lastInfo.get("ValorMes")} />
+                    </Col>   
+                </Row>
+                </Form>
+                </Spin>
+                </Modal>
 
-            <Spin spinning={this.state.loadingModal} tip="Cargando Archivos...">
-            <Form>
-            <Row gutter={[48,20]}>
-                <Col span={12}>
-                    <Divider orientation="left">Datos Principales</Divider>
-                </Col>
-                <Col span={12}>
-                    <Divider orientation="left">Datos de Contacto</Divider>
-                </Col>
-                <Col span={12}>
-                    <h1>Nombre</h1>
-                    <Input placeholder="Nombre" id="Nombre"  onChange={this.onChangeInput}
-                    defaultValue={this.state.id <= 0 ? undefined : lastInfo.get("Nombre")} />
-                </Col>
-                <Col span={12}>
-                    <h1>Teléfono</h1>
-                    <Input placeholder="Telefono" type="number" id="Telefono" onChange={this.onChangeInput}
-                    defaultValue={this.state.id <= 0 ? undefined : lastInfo.get("Telefono")} />
-                </Col>
-                <Col span={12}>
-                    <h1>Apellido</h1>
-                    <Input placeholder="Apellido" id="Apellido" onChange={this.onChangeInput}
-                    defaultValue={this.state.id <= 0 ? undefined : lastInfo.get("Apellido")} />
-                </Col>
-                <Col span={12}>
-                    <h1>Domicilio</h1>
-                    <Input placeholder="Domicilio" id="Domicilio" onChange={this.onChangeInput}
-                    defaultValue={this.state.id <= 0 ? undefined : lastInfo.get("Domicilio")} />
-                </Col>
-                <Col span={12}>
-                    <h1>DNI</h1>
-                    <Input placeholder="DNI" type="number" id="DNI" onChange={this.onChangeInput}
-                    defaultValue={this.state.id <= 0 ? undefined : lastInfo.get("DNI")} />
-                </Col>
-                <Col span={12}>
-                    <h1>E-Mail</h1>
-                    <Input placeholder="Email" id="Email" onChange={this.onChangeInput}
-                    defaultValue={this.state.id <= 0 ? undefined : lastInfo.get("Email")} />
-                </Col>
-                <Col span={12}>
-                    <h1>CUIL</h1>
-                    <Input placeholder="CUIL" type="number" id="CUIL" onChange={this.onChangeInput}
-                    defaultValue={this.state.id <= 0 ? undefined : lastInfo.get("CUIL")} />
-                </Col>
-            </Row>
-            <Divider orientation="left">Datos de Facturación</Divider>
-            <Row gutter={[48,20]}>
-                <Col span={12}>
-                    <h1>Entidad Bancaria</h1>
-                    <Input placeholder="Entidad Bancaria" id="EntidadBancaria" onChange={this.onChangeInput}
-                    defaultValue={this.state.id <= 0 ? undefined : lastInfo.get("EntidadBancaria")} />
-                </Col>
-                <Col span={12}>
-                    <h1>CBU/ALIAS</h1>
-                    <Input placeholder="CBU/ALIAS" id="CBU" onChange={this.onChangeInput}
-                    defaultValue={this.state.id <= 0 ? undefined : lastInfo.get("CBU")} />
-                </Col>
-                <Col span={12}>
-                    <h1>Constancia AFIP</h1>
-                    <Upload {...this.propsConstanciaAFIP} accept="application/pdf">
-                        <Button type="primary" disabled={this.state.afipFiles.length>0} icon={<UploadOutlined />}>Subir PDF</Button>
-                    </Upload>
-                    <Button onClick={() => this.setState({pdf:1, pdfViewer: true})}
-                        hidden={this.state.id <= 0 || !fileUrlAFIP}
-                    >Ver Actual</Button>
-                </Col>
-                <Col span={12}>
-                    <h1>Valor por Mes</h1>
-                    <Input placeholder="Valor Mes" type="number" id="ValorMes" onChange={this.onChangeInput}
-                    defaultValue={this.state.id <= 0 ? undefined : lastInfo.get("ValorMes")} />
-                </Col>
-                <Col span={12}>
-                    <h1>CV</h1>
-                    <Upload {...this.propsCV} accept="application/pdf">
-                        <Button type="primary" disabled={this.state.cvFiles.length>0} icon={<UploadOutlined />}>Subir PDF</Button>
-                    </Upload>
-                    <Button onClick={() => this.setState({pdf:2, pdfViewer: true})}
-                        hidden={this.state.id <= 0 || !fileUrlCV}
-                    >Ver Actual</Button>
-                </Col>
-            </Row>        
-            </Form> 
-            </Spin>             
-            </Modal>
-            
-            <VisorPDF
-                    fileURL={this.state.pdf===1?fileUrlAFIP:fileUrlCV}
-                    fileName={this.state.id>0?infoDatos[this.state.id - 1].Apellido + this.state.pdf===1?"_ConstanciaAFIP":"_CV" + ".pdf":""}
-                    visible={this.state.pdfViewer}
-                    onCancel={()=> this.setState({pdfViewer: false})}
-            />
-        </div>
-    )}
-    
+                <VisorPDF
+                    fileURL={fileUrlAFIP}
+                    fileName={this.state.pdfFileName}
+                    visible={this.state.pdfViewer1}
+                    onCancel={()=> this.setState({pdfViewer1: false})}
+                />
+                <VisorPDF
+                    fileURL={fileUrlCV}
+                    fileName={this.state.pdfFileName}
+                    visible={this.state.pdfViewer2}
+                    onCancel={()=> this.setState({pdfViewer2: false})}
+                />
+            </div>
+        )
+    }
 }
 
 export default Coordinadores

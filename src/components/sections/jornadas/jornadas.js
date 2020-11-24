@@ -10,10 +10,8 @@ const { Search } = Input;
 const { RangePicker } = DatePicker;
 const dateFormat = 'YYYY-MM-DD';
 const mesesNombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-"Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-];
+"Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 const moment = require('moment');
-const { confirm } = Modal;
 
 var agds = [];
 var ucds = [];
@@ -25,8 +23,8 @@ var rowOffset = 0;
 function nombreJornada (agdID, ucdID, fecha)
 {
     const f = fecha.split('/');
-    var n1; n1 = ucds[ucds.findIndex(v => v.id == ucdID)]; n1 = n1 ? n1.value.split(" ") : "[Beneficiario Borrado]";
-    var n2; n2 = agds[agds.findIndex(v => v.id == agdID)]; n2 = n2 ? n2.value.split(" ") : "[Acompañante Borrado]";
+    var n1; n1 = ucds[ucds.findIndex(v => v.id === ucdID)]; n1 = n1 ? n1.value.split(" ") : "[Beneficiario Borrado]";
+    var n2; n2 = agds[agds.findIndex(v => v.id === agdID)]; n2 = n2 ? n2.value.split(" ") : "[Acompañante Borrado]";
     var n = f[0] + " de " + mesesNombres[parseInt(f[1] - 1, 10)];
     n += " / " + n1[n1.length -1] + " - " + n2[n2.length -1];
     return n;    
@@ -34,7 +32,7 @@ function nombreJornada (agdID, ucdID, fecha)
 
 function getName (id, array){
     var n = "[Usuario Eliminado]";
-    var index = array.findIndex(v => v.id == id);
+    var index = array.findIndex(v => v.id === id);
     n = index !== -1 ? array[index].value : n;
     return n;
 }
@@ -43,7 +41,6 @@ var jornadasIn = [], jornadasFilter = [];
 
 var lastInfo = new FormData();
 
-//const loadingIcon = <LoadingOutlined style={{ fontSize: 24, display: this.state.isLoading ? "inline" : "none" }} spin />;
 
 class Jornadas extends React.Component{
     state = { 
@@ -53,9 +50,7 @@ class Jornadas extends React.Component{
         horas: 0,
         id: 0,
         acompIndex: -1,
-        benefIndex: -1,
-        filterSearch: "",
-        filter: []
+        benefIndex: -1
     };
 
     abortController = new AbortController();
@@ -277,50 +272,40 @@ class Jornadas extends React.Component{
     //Buscador
     handleSearch = (v) => {
         this.setState({filterSearch: v});
-        this.makeSearch();
+
     }
 
-    makeSearch = () =>{
-        //Se comprueba que el valor ingresado no esté vacio
-        if(this.state.filterSearch !== undefined || this.state.filterSearch !== "")
-        {
-            // if(p.Nombre.toUpperCase().includes(v.toUpperCase())||
-            // p.Apellido.toUpperCase().includes(v.toUpperCase()))
-
-            jornadasFilter = [];    //Se vacia el array
-            var k = this.state.filterSearch.split(':');   //Se separa la 'key'(0) y el valor(1), si es que hay ":"
-            jornadasIn.map(p => {
-                if(k.length === 2 && p[k[0]] !== undefined){
-                    //Si los valores separados son 2 y la 'key'(0) es valida
-                    //Se busca a partir de la 'key'(0) el valor(1) ingresado
-                    //Si dentro del elemento existe dicho valor(1), se "pushea" el objeto
-                    if(p[k[0]].toString().toUpperCase().includes(k[1].toUpperCase()))
-                    jornadasFilter.push(p);
-                }
-                else{
-                    //En el caso de que haya menos valores separados
-                    //Se busca en cada elemento dentro del objeto la coincidencia
-                    var f = false;
-                    Object.keys(p).forEach(key => { 
-                        if(p[key].toString().toUpperCase().includes(this.state.filterSearch.toUpperCase()) && !f) 
-                        {
-                            jornadasFilter.push(p);
-                            f = true;
-                        }
-                    })
-                }
-            })
+    onChangeFilter = async(e) => {
+        if(e){
+            let desde = e[0].format(dateFormat);
+            let hasta = e[1].format(dateFormat);
+            let fields = "*";
+            const res = await fetch('http://localhost:4000/rangoJornadas/' + fields + '/' + desde + '/' + hasta);
+            const datos = await res.json();
+            if(!datos.error)
+            {
+                var d = [];
+                datos.map(v => {
+                    v.FechaIngreso = moment(v.FechaIngreso, dateFormat + " HH:mm").format("DD/MM/YYYY HH:mm");
+                    v.FechaEgreso = moment(v.FechaEgreso, dateFormat + " HH:mm").format("DD/MM/YYYY HH:mm");
+                    d.push(v);
+                })
+                
+                jornadasFilter = d;
+            }
         }
         else jornadasFilter = jornadasIn;
 
         this.setState({cantidad: jornadasFilter.length});
     }
-
-    filterOk = () => {
-
-    }
     
 
+    arrayEquals(a, b) {
+        return Array.isArray(a) &&
+          Array.isArray(b) &&
+          a.length === b.length &&
+          a.every((val, index) => val === b[index]);
+    }
     // onChangeInput = (e) => {
     //     lastInfo.set(e.target.id, e.target.value);
     // }
@@ -344,7 +329,7 @@ class Jornadas extends React.Component{
                                 separator=">"
                                 allowClear
                                 locale={esES}
-                                onOk={this.filterOk}
+                                onChange={this.onChangeFilter}
                             />
                         </div>
                         
@@ -370,7 +355,7 @@ class Jornadas extends React.Component{
                             <LoadingOutlined style={{ padding: 16, fontSize: 24, display: this.state.isLoading ? "inline" : "none" }} spin />
                         </div>
                         <Pagination 
-                            style={{textAlign:"center", visibility:maxItems<=maxRows?"hidden":"visible"}} 
+                            style={{textAlign:"center", visibility:maxItems<=maxRows||!this.arrayEquals(jornadasIn,jornadasFilter)?"hidden":"visible"}} 
                             defaultCurrent={1} 
                             total={maxItems} 
                             pageSize={maxRows}

@@ -23,7 +23,7 @@ function CoordCard(props) {
                 pathname: props.linkto,
                 state: datos[0]
             })
-            )
+        )
     }
 
 
@@ -68,6 +68,9 @@ function CoordCard(props) {
                             </h1>
                         </div>
                     </Row>
+                    <div className="card-contents">
+                        <h3 className="card-subtitle">{props.Domicilio}</h3>
+                    </div>
                 </div>
                 <div className="card-right-col">
                     <Dropdown overlay={menu} trigger={['click']} placement="bottomRight">

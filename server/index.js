@@ -10,7 +10,7 @@ const {addBenef, updBenef, updBenefSeg, getBenef, getBenefOnly, delBenef,
 const {addCoord, updCoord, getCoord, getCoordOnly, delCoord, 
       addMonoCoord, getMonoCoord, getMonoCoordOnly, updMonoCoord, delMonoCoord, 
       addConCoord, getConCoord, getConCoordOnly, updConCoord, delConCoord} = require('./routes/coordinadorDBHandle')
-const {addJornada, updJornada, getJornadas, getJornadaOnly, delJornada, getJor4Liq} = require('./routes/jornadaDBHandle');
+const {addJornada, updJornada, getJornadas, getJornadaOnly, delJornada, rangoJornadas, getJor4Liq} = require('./routes/jornadaDBHandle');
 const {addLiq, updLiq, getLiq, getLiqOnly, delLiq} = require('./routes/liquidacionDBHandle');
 //const {getConnection} = require('./db/conn');
 const app = express()
@@ -83,6 +83,11 @@ app.get('/getJornadas/:fields',  (req, res) => {
 //Obtener Jornadas
 app.get('/getJornadas/:fields/:limit/:offset',  (req, res) => {
    getJornadas(req,res);
+})
+
+//Obtener Jornadas desde un rango de fechas
+app.get('/rangoJornadas/:fields/:desde/:hasta',  (req, res) => {
+   rangoJornadas(req,res);
 })
 
 //Actualizando Jornada

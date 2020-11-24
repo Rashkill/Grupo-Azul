@@ -47,6 +47,31 @@ const getJornadas = (req,res,next) =>{
   });
 }
 
+const rangoJornadas = (req,res,next) =>{
+  let fields = req.params.fields ? req.params.fields : "*";
+  let rango = req.params.desde && req.params.hasta ? `WHERE 
+    (
+      FechaIngreso LIKE '%${req.params.desde}%' OR (FechaIngreso > '${req.params.desde}' AND FechaIngreso < '${req.params.hasta}')
+      AND
+      FechaEgreso LIKE '%${req.params.hasta}%' OR (FechaEgreso < '${req.params.hasta}' AND FechaEgreso > '${req.params.desde}')
+    )` : "";
+  let db = getConnection();
+  let sql = `SELECT ${fields} FROM Jornada ${rango}`;
+
+  var arrayData = [];
+  db.all(sql, [], (err, rows) => {
+      if (err) {
+          res.status(400).json({"error":err.message});
+          return;
+      }
+      rows.forEach((row) => {
+          // console.log(row);
+          arrayData.push(row);
+      });
+      res.json(rows)
+  });
+}
+
 const getJor4Liq = (req,res,next) => {
   let idbenef = req.params.idbenef
   let desde = req.params.desde
@@ -127,4 +152,4 @@ const delJornada = (req,res) =>{
   });
 }
 
-module.exports = {addJornada, updJornada, getJornadas, getJornadaOnly, delJornada, getJor4Liq}
+module.exports = {addJornada, updJornada, getJornadas, getJornadaOnly, delJornada, rangoJornadas, getJor4Liq}
