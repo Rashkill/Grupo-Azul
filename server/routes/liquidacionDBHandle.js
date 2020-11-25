@@ -46,6 +46,31 @@ const getLiq = (req,res,next) =>{
   });
 }
 
+const rangoLiq = (req,res,next) =>{
+  let fields = req.params.fields ? req.params.fields : "*";
+  let rango = req.params.desde && req.params.hasta ? `WHERE 
+    (
+      Desde LIKE '%${req.params.desde}%' OR (Desde > '${req.params.desde}' AND Desde < '${req.params.hasta}')
+      AND
+      Hasta LIKE '%${req.params.hasta}%' OR (Hasta < '${req.params.hasta}' AND Hasta > '${req.params.desde}')
+    )` : "";
+  let db = getConnection();
+  let sql = `SELECT ${fields} FROM Liquidacion ${rango}`;
+
+  var arrayData = [];
+  db.all(sql, [], (err, rows) => {
+      if (err) {
+          res.status(400).json({"error":err.message});
+          return;
+      }
+      rows.forEach((row) => {
+          // console.log(row);
+          arrayData.push(row);
+      });
+      res.json(rows)
+  });
+}
+
 const getLiqOnly = (req,res,next) =>{
   let fields = req.params.fields ? req.params.fields : "*";
   let db = getConnection();
@@ -96,4 +121,4 @@ const delLiq = (req,res) =>{
   });
 }
 
-module.exports = {addLiq, updLiq, getLiq, getLiqOnly, delLiq}
+module.exports = {addLiq, updLiq, getLiq, rangoLiq, getLiqOnly, delLiq}

@@ -1,17 +1,19 @@
 import React from 'react';
 import { Divider, Row, Col, Input, Modal, AutoComplete, DatePicker, Empty, notification, Pagination } from 'antd';
 import { PlusOutlined, LoadingOutlined, CheckCircleOutlined, AlertOutlined } from '@ant-design/icons';
+import esES from 'antd/lib/locale/es_ES';
 import LiqCard from './liq-card.js'
 import Axios from 'axios';
 
+const { RangePicker } = DatePicker;
 const moment = require('moment');
 const { Search } = Input;
-const dateFormat = 'DD/MM/YYYY';
+const dateFormat = 'YYYY-MM-DD';
 const mesesNombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
 ];
 
-var liq = [];
+var liq = [], liqFilter = [];
 var ucds = [];
 var lastInfo = new FormData();
 
@@ -21,7 +23,7 @@ var rowOffset = 0;
 
 const getTitle = (ucdId, fecha) => {
 
-    const f = fecha.split('/');
+    const f = fecha.split('-');
     var n = ucds[ucds.findIndex(v => v.id == ucdId)];
 
     n = n ? n.value.split(" ") : "[Eliminado]";
@@ -38,6 +40,7 @@ class Liquidaciones extends React.Component {
         visible: false,
         isLoading: true,
         id: 0,
+        cantidad: 0,
         benefIndex: -1
     };
 
@@ -53,7 +56,9 @@ class Liquidaciones extends React.Component {
             const datos = await res.json();
             if(datos)
                 liq = datos;
+            liqFilter = liq;
 
+            this.setState({cantidad: liqFilter.length})
         }catch(e){
             liq = [];
             console.log(e);
@@ -109,6 +114,7 @@ class Liquidaciones extends React.Component {
         let fecha = `${d}/${m}/${a}`;
         lastInfo.set("FechaEmision", fecha)
 
+        console.log(lastInfo.get("Desde"),lastInfo.get("Hasta"))
         if(this.state.id <=0){
             Axios.post('http://localhost:4000/addLiq', lastInfo, {
                     headers: {
@@ -207,10 +213,32 @@ class Liquidaciones extends React.Component {
         console.log(v)
     }
     
+    onChangeFilter = async(e) => {
+        if(e){
+            let desde = e[0].format(dateFormat);
+            let hasta = e[1].format(dateFormat);
+            let fields = "*";
+            const res = await fetch('http://localhost:4000/rangoLiq/' + fields + '/' + desde + '/' + hasta);
+            const datos = await res.json();
+            if(!datos.error)
+                liqFilter = datos;
+        }
+        else liqFilter = liq;
+
+        this.setState({cantidad: liqFilter.length});
+    }
 
     // onChangeInput = (e) => {
     //     lastInfo.set(e.target.id, e.target.value);
     // }
+
+
+    arrayEquals(a, b) {
+        return Array.isArray(a) &&
+          Array.isArray(b) &&
+          a.length === b.length &&
+          a.every((val, index) => val === b[index]);
+    }
 
     render(){
         return(
@@ -221,18 +249,28 @@ class Liquidaciones extends React.Component {
                             <h1 className="big-title">
                                 Liquidaciónes
                             </h1>
-                            
                         </Divider>
+                        <div className="range-wrap">
+                            <h3 className="data-attr">Filtrar por fecha: </h3>
+                            <RangePicker
+                                size="small"
+                                format="DD/MM/YYYY"
+                                separator=">"
+                                allowClear
+                                locale={esES}
+                                onChange={this.onChangeFilter}
+                            />
+                        </div>
                         <div className="cards-container">
                             <Empty style={{display: this.state.isLoading ? "none" : liq.length > 0 ? "none" : "inline"}} description={false} />
-                            {liq.map(v =>
+                            {liqFilter.map(v =>
                             <LiqCard
                                 OnEdit={this.onEdit}
                                 OnDelete={this.onDelete}
                                 title={getTitle(v.IdBeneficiario, v.Desde)}
                                 idbenef={v.IdBeneficiario}
-                                desde={v.Desde}
-                                hasta={v.Hasta}
+                                desde={moment(v.Desde, dateFormat).format("DD/MM/YYYY")}
+                                hasta={moment(v.Hasta, dateFormat).format("DD/MM/YYYY")}
                                 fecha={v.FechaEmision}
                                 key={v.Id}
                                 id={v.Id}
@@ -242,7 +280,7 @@ class Liquidaciones extends React.Component {
                             <LoadingOutlined style={{ padding: 16, fontSize: 24, display: this.state.isLoading ? "inline" : "none" }} spin />
                         </div>
                         <Pagination 
-                            style={{textAlign:"center", visibility:maxItems<=maxRows?"hidden":"visible"}} 
+                            style={{textAlign:"center", visibility:maxItems<=maxRows||!this.arrayEquals(liq,liqFilter)?"hidden":"visible"}} 
                             defaultCurrent={1} 
                             total={maxItems} 
                             pageSize={maxRows}
@@ -265,7 +303,7 @@ class Liquidaciones extends React.Component {
                     onOk={this.handleOk}
                     onCancel={this.handleCancel}
                     cancelText="Cancelar"
-                    okText="Generar"
+                    okText={this.state.id <=0?"Generar":"Modificar"}
                     destroyOnClose
                     style={{padding: 16}}
                 >

@@ -11,7 +11,7 @@ const {addCoord, updCoord, getCoord, getCoordOnly, delCoord,
       addMonoCoord, getMonoCoord, getMonoCoordOnly, updMonoCoord, delMonoCoord, 
       addConCoord, getConCoord, getConCoordOnly, updConCoord, delConCoord} = require('./routes/coordinadorDBHandle')
 const {addJornada, updJornada, getJornadas, getJornadaOnly, delJornada, rangoJornadas, getJor4Liq} = require('./routes/jornadaDBHandle');
-const {addLiq, updLiq, getLiq, getLiqOnly, delLiq} = require('./routes/liquidacionDBHandle');
+const {addLiq, updLiq, getLiq, rangoLiq, getLiqOnly, delLiq} = require('./routes/liquidacionDBHandle');
 //const {getConnection} = require('./db/conn');
 const app = express()
 const multer = require('multer');
@@ -420,6 +420,11 @@ app.post('/updLiq/:id', upload.none(), (req, res) =>{
 //Get Liquidaciones
 app.get('/getLiq',  (req, res) => {
    getLiq(req,res)
+})
+
+//Obtener Liquidaciones desde un rango de fechas
+app.get('/rangoLiq/:fields/:desde/:hasta',  (req, res) => {
+   rangoLiq(req,res);
 })
 
 //Get Liquidaciones con campos especificos
