@@ -50,7 +50,9 @@ class Jornadas extends React.Component{
         horas: 0,
         id: 0,
         acompIndex: -1,
-        benefIndex: -1
+        benefIndex: -1,
+        filterSearch: "",
+        jornadas: []
     };
 
     abortController = new AbortController();
@@ -80,6 +82,7 @@ class Jornadas extends React.Component{
                     jornadasIn = d;
                 
                 jornadasFilter = jornadasIn;
+                this.setState({jornadas: jornadasFilter})
                 // jornadasIn.forEach(v => {
                 //     if(v.FechaIngreso)
                 //         v.FechaIngreso = moment(v.FechaIngreso, dateFormat + " HH:mm").format("DD/MM/YYYY");
@@ -298,6 +301,31 @@ class Jornadas extends React.Component{
 
         this.setState({cantidad: jornadasFilter.length});
     }
+
+    //filtrar listado de jornadas
+    filterOk = (value) => {        
+
+        
+        if(value == null){
+            this.getData()
+
+        }else{
+            var nuevaLista = []
+            
+            this.state.jornadas.map(j => {
+                console.log(j.Id)
+                console.log(j.FechaIngreso)
+                console.log(j.FechaEgreso)
+                // if(moment(j.FechaIngreso) >= value[0]){
+                //     console.log(j)
+                //     nuevaLista.push(j)
+                // }
+            })
+            
+            console.log(nuevaLista)
+            // this.setState({jornadas: nuevaLista})
+        }
+    }
     
 
     arrayEquals(a, b) {
@@ -334,9 +362,9 @@ class Jornadas extends React.Component{
                         </div>
                         
                         <div className="cards-container">
-                            <Empty style={{display: this.state.isLoading ? "none" : jornadasFilter.length > 0 ? "none" : "inline"}} description={false} />
+                            <Empty style={{display: this.state.isLoading ? "none" : this.state.jornadas.length > 0 ? "none" : "inline"}} description={false} />
                             
-                                {jornadasFilter.map(j => {
+                                {this.state.jornadas.map(j => {
                                     return(
                                         <JornadaCard
                                             title={nombreJornada(j.IdAcompañante, j.IdBeneficiario, j.FechaIngreso)}
