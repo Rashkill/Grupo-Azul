@@ -7,12 +7,12 @@ import BenefCard from './benef-card'
 
 import Axios from 'axios';
 
-
+const moment = require('moment');
 const { Search } = Input;
 
 var infoDatos = [], infoFiltro = [];
 var coords = [];
-var coordIndex = -1;
+var index = -1, coordIndex = -1;
 var lastInfo = new FormData();
 var fileBlob, fileURL;
 
@@ -78,21 +78,14 @@ class Beneficiarios extends React.Component{
         } 
         catch(e){console.log(e)}
     }
-
-    fetchMoreData = () => {
-        this.setState({isLoading:true});
-        this.getData();
-    };
     
     //Se ejecuta al montar el componente
-    componentDidMount()
-    {
+    componentDidMount(){
         this.getData();
     }
 
     //Se ejecuta al desmontar el componente
-    componentWillUnmount()
-    {
+    componentWillUnmount(){
         rowOffset = 0;
         infoDatos = [];
         this.abortController.abort();
@@ -129,6 +122,7 @@ class Beneficiarios extends React.Component{
         {
             //Se asigna el archivo desde la lista y se llama a la base de datos
             lastInfo.set("FichaInicial", this.state.fileList[0])
+            lastInfo.set("CUIL", lastInfo.get("CUIL1")+"-"+lastInfo.get("CUIL2"))
             Axios.post('http://localhost:4000/addBenef', lastInfo, {
                 headers: {
                     Accept: 'application/json'
@@ -153,6 +147,8 @@ class Beneficiarios extends React.Component{
                 lastInfo.set("FichaInicial", this.state.fileList[0]);
             else
                 lastInfo.set("FichaInicial", fileBlob)
+
+            lastInfo.set("CUIL", lastInfo.get("CUIL1")+"-"+lastInfo.get("CUIL2"))
             Axios.post('http://localhost:4000/updBenef/' + this.state.id, lastInfo, {
                 headers: {
                     Accept: 'application/json'
@@ -165,7 +161,7 @@ class Beneficiarios extends React.Component{
                     fileList: []
                 })
                 this.openNotification("Datos Actualizados",
-                "El acompañante fue actualizado correctamente", true);
+                "El beneficiario fue actualizado correctamente", true);
                 this.getData();
             });
         }
@@ -192,10 +188,16 @@ class Beneficiarios extends React.Component{
                 column = k[0];
                 pattern = k[1].replace(/^\s+/g, '');
             }
-            const fields = "Id, Nombre, Apellido, DNI, CUIL, FechaNacimiento, Domicilio, Localidad, CodigoPostal, Email, Telefono, Enfermedades, IdCoordinador"
-            const result = await fetch('http://localhost:4000/find/' + fields + '/' + table + '/' + column + '/' + pattern, {signal: this.abortController.signal});
-            const data = await result.json();
-            infoFiltro = data;
+            try{
+                const fields = "Id, Nombre, Apellido, DNI, CUIL, FechaNacimiento, Domicilio, Localidad, CodigoPostal, Email, Telefono, Enfermedades, IdCoordinador"
+                const result = await fetch('http://localhost:4000/find/' + fields + '/' + table + '/' + column + '/' + pattern, {signal: this.abortController.signal});
+                const data = await result.json();
+                if(data.error)
+                    this.openNotification('Error de busqueda', `"${column}" no es un criterio de busqueda valido`, false);
+                else
+                    infoFiltro = data;
+            }
+            catch(e){console.log(e); infoFiltro = infoDatos;}
         }
         else infoFiltro = infoDatos;
         
@@ -207,9 +209,18 @@ class Beneficiarios extends React.Component{
 
         //Se obtiene el index del array, segun la Id a editar
         //Luego se rellenan los campos correspondientes
-        let index = infoDatos.findIndex(p => p.Id == id);
+        index = infoDatos.findIndex(p => p.Id == id);
         for (var prop in infoDatos[index]) {
-            lastInfo.set(prop, infoDatos[index][prop]);
+            if(prop != "CUIL")
+                lastInfo.set(prop, infoDatos[index][prop]);
+            else{
+                let cuil = infoDatos[index].CUIL.split('-');
+                lastInfo.set("CUIL1", cuil[0]);
+                if(cuil.length>1)
+                    lastInfo.set("CUIL2", cuil[1]);
+                else
+                    lastInfo.set("CUIL2", "");
+            }
         }
         coordIndex = coords.findIndex(x => x.id == lastInfo.get('IdCoordinador'));
 
@@ -246,7 +257,6 @@ class Beneficiarios extends React.Component{
         beforeUpload: file => {
             let fileL = []; fileL.push(file);
             this.setState({fileList: fileL})
-            console.log(file);
           return false;
         }
     };
@@ -349,9 +359,23 @@ class Beneficiarios extends React.Component{
                             defaultValue={this.state.id <=0 ? this.value : lastInfo.get("Domicilio")}/>
                         </Col>
                         <Col span={12}>
-                            <h4>DNI:</h4>
-                            <Input placeholder="DNI" type="number" id="DNI" onChange={this.onChangeInput}
-                            defaultValue={this.state.id <=0 ? this.value : lastInfo.get("DNI")}/>
+                            <h4>DNI/CUIL:</h4>
+                            <Row gutter={12}>
+                            <Col span={5}>
+                                <Input placeholder="00" type="number" id="CUIL1" onChange={this.onChangeInput}
+                                defaultValue={this.state.id <=0 ? this.value : lastInfo.get("CUIL1")}/>
+                            </Col>
+                            -
+                            <Col span={12}>
+                                <Input placeholder="DNI" type="number" id="DNI" onChange={this.onChangeInput}
+                                defaultValue={this.state.id <=0 ? this.value : lastInfo.get("DNI")}/>
+                            </Col>
+                            -
+                            <Col span={4}>
+                                <Input placeholder="0" type="number" id="CUIL2" onChange={this.onChangeInput}
+                                defaultValue={this.state.id <=0 ? this.value : lastInfo.get("CUIL2")}/>
+                            </Col>
+                            </Row>
                         </Col>
                         <Col span={12}>
                             <h4>Localidad:</h4>
@@ -361,15 +385,11 @@ class Beneficiarios extends React.Component{
                         <Col span={12}>
                             <h4>Fecha de Nacimiento:</h4>
                             <DatePicker placeholder="Fecha de Nacimiento" id="FechaNacimiento"
-                                format="DD / MM / YYYY"
+                                format="DD/MM/YYYY"
                                 style={{width: '100%'}}
-                                onChange={(e) =>{lastInfo.set("FechaNacimiento", e.format('DD/MM/YYYY'))}}
+                                defaultValue={this.state.id<0?this.value :  moment(lastInfo.get("FechaNacimiento"), "DD/MM/YYYY")}
+                                onChange={(e) =>{lastInfo.set("FechaNacimiento", e.format('DD-MM-YYYY'))}}
                             />
-                        </Col>
-                        <Col span={12}>
-                            <h4>CUIL:</h4>
-                            <Input placeholder="CUIL" type="number" id="CUIL" onChange={this.onChangeInput}
-                            defaultValue={this.state.id <=0 ? this.value : lastInfo.get("CUIL")}/>
                         </Col>
                         <Col span={12}>
                             <h4>Codigo Postal:</h4>
@@ -424,7 +444,7 @@ class Beneficiarios extends React.Component{
 
                 <VisorPDF
                     fileURL={fileURL}
-                    fileName={this.state.id>0?infoDatos[this.state.id - 1].Apellido + "_FichaInicial.pdf":""}
+                    fileName={this.state.id>0?infoDatos[index].Apellido + "_FichaInicial.pdf":""}
                     visible={this.state.pdfViewer}
                     onCancel={()=> this.setState({pdfViewer: false})}
                 />

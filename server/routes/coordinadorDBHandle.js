@@ -40,6 +40,8 @@ const updCoord = (req,res) =>{
   let ConstanciaAFIP = req.files.ConstanciaAFIP[0].buffer
   let CV = req.files.CV[0].buffer;
 
+  console.log(req.body);
+
   db.run(sql,
     req.body.Nombre,
     req.body.Apellido,
@@ -52,15 +54,16 @@ const updCoord = (req,res) =>{
     //req.body.Telefono,
     req.body.ValorMes,
     ConstanciaAFIP,
-    CV, 
+    CV,
+    req.params.id,
       function(err) {
       if (err) {
         res.status(400).json({"error":err.message});
         console.log(err.message);
         return;
       }
-      res.status(200).json("Coordinador Cargado con exito");
-      console.log("Coordinador Cargado con Exito");
+      res.status(200).json("Coordinador Actualizado con exito");
+      console.log("Coordinador Actualizado con Exito");
   });
 }
 

@@ -31,9 +31,7 @@ function LiqCard(props) {
 
         try{
             let fields = "Id,IdAcompañante,CantHoras";
-            const res = await fetch('http://localhost:4000/getJor4Liq/' + fields + '/' + props.idbenef + '/' + desde + '/' + hasta, 
-            // {signal: this.abortController.signal}
-            );
+            const res = await fetch('http://localhost:4000/getJor4Liq/' + fields + '/' + props.idbenef + '/' + desde + '/' + hasta);
             jornadas = await res.json();
             console.log("Jornadas: ", jornadas)
         }catch(e){
