@@ -270,10 +270,36 @@ class Jornadas extends React.Component{
     };
 
     //Buscador
-    handleSearch = (v) => {
-        this.setState({filterSearch: v});
+    handleSearch = async(v) => {
+        if(v !== null && v !== ""){
+            let pattern = v.replace(/^\s+/g, '');
+            let column = "Nombre,Apellido";
+            let k = v.split(':');
+            if(k.length > 1){
+                column = k[0];
+                pattern = k[1].replace(/^\s+/g, '');
+            }
+            try{
+                const fields = "Id, Nombre, Apellido"
 
-    }
+                const result = await fetch('http://localhost:4000/find/' + fields + '/' + "Acompañante" + '/' + column + '/' + pattern, {signal: this.abortController.signal});
+                const data = await result.json();
+                if(data.error)
+                    this.openNotification('Error de busqueda', `"${column}" no es un criterio de busqueda valido`, false);
+                else
+                    console.log(data);
+                
+                const result2 = await fetch('http://localhost:4000/find/' + fields + '/' + "Beneficiario" + '/' + column + '/' + pattern, {signal: this.abortController.signal});
+                const data2 = await result2.json();
+                if(data2.error)
+                    this.openNotification('Error de busqueda', `"${column}" no es un criterio de busqueda valido`, false);
+                else
+                    console.log(data2);
+
+            }
+            catch(e){console.log(e);}
+        }
+    } 
 
     onChangeFilter = async(e) => {
         if(e){
@@ -363,7 +389,7 @@ class Jornadas extends React.Component{
                         />
                     </Col>
                     <Col span={6}>
-                        <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onChange={e => this.handleSearch(e.target.value)} allowClear={true}/>
+                        <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onPressEnter={e => this.handleSearch(e.target.value)} allowClear={true}/>
                         <div className="right-menu">
                             <div className="right-btn" hidden={this.state.isLoading} onClick={this.showModal}>
                                 <PlusOutlined />

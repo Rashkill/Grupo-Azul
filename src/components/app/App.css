@@ -5,6 +5,10 @@
     background: #f0f0f0;
 }
 
+.webmap {
+    height: 400px;
+}
+
 .flex-center{
     display: flex;
     justify-content: center;

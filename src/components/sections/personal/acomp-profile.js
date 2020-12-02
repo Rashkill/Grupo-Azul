@@ -6,6 +6,7 @@ import UserImg from '../../../images/image3.png'
 import DataRow from  '../../layout/data-row'
 
 import VisorPDF from '../util/visorPDF'
+import WebMapView from '../util/webMapView'
 import Axios from 'axios';
 
 const { TabPane } = Tabs;
@@ -20,6 +21,7 @@ const botones = {
     display: 'flex',
     flexDirection: 'row'
 }
+
 
 //click dropdown
 const dropClick = ({ key }) => {
@@ -655,7 +657,7 @@ const AcompProfile = (props) =>{
                             
                     </TabPane>
                     <TabPane tab="Mapa" key="2" style={TabStyles}>
-                        
+                        <WebMapView/>
                     </TabPane>
                 </Tabs>
 

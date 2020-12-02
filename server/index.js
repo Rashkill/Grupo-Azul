@@ -81,6 +81,11 @@ app.get('/getJornadas/:fields',  (req, res) => {
 })
 
 //Obtener Jornadas
+app.get('/getJornadas/:fields/:idbenef/:idacomp',  (req, res) => {
+   getJornadas(req,res);
+})
+
+//Obtener Jornadas
 app.get('/getJornadas/:fields/:limit/:offset',  (req, res) => {
    getJornadas(req,res);
 })
