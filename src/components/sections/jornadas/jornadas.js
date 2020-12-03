@@ -1,5 +1,5 @@
 import React from 'react';
-import { Divider, Row, Col, Input, Modal, AutoComplete, DatePicker, notification , Empty, Pagination } from 'antd';
+import { Divider, Row, Col, Input, Modal, AutoComplete, DatePicker, notification, Empty, Pagination, Select } from 'antd';
 import { PlusOutlined, LoadingOutlined , CheckCircleOutlined, AlertOutlined } from '@ant-design/icons';
 import esES from 'antd/lib/locale/es_ES';
 import JornadaCard from './jornada-card';
@@ -7,6 +7,7 @@ import Axios from 'axios';
 
 
 const { Search } = Input;
+const { Option } = Select;
 const { RangePicker } = DatePicker;
 const dateFormat = 'YYYY-MM-DD';
 const mesesNombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -38,9 +39,8 @@ function getName (id, array){
 }
 
 var jornadasIn = [], jornadasFilter = [];
-
 var lastInfo = new FormData();
-
+var searchTable = undefined;
 
 class Jornadas extends React.Component{
     state = { 
@@ -271,34 +271,52 @@ class Jornadas extends React.Component{
 
     //Buscador
     handleSearch = async(v) => {
-        if(v !== null && v !== ""){
-            let pattern = v.replace(/^\s+/g, '');
-            let column = "Nombre,Apellido";
-            let k = v.split(':');
-            if(k.length > 1){
-                column = k[0];
-                pattern = k[1].replace(/^\s+/g, '');
-            }
-            try{
-                const fields = "Id, Nombre, Apellido"
+        if(searchTable){
+            if(v !== null && v !== ""){
+                let pattern = v.replace(/^\s+/g, '');
+                let column = "Nombre,Apellido";
+                let k = v.split(':');
+                if(k.length > 1){
+                    column = k[0];
+                    pattern = k[1].replace(/^\s+/g, '');
+                }
+                try{
+                    const result = await fetch('http://localhost:4000/find/Id' + '/' + searchTable + '/' + column + '/' + pattern, {signal: this.abortController.signal});
+                    const data = await result.json();
+                    if(data.error)
+                        this.openNotification('Error de busqueda', `"${column}" no es un criterio de busqueda valido`, false);
+                    else{
+                        var arr = [];
+                        var p = new Promise((resolve, reject) => data.forEach(async(info) => {
+                            let idType = searchTable + "=" + info.Id;
+                            const result2 = await fetch('http://localhost:4000/getJornadasPorID/*/' + idType, {signal: this.abortController.signal});
+                            const data2 = await result2.json();
+                            if(!data2.error){
+                                arr = Array.prototype.concat(arr, data2);
+                                var d = [];
+                                arr.map(v => {
+                                    v.FechaIngreso = moment(v.FechaIngreso, dateFormat + " HH:mm").format("DD/MM/YYYY HH:mm");
+                                    v.FechaEgreso = moment(v.FechaEgreso, dateFormat + " HH:mm").format("DD/MM/YYYY HH:mm");
+                                    d.push(v);
+                                })
+                                arr = d;
+                                resolve();
+                            }
+                        }));
+                        p.then(()=> {
+                            arr = arr.filter (function (value, index, array) { 
+                                return array.indexOf (value) == index;
+                            });
 
-                const result = await fetch('http://localhost:4000/find/' + fields + '/' + "Acompañante" + '/' + column + '/' + pattern, {signal: this.abortController.signal});
-                const data = await result.json();
-                if(data.error)
-                    this.openNotification('Error de busqueda', `"${column}" no es un criterio de busqueda valido`, false);
-                else
-                    console.log(data);
-                
-                const result2 = await fetch('http://localhost:4000/find/' + fields + '/' + "Beneficiario" + '/' + column + '/' + pattern, {signal: this.abortController.signal});
-                const data2 = await result2.json();
-                if(data2.error)
-                    this.openNotification('Error de busqueda', `"${column}" no es un criterio de busqueda valido`, false);
-                else
-                    console.log(data2);
-
-            }
-            catch(e){console.log(e);}
-        }
+                            jornadasFilter = arr;
+                            this.setState({cantidad: jornadasFilter.length});
+                        });
+                    }
+                }
+                catch(e){console.log(e);}
+            } else jornadasFilter = jornadasIn;
+        } else this.openNotification('Error de busqueda', `Por favor elija el tipo de busqueda`, false);
+        this.setState({cantidad: jornadasFilter.length});
     } 
 
     onChangeFilter = async(e) => {
@@ -389,6 +407,10 @@ class Jornadas extends React.Component{
                         />
                     </Col>
                     <Col span={6}>
+                        <Select allowClear onChange={(value)=>searchTable=value} placeholder="Buscar por" style={{width: '95%', margin: 8, marginRight: 16}}>
+                            <Option value="Acompañante" key="1">Acompañante</Option>
+                            <Option value="Beneficiario" key="2">Beneficiario</Option>
+                        </Select>
                         <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onPressEnter={e => this.handleSearch(e.target.value)} allowClear={true}/>
                         <div className="right-menu">
                             <div className="right-btn" hidden={this.state.isLoading} onClick={this.showModal}>

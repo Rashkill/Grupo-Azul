@@ -28,11 +28,12 @@ const addJornada = (req,res,next) =>{
 }
 
 const getJornadas = (req,res,next) =>{
+  let whereId = req.params.whereId ? `WHERE Id${req.params.whereId}` : "";
   let fields = req.params.fields ? req.params.fields : "*";
   let limitOffset = req.params.limit ? `LIMIT ${req.params.limit} OFFSET ${req.params.offset ? req.params.offset : 0}` : "";
   let db = getConnection();
-  let sql = `SELECT ${fields} FROM Jornada ORDER BY Id ${limitOffset}`;
-  
+  let sql = `SELECT ${fields} FROM Jornada ${whereId} ORDER BY Id ${limitOffset}`;
+  console.log(sql);
   var arrayData = [];
   db.all(sql, [], (err, rows) => {
       if (err) {

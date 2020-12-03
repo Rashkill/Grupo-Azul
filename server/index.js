@@ -80,8 +80,8 @@ app.get('/getJornadas/:fields',  (req, res) => {
    getJornadas(req,res);
 })
 
-//Obtener Jornadas
-app.get('/getJornadas/:fields/:idbenef/:idacomp',  (req, res) => {
+//Obtener Jornadas Con busqueda de ID especifica
+app.get('/getJornadasPorID/:fields/:whereId',  (req, res) => {
    getJornadas(req,res);
 })
 
