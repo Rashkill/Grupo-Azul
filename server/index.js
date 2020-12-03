@@ -427,6 +427,11 @@ app.get('/getLiq',  (req, res) => {
    getLiq(req,res)
 })
 
+//Obtener Liquidaciones Con busqueda de ID especifica
+app.get('/getLiqPorID/:fields/:whereId',  (req, res) => {
+   getLiq(req,res);
+})
+
 //Obtener Liquidaciones desde un rango de fechas
 app.get('/rangoLiq/:fields/:desde/:hasta',  (req, res) => {
    rangoLiq(req,res);

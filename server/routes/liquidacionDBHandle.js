@@ -27,10 +27,11 @@ const addLiq = (req,res,next) =>{
 }
 
 const getLiq = (req,res,next) =>{
+  let whereId = req.params.whereId ? `WHERE Id${req.params.whereId}` : "";
   let fields = req.params.fields ? req.params.fields : "*";
   let limitOffset = req.params.limit ? `LIMIT ${req.params.limit} OFFSET ${req.params.offset ? req.params.offset : 0}` : "";
   let db = getConnection();
-  let sql = `SELECT ${fields} FROM Liquidacion ORDER BY Id ${limitOffset}`;
+  let sql = `SELECT ${fields} FROM Liquidacion ${whereId} ORDER BY Id ${limitOffset}`;
 
   var arrayData = [];
   db.all(sql, [], (err, rows) => {

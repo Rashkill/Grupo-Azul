@@ -208,10 +208,45 @@ class Liquidaciones extends React.Component {
         });
     };
 
-    //Presionar enter al buscador
-    handleSearch = (v) => { 
-        console.log(v)
-    }
+    //Buscador
+    handleSearch = async(v) => {
+        if(v !== null && v !== ""){
+            let pattern = v.replace(/^\s+/g, '');
+            let column = "Nombre,Apellido";
+            let k = v.split(':');
+            if(k.length > 1){
+                column = k[0];
+                pattern = k[1].replace(/^\s+/g, '');
+            }
+            try{
+                const result = await fetch('http://localhost:4000/find/Id/Beneficiario/' + column + '/' + pattern, {signal: this.abortController.signal});
+                const data = await result.json();
+                if(data.error)
+                    this.openNotification('Error de busqueda', `"${column}" no es un criterio de busqueda valido`, false);
+                else{
+                    var arr = [];
+                    var p = new Promise((resolve, reject) => data.forEach(async(info) => {
+                        let idType = "Beneficiario=" + info.Id;
+                        const result2 = await fetch('http://localhost:4000/getLiqPorID/*/' + idType, {signal: this.abortController.signal});
+                        const data2 = await result2.json();
+                        if(!data2.error){
+                            arr = Array.prototype.concat(arr, data2);
+                            resolve();
+                        }
+                    }));
+                    p.then(()=> {
+                        arr = arr.filter (function (value, index, array) { 
+                            return array.indexOf (value) == index;
+                        });
+                        liqFilter = arr;
+                        this.setState({cantidad: liqFilter.length});
+                    });
+                }
+            }
+            catch(e){console.log(e);}
+        } else liqFilter = liq;
+        this.setState({cantidad: liqFilter.length});
+    } 
     
     onChangeFilter = async(e) => {
         if(e){

@@ -33,7 +33,7 @@ const getJornadas = (req,res,next) =>{
   let limitOffset = req.params.limit ? `LIMIT ${req.params.limit} OFFSET ${req.params.offset ? req.params.offset : 0}` : "";
   let db = getConnection();
   let sql = `SELECT ${fields} FROM Jornada ${whereId} ORDER BY Id ${limitOffset}`;
-  console.log(sql);
+
   var arrayData = [];
   db.all(sql, [], (err, rows) => {
       if (err) {
