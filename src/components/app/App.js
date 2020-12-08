@@ -1,7 +1,7 @@
 import React from 'react';
 import "antd/dist/antd.css";
 import './App.css';
-import { BrowserRouter, Route } from 'react-router-dom'
+import { BrowserRouter, Route, Redirect } from 'react-router-dom'
 import Sidenav from '../navigation/sidenav.js'
 import Inicio from '../sections/inicio/inicio.js'
 import Personal from '../sections/personal/personal.js'
@@ -22,6 +22,7 @@ function App() {
             <Sidenav/>
           </div>
           <div className="content-col">
+            <Redirect from="/" to="/inicio" />
             <Route path="/inicio" component={Inicio} />
             <Route path="/personal" component={Personal} />
             <Route path="/acompprofile" component={AcompProfile} />
