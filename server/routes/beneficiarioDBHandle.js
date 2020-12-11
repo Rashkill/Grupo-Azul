@@ -5,8 +5,8 @@ const {getConnection} = require('../db/conn');
 const addBenef = (req,res) =>{
     // console.log(req.body.data);
     let db = getConnection();
-    let sql = `INSERT INTO Beneficiario(Nombre,Apellido,DNI,CUIL,FechaNacimiento,Domicilio,Localidad,CodigoPostal,Email,Telefono,Enfermedades,FichaInicial,IdCoordinador)` + 
-    ` VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`;   
+    let sql = `INSERT INTO Beneficiario(Nombre,Apellido,DNI,CUIL,FechaNacimiento,Domicilio,Localidad,CodigoPostal,Email,Telefono,Enfermedades,FichaInicial,IdCoordinador,Latitud,Longitud)` + 
+    ` VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;   
     
     db.run(sql, 
       req.body.Nombre,
@@ -20,8 +20,10 @@ const addBenef = (req,res) =>{
       req.body.Email,
       req.body.Telefono,
       req.body.Enfermedades,
-      req.file.buffer,
+      req.file ? req.file.buffer : null,
       req.body.IdCoordinador,
+      req.body.Latitud,
+      req.body.Longitud,
       function(err) {
       if (err) {
         res.status(400).json({"error":err.message});
@@ -39,7 +41,7 @@ const addBenef = (req,res) =>{
 const updBenef = (req,res) =>{
 
   let db = getConnection();
-  let sql = `UPDATE Beneficiario SET Nombre=?,Apellido=?,DNI=?,CUIL=?,FechaNacimiento=?,Domicilio=?,Localidad=?,CodigoPostal=?,Email=?,Telefono=?,Enfermedades=?,FichaInicial=?,IdCoordinador=? WHERE id=?`; 
+  let sql = `UPDATE Beneficiario SET Nombre=?,Apellido=?,DNI=?,CUIL=?,FechaNacimiento=?,Domicilio=?,Localidad=?,CodigoPostal=?,Email=?,Telefono=?,Enfermedades=?,FichaInicial=?,IdCoordinador=?,Latitud=?,Longitud=? WHERE id=?`; 
 
   //console.log(req.body.FichaInicial)
   // insert one row into the langs table
@@ -55,8 +57,10 @@ const updBenef = (req,res) =>{
     req.body.Email,
     req.body.Telefono,
     req.body.Enfermedades,
-    req.file.buffer,
+    req.file ? req.file.buffer : null,
     req.body.IdCoordinador,
+    req.body.Latitud,
+    req.body.Longitud,
     req.params.id,
     function(err) {
       if (err) {

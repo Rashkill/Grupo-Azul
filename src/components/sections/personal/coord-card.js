@@ -12,7 +12,7 @@ function CoordCard(props) {
 
     var datos;
     const getDatos = async () =>{
-        const fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, ValorMes"
+        const fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, Localidad, CodigoPostal, ValorMes, Latitud, Longitud"
         const res = await fetch('http://localhost:4000/getCoordOnly/' + props.id + "/" + fields);
         datos = await res.json();
     }

@@ -36,7 +36,7 @@ const BenefCard = (props) =>{
 
     var info = [];
     const getDatos = async () =>{
-        const fields = "Id, Nombre, Apellido, DNI, CUIL, FechaNacimiento, Domicilio, Localidad, CodigoPostal, Email, Telefono, Enfermedades, IdCoordinador"
+        const fields = "Id, Nombre, Apellido, DNI, CUIL, FechaNacimiento, Domicilio, Localidad, CodigoPostal, Email, Telefono, Enfermedades, IdCoordinador, Latitud, Longitud"
         const res = await fetch('http://localhost:4000/getBenefOnly/' + props.id + '/' + fields);
         const datos = await res.json();
         info = datos[0];

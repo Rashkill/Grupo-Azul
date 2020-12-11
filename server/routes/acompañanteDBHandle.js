@@ -4,11 +4,11 @@ const {getConnection} = require('../db/conn');
 
 const addAcomp = (req,res) =>{
   let db = getConnection();
-  let sql = `INSERT INTO Acompañante(Nombre,Apellido,DNI,CUIL,EntidadBancaria,CBU,Domicilio,Email,Telefono,ValorHora,NumeroPoliza,NombreSeguros,ConstanciaAFIP,CV)` + 
-  ` VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`; 
+  let sql = `INSERT INTO Acompañante(Nombre,Apellido,DNI,CUIL,EntidadBancaria,CBU,Domicilio,Localidad,CodigoPostal,Email,Telefono,ValorHora,NumeroPoliza,NombreSeguros,Latitud,Longitud,ConstanciaAFIP,CV)` + 
+  ` VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`; 
 
-  let ConstanciaAFIP = req.files.ConstanciaAFIP[0].buffer;
-  let CV = req.files.CV[0].buffer;
+  let ConstanciaAFIP = req.files.ConstanciaAFIP ? req.files.ConstanciaAFIP[0].buffer : null;
+  let CV = req.files.CV > 0 ? req.files.CV[0].buffer : null;
   // insert one row into the langs table
   db.run(sql,
     req.body.Nombre,
@@ -18,13 +18,17 @@ const addAcomp = (req,res) =>{
     req.body.EntidadBancaria,
     req.body.CBU,
     req.body.Domicilio,
+    req.body.Localidad,
+    req.body.CodigoPostal,
     req.body.Email,
     req.body.Telefono,
     req.body.ValorHora,
     req.body.NumeroPoliza,
     req.body.NombreSeguros,
+    req.body.Latitud,
+    req.body.Longitud,
     ConstanciaAFIP,
-    CV, 
+    CV,
     function(err) {
     if (err) {
       res.status(400).json({"error":err.message});
@@ -38,10 +42,10 @@ const addAcomp = (req,res) =>{
 
 const updAcomp = (req,res) =>{
   let db = getConnection();
-  let sql = 'UPDATE Acompañante SET Nombre=?,Apellido=?,DNI=?,CUIL=?,EntidadBancaria=?,CBU=?,Domicilio=?,Email=?,Telefono=?,ValorHora=?,NumeroPoliza=?,NombreSeguros=?,ConstanciaAFIP=?,CV=? WHERE Id=?'; 
+  let sql = 'UPDATE Acompañante SET Nombre=?,Apellido=?,DNI=?,CUIL=?,EntidadBancaria=?,CBU=?,Domicilio=?,Localidad=?,CodigoPostal=?,Email=?,Telefono=?,ValorHora=?,NumeroPoliza=?,NombreSeguros=?,Latitud=?,Longitud=?,ConstanciaAFIP=?,CV=? WHERE Id=?'; 
 
-  let ConstanciaAFIP = req.files.ConstanciaAFIP[0].buffer
-  let CV = req.files.CV[0].buffer;
+  let ConstanciaAFIP = req.files.ConstanciaAFIP ? req.files.ConstanciaAFIP[0].buffer : null;
+  let CV = req.files.CV > 0 ? req.files.CV[0].buffer : null;
 
   db.run(sql,
     req.body.Nombre,
@@ -51,11 +55,15 @@ const updAcomp = (req,res) =>{
     req.body.EntidadBancaria,
     req.body.CBU,
     req.body.Domicilio,
+    req.body.Localidad,
+    req.body.CodigoPostal,
     req.body.Email,
     req.body.Telefono,
     req.body.ValorHora,
     req.body.NumeroPoliza,
     req.body.NombreSeguros,
+    req.body.Latitud,
+    req.body.Longitud,
     ConstanciaAFIP,
     CV, 
     req.params.id,

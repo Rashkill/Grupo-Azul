@@ -6,6 +6,8 @@ import UserImg from '../../../images/image3.png'
 import DataRow from  '../../layout/data-row'
 
 import VisorPDF from '../util/visorPDF'
+import Map from '../util/Map'
+
 import Axios from 'axios';
 
 const { TabPane } = Tabs;
@@ -671,7 +673,11 @@ const CoordProfile = (props) =>{
                             
                     </TabPane>
                     <TabPane tab="Mapa" key="2" style={TabStyles}>
-                        
+                        <div style={{height: 500}}>
+                            <Map
+                                coordPrincipal={[info.Latitud, info.Longitud]}
+                            />
+                        </div>
                     </TabPane>
                 </Tabs>
 

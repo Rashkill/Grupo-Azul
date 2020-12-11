@@ -1,58 +1,77 @@
 import React from 'react'
+import {Divider} from 'antd'
 import { NavLink, withRouter } from 'react-router-dom';
-import axios from 'axios'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
-import { latLng } from 'leaflet';
 
-// var coords = []
+import { createHashHistory } from 'history';
+export const history = createHashHistory();
 
 class Map extends React.Component {
-
+ 
     state = {
-        coords: [-31.63276, -60.71262]
+        info: [],
+        linkto: ""
     }
 
-    componentDidMount(){
-        var latlong = []
+    componentDidMount = async() =>{
+        if(this.props.buscarCoords){
+            try {
+                let fields
+                switch(this.props.buscarCoords){
+                    case "Acompañante": 
+                        fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, Localidad, CodigoPostal, Email, Telefono, ValorHora, NumeroPoliza, NombreSeguros, Latitud, Longitud"
+                        this.setState({linkto:"/acompprofile"}); 
+                        break;
+                    case "Beneficiario":
+                        fields = "Id, Nombre, Apellido, DNI, CUIL, FechaNacimiento, Domicilio, Localidad, CodigoPostal, Email, Telefono, Enfermedades, IdCoordinador, Latitud, Longitud"
+                        this.setState({linkto:"/benefprofile"}); 
+                        break;
+                    case "Coordinador": 
+                        fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, Localidad, CodigoPostal, ValorMes, Latitud, Longitud"
+                        this.setState({linkto:"/coordprofile"}); 
+                        break;
+                }
 
-        axios('http://dev.virtualearth.net/REST/v1/Locations?q=candido%20pujato%203360%20santa%20fe%203000%20argentina&maxResults=1&key=Arn6kit_Moqpx-2p7jWVKy1h-TlLyYESkqc1cHzP1JkEAm1A_86T8o3FtDcKqnVV')
-            .then(response => {
-                latlong = response.data.resourceSets[0].resources[0].geocodePoints[0].coordinates
-            })
-            .then(() => {
-                // console.log(coords)
-                this.setState({coords: latlong})
-            })
+                const result = await fetch('http://localhost:4000/getTable/' + fields + "/" + this.props.buscarCoords);
+                const info = await result.json();
+                this.setState({info: await info})
+                
+            } catch (error) {console.log(error);}
+        }
 
-        console.log(this.state.coords)
     }
-    
+
     render(){
         return(
             <div id="mapid" style={{width: '100%', height: '100%'}}>
-                <MapContainer center={[-31.63176, -60.71262]} zoom={16} scrollWheelZoom={true} style={{height:'100%'}}>
+                <MapContainer center={this.props.coordPrincipal} zoom={16} scrollWheelZoom={true} style={{height:'100%'}}>
                     <TileLayer
-                    attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
-                    {/* <Marker position={[-31.63176, -60.71262]}>
-                        <Popup>
-                        Mi casa <br/> 
-                        jeje<br/>
-                        <NavLink to="/personal">
-                            <a>personal</a>
-                        </NavLink>
-                        </Popup>
-                    </Marker> */}
-                    <Marker position={this.state.coords}>
-                    {/* <Marker position={coords}> */}
-                        <Popup>
-                        otro marker <br/>
-                        <NavLink to="/beneficiarios">
-                            <a>beneficiarios</a>
-                        </NavLink>
-                        </Popup>
+                    <Marker position={this.props.coordPrincipal}>
                     </Marker>
+
+                    {this.state.info.map((p,index) => {
+                        return(
+                            <Marker opacity={90} position={[p.Latitud, p.Longitud]} key={`Marker N°${index+1}`}>
+                                <Popup>
+                                    <Divider>
+                                        <NavLink style={{fontWeight: "bolder"}} to={{
+                                            pathname: this.state.linkto,
+                                            state: p
+                                        }}>
+                                            {p.Nombre + " " + p.Apellido}
+                                        </NavLink>
+                                    </Divider>
+                                    <div style={{textAlign: "center"}}>
+                                        {p.Domicilio} <br/>
+                                        <div style={{fontSize: 10}}>{p.Localidad + " " + p.CodigoPostal}</div>
+                                    </div>
+                                </Popup>
+                            </Marker>
+                        )
+                    })}
                 </MapContainer>
             </div>
         )

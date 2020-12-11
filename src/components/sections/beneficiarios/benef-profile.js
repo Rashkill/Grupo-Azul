@@ -6,6 +6,7 @@ import UserImg from '../../../images/image4-5.png'
 import DataRow from  '../../layout/data-row'
 
 import VisorPDF from '../util/visorPDF'
+import Map from '../util/Map'
 
 import Axios from 'axios';
 
@@ -96,17 +97,18 @@ const BenefCard = (props) =>{
         if(datos.length>0 && datos[0].Seguimientos){
             var jsonObject = JSON.parse(Buffer.from(JSON.parse(JSON.stringify(datos[0].Seguimientos)).data).toString('utf8'));
             info.Seguimientos = jsonObject;
-        }
-
-        if(info && info.Seguimientos){
-            delInfo = [];
-            for (let i = 0; i < info.Seguimientos.length; i++) {
-                    delInfo.push({delete: false})
-            }
-        }
         
-        setDelInfo([...delInfo]);
-        setSeguimientos([...info.Seguimientos]);
+
+            if(info && info.Seguimientos){
+                delInfo = [];
+                for (let i = 0; i < info.Seguimientos.length; i++) {
+                        delInfo.push({delete: false})
+                }
+            }
+            
+            setDelInfo([...delInfo]);
+            setSeguimientos([...info.Seguimientos]);
+        }
     }
 
 
@@ -132,10 +134,16 @@ const BenefCard = (props) =>{
         catch(e){console.log(e)}
     }
 
+    //const [coord, setCoord] = useState([0,0])
     useEffect(() => {
         if(info){
             getDatos();
             getPdfs();
+
+            // Axios(`http://dev.virtualearth.net/REST/v1/Locations?q='${info.Domicilio} ${info.Localidad} ${info.CodigoPostal}'argentina&maxResults=1&key=Arn6kit_Moqpx-2p7jWVKy1h-TlLyYESkqc1cHzP1JkEAm1A_86T8o3FtDcKqnVV`)
+            // .then(response => {
+            //     setCoord(response.data.resourceSets[0].resources[0].geocodePoints[0].coordinates);
+            // })
         }
         return () =>{
             rowOffset = 0;
@@ -585,7 +593,12 @@ const BenefCard = (props) =>{
                         {seguimiento}
                     </TabPane>
                     <TabPane tab="Mapa" key="3" style={TabStyles}>
-                        
+                        <div style={{height: 500}}>
+                            <Map
+                                coordPrincipal={[info.Latitud, info.Longitud]}
+                                buscarCoords={"Acompañante"}
+                            />
+                        </div>
                     </TabPane>
                 </Tabs>
 

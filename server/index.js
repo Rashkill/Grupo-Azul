@@ -66,6 +66,27 @@ app.get('/find/:fields/:table/:column/:pattern',  (req, res) => {
    });
 })
 
+app.get('/getTable/:fields/:table',  (req, res) => {
+   let fields = req.params.fields;
+   let table = req.params.table;
+
+   let db = getConnection();
+   let sql = `SELECT ${fields} FROM ${table} ORDER BY Id`;
+
+   var arrayData = [];
+   db.all(sql, [], (err, rows) => {
+       if (err) {
+           res.status(400).json({"error":err.message});
+           return;
+       }
+       rows.forEach((row) => {
+           // console.log(row);
+           arrayData.push(row);
+       });
+       res.json(rows)
+   });
+})
+
 /*-------------
     JORNADAS
 ---------------*/

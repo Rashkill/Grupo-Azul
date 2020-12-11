@@ -4,10 +4,10 @@ const {getConnection} = require('../db/conn');
 const addCoord = (req,res) =>{
   // console.log(req.body.data);
   let db = getConnection();
-  let sql = `INSERT INTO Coordinador(Nombre,Apellido,DNI,CUIL,EntidadBancaria,CBU,Domicilio,ValorMes,ConstanciaAFIP,CV)` + 
-  ` VALUES(?,?,?,?,?,?,?,?,?,?)`;
-  let ConstanciaAFIP = req.files.ConstanciaAFIP[0].buffer
-  let CV = req.files.CV[0].buffer;
+  let sql = `INSERT INTO Coordinador(Nombre,Apellido,DNI,CUIL,EntidadBancaria,CBU,Domicilio,Localidad,CodigoPostal,ValorMes,Latitud,Longitud,ConstanciaAFIP,CV)` + 
+  ` VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+  let ConstanciaAFIP = req.files.ConstanciaAFIP ? req.files.ConstanciaAFIP[0].buffer : null;
+  let CV = req.files.CV ? req.files.CV[0].buffer : null;
 
   db.run(sql,
     req.body.Nombre,
@@ -17,9 +17,11 @@ const addCoord = (req,res) =>{
     req.body.EntidadBancaria,
     req.body.CBU,
     req.body.Domicilio,
-    //req.body.Email,
-    //req.body.Telefono,
+    req.body.Localidad,
+    req.body.CodigoPostal,
     req.body.ValorMes,
+    req.body.Latitud,
+    req.body.Longitud,
     ConstanciaAFIP,
     CV, 
       function(err) {
@@ -35,10 +37,10 @@ const addCoord = (req,res) =>{
 
 const updCoord = (req,res) =>{
   let db = getConnection();
-  let sql = `UPDATE Coordinador SET Nombre=?,Apellido=?,DNI=?,CUIL=?,EntidadBancaria=?,CBU=?,Domicilio=?,ValorMes=?,ConstanciaAFIP=?,CV=? WHERE Id=?`;
+  let sql = `UPDATE Coordinador SET Nombre=?,Apellido=?,DNI=?,CUIL=?,EntidadBancaria=?,CBU=?,Domicilio=?,Localidad=?,CodigoPostal=?,ValorMes=?,Latitud=?,Longitud=?,ConstanciaAFIP=?,CV=? WHERE Id=?`;
 
-  let ConstanciaAFIP = req.files.ConstanciaAFIP[0].buffer
-  let CV = req.files.CV[0].buffer;
+  let ConstanciaAFIP = req.files.ConstanciaAFIP ? req.files.ConstanciaAFIP[0].buffer : null;
+  let CV = req.files.CV ? req.files.CV[0].buffer : null;
 
   console.log(req.body);
 
@@ -50,9 +52,11 @@ const updCoord = (req,res) =>{
     req.body.EntidadBancaria,
     req.body.CBU,
     req.body.Domicilio,
-    //req.body.Email,
-    //req.body.Telefono,
+    req.body.Localidad,
+    req.body.CodigoPostal,
     req.body.ValorMes,
+    req.body.Latitud,
+    req.body.Longitud,
     ConstanciaAFIP,
     CV,
     req.params.id,

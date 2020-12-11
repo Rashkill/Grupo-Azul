@@ -116,55 +116,62 @@ class Beneficiarios extends React.Component{
 
     
     //Se llama al presionar el boton OK
-    handleOk = e => {   
-        //Si la 'id' es menor o igual a 0, significa que se esta agregando uno nuevo
-        if(this.state.id <=0)
-        {
-            //Se asigna el archivo desde la lista y se llama a la base de datos
-            lastInfo.set("FichaInicial", this.state.fileList[0])
-            lastInfo.set("CUIL", lastInfo.get("CUIL1")+"-"+lastInfo.get("CUIL2"))
-            Axios.post('http://localhost:4000/addBenef', lastInfo, {
-                headers: {
-                    Accept: 'application/json'
-                }
-            }).then(() => {
-                //Se establecen los valores por defecto y se abre la notificacion
-                this.setState({
-                    visible: false,
-                    id: 0,
-                    fileList: []
-                })
-                this.openNotification("Datos Agregados",
-                "El beneficiario " + lastInfo.get("Apellido") + " ahora se encuentra en la lista", true);
-                this.getData();
-            });
-        }
-        else    //Parte de la actualizacion
-        {   
-            //Se comprueba que no se haya subido un archivo nuevo.
-            //De lo contrario, se utiliza el que ya estaba
-            if(this.state.fileList.length >= 1)
-                lastInfo.set("FichaInicial", this.state.fileList[0]);
-            else
-                lastInfo.set("FichaInicial", fileBlob)
+    handleOk = e => {
+        //Se obtiene la Latitud y la Longitud
+        Axios(`http://dev.virtualearth.net/REST/v1/Locations?q='${lastInfo.get("Domicilio")} ${lastInfo.get("Localidad")} ${lastInfo.get("CodigoPostal")}'argentina&maxResults=1&key=Arn6kit_Moqpx-2p7jWVKy1h-TlLyYESkqc1cHzP1JkEAm1A_86T8o3FtDcKqnVV`)
+            .then(response => {
+                let coords = (response.data.resourceSets[0].resources[0].geocodePoints[0].coordinates);
+                lastInfo.set("Latitud", coords[0]); lastInfo.set("Longitud", coords[1]);
+        }).then(()=>{
+            //Si la 'id' es menor o igual a 0, significa que se esta agregando uno nuevo
+            if(this.state.id <=0)
+            {
+                //Se asigna el archivo desde la lista y se llama a la base de datos
+                lastInfo.set("FichaInicial", this.state.fileList[0])
+                lastInfo.set("CUIL", lastInfo.get("CUIL1")+"-"+lastInfo.get("CUIL2"))
+                Axios.post('http://localhost:4000/addBenef', lastInfo, {
+                    headers: {
+                        Accept: 'application/json'
+                    }
+                }).then(() => {
+                    //Se establecen los valores por defecto y se abre la notificacion
+                    this.setState({
+                        visible: false,
+                        id: 0,
+                        fileList: []
+                    })
+                    this.openNotification("Datos Agregados",
+                    "El beneficiario " + lastInfo.get("Apellido") + " ahora se encuentra en la lista", true);
+                    this.getData();
+                });
+            }
+            else    //Parte de la actualizacion
+            {   
+                //Se comprueba que no se haya subido un archivo nuevo.
+                //De lo contrario, se utiliza el que ya estaba
+                if(this.state.fileList.length >= 1)
+                    lastInfo.set("FichaInicial", this.state.fileList[0]);
+                else
+                    lastInfo.set("FichaInicial", fileBlob)
 
-            lastInfo.set("CUIL", lastInfo.get("CUIL1")+"-"+lastInfo.get("CUIL2"))
-            Axios.post('http://localhost:4000/updBenef/' + this.state.id, lastInfo, {
-                headers: {
-                    Accept: 'application/json'
-                }
-            }).then(() => {
-                //Se establecen los valores por defecto y se abre la notificacion
-                this.setState({
-                    visible: false,
-                    id: 0,
-                    fileList: []
-                })
-                this.openNotification("Datos Actualizados",
-                "El beneficiario fue actualizado correctamente", true);
-                this.getData();
-            });
-        }
+                lastInfo.set("CUIL", lastInfo.get("CUIL1")+"-"+lastInfo.get("CUIL2"))
+                Axios.post('http://localhost:4000/updBenef/' + this.state.id, lastInfo, {
+                    headers: {
+                        Accept: 'application/json'
+                    }
+                }).then(() => {
+                    //Se establecen los valores por defecto y se abre la notificacion
+                    this.setState({
+                        visible: false,
+                        id: 0,
+                        fileList: []
+                    })
+                    this.openNotification("Datos Actualizados",
+                    "El beneficiario fue actualizado correctamente", true);
+                    this.getData();
+                });
+            }
+        })
     };
 
     //cancelar modal
@@ -387,8 +394,8 @@ class Beneficiarios extends React.Component{
                             <DatePicker placeholder="Fecha de Nacimiento" id="FechaNacimiento"
                                 format="DD/MM/YYYY"
                                 style={{width: '100%'}}
-                                defaultValue={this.state.id<0?this.value :  moment(lastInfo.get("FechaNacimiento"), "DD/MM/YYYY")}
-                                onChange={(e) =>{lastInfo.set("FechaNacimiento", e.format('DD-MM-YYYY'))}}
+                                defaultValue={this.state.id<0? moment(null) :  moment(lastInfo.get("FechaNacimiento"), "DD/MM/YYYY")}
+                                onChange={(e) =>{e ? lastInfo.set("FechaNacimiento", e.format('DD-MM-YYYY')) : lastInfo.set("FechaNacimiento", null)}}
                             />
                         </Col>
                         <Col span={12}>
