@@ -48,7 +48,7 @@ class Acompañantes extends React.Component{
             const data = await result.json();
             maxItems = data.length;
 
-            const fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, Email, Telefono, ValorHora, NumeroPoliza, NombreSeguros"
+            const fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, Localidad, CodigoPostal, Email, Telefono, ValorHora, NumeroPoliza, NombreSeguros"
             const res = await fetch('http://localhost:4000/getAcomp/' + fields + '/' + maxRows + '/' + rowOffset, {signal: this.abortController.signal});
             const datos = await res.json();
             
@@ -197,7 +197,7 @@ class Acompañantes extends React.Component{
                 pattern = k[1].replace(/^\s+/g, '');
             }
             try{
-                const fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, Email, Telefono, ValorHora, NumeroPoliza, NombreSeguros"
+                const fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, Localidad, CodigoPostal, Email, Telefono, ValorHora, NumeroPoliza, NombreSeguros"
                 const result = await fetch('http://localhost:4000/find/' + fields + '/' + table + '/' + column + '/' + pattern, {signal: this.abortController.signal});
                 const data = await result.json();
                 if(data.error)
