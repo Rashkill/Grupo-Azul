@@ -2,7 +2,7 @@ import React,{ useState, useEffect } from 'react';
 import { withRouter } from 'react-router-dom';
 import { Row, Col, Menu, Dropdown } from 'antd';
 import { EllipsisOutlined, EditFilled, DeleteFilled } from '@ant-design/icons';
-import UserImg from '../../../images/image3.png'
+import CoordImg from '../../../images/image3_1.png'
 import '../../layout/cards.css'
 import Axios from 'axios';
 import { createHashHistory } from 'history';
@@ -58,7 +58,7 @@ function CoordCard(props) {
         <div className="card">
             <div className="card-row">
                 <div className="card-left-col">
-                    <img src={UserImg} alt=""/>
+                    <img src={CoordImg} alt=""/>
                 </div>
                 <div className="card-mid-col">
                     <Row>

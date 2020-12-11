@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { withRouter } from 'react-router-dom';
 import { Modal, Upload, Tabs, PageHeader, Menu, Dropdown, Divider, Table, Timeline, Row, Col, Button, Typography, Input, notification, Popconfirm } from 'antd';
 import { SettingFilled, EditFilled, DeleteFilled, DeleteOutlined, CheckCircleOutlined, AlertOutlined, UploadOutlined, SaveOutlined, FileAddOutlined } from '@ant-design/icons';
-import UserImg from '../../../images/image3.png'
+import CoordImg from '../../../images/image3_1.png'
 import DataRow from  '../../layout/data-row'
 
 import VisorPDF from '../util/visorPDF'
@@ -538,7 +538,7 @@ const CoordProfile = (props) =>{
                 <Tabs>
                     <TabPane tab="Perfil" key="1" style={TabStyles}>
                         <div className="profile-banner">
-                            <img src={UserImg} style={{height: 125}}/>
+                            <img src={CoordImg} style={{height: 125}}/>
                             <h1 className="profile-name">{info.Nombre + " " + info.Apellido}</h1>
                             <p className="card-subtitle" style={{fontSize: 16}}>27-06320624-0</p>
                         </div>

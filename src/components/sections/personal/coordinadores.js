@@ -113,7 +113,8 @@ class Coordinadores extends React.Component{
     //Se llama al presionar el boton OK
     handleOk = e => {
         //Se obtiene la Latitud y la Longitud
-        Axios(`http://dev.virtualearth.net/REST/v1/Locations?q='${lastInfo.get("Domicilio")} ${lastInfo.get("Localidad")} ${lastInfo.get("CodigoPostal")}'argentina&maxResults=1&key=Arn6kit_Moqpx-2p7jWVKy1h-TlLyYESkqc1cHzP1JkEAm1A_86T8o3FtDcKqnVV`)
+        Axios(`http://dev.virtualearth.net/REST/v1/Locations?q=${lastInfo.get("Domicilio")}%20${lastInfo.get("CodigoPostal")}%20${lastInfo.get("Localidad")}%20argentina&maxResults=1&key=Arn6kit_Moqpx-2p7jWVKy1h-TlLyYESkqc1cHzP1JkEAm1A_86T8o3FtDcKqnVV`)
+        // Axios(`http://dev.virtualearth.net/REST/v1/Locations?q=Alberdi%202334%203000%20Santa%20Fe%20argentina&maxResults=1&key=Arn6kit_Moqpx-2p7jWVKy1h-TlLyYESkqc1cHzP1JkEAm1A_86T8o3FtDcKqnVV`)
             .then(response => {
                 let coords = (response.data.resourceSets[0].resources[0].geocodePoints[0].coordinates);
                 lastInfo.set("Latitud", coords[0]); lastInfo.set("Longitud", coords[1]);
