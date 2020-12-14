@@ -1,7 +1,7 @@
 import React from 'react'
 import {Divider} from 'antd'
 import { NavLink, withRouter } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, MapConsumer } from 'react-leaflet'
 import { Typography, Space } from 'antd';
 import { createHashHistory } from 'history';
 import { marker } from 'leaflet';
@@ -17,6 +17,7 @@ export const history = createHashHistory();
 
 var L = window.L;
 var markerIcon;
+let group;
 
 class Map extends React.Component {
  
@@ -79,6 +80,12 @@ class Map extends React.Component {
                 const result = await fetch('http://localhost:4000/getTable/' + fields + "/" + this.props.buscarCoords);
                 const info = await result.json();
                 this.setState({info: await info})
+                let coords = [];
+                info.map((i) => {
+                    coords.push([i.Latitud, i.Longitud])
+                })
+                group = new L.featureGroup(coords);
+                console.log(coords)
             } catch (error) {console.log(error);}
         }
 
@@ -130,7 +137,13 @@ class Map extends React.Component {
     render(){
         return(
             <div id="mapid" style={{width: '100%', height: '100%'}}>
-                <MapContainer center={this.props.coordPrincipal} zoom={16} scrollWheelZoom={true} style={{height:'100%'}}>
+                <MapContainer center={this.props.coordPrincipal} zoom={16} scrollWheelZoom={true} style={{height:'100%'}} ref={(ref) => { this.map = ref; }}>
+                    <MapConsumer>
+                        {(map) => {
+                        // console.log('map center:', map.fitBounds(group.getBounds()))
+                        return null
+                        }}
+                    </MapConsumer>
                     <TileLayer
                         // attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -142,6 +155,7 @@ class Map extends React.Component {
                     </Marker>
 
                     {this.state.info.map((p,index) => {
+                        
                         return(
                             <Marker 
                                 icon={markerIcon}

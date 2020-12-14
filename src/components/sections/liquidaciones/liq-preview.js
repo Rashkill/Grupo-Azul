@@ -1,6 +1,6 @@
 import React from 'react'
 import {Divider} from 'antd'
-import { Page, Text, Image, View, Document, StyleSheet, PDFViewer } from '@react-pdf/renderer';
+import { Page, Text, Image, View, Document, StyleSheet, PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
 import Logo3 from '../../../images/Logo3.jpg'
 
 const BORDER_COLOR = '#bfbfbf'
@@ -124,12 +124,19 @@ const LiqPreview = (props) => {
     
     const info = props.location.state
     console.log(info)
-
+    let totalLiq;
+    
     if(!info){
         props.history.goBack();
         return(<div></div>)
     }
     else
+    
+    totalLiq = info.infoCoord.ValorMes;
+    info.infoPorAcomp.map((a) => {
+        totalLiq = totalLiq + a.valorFinal
+    })
+
     return (
         <div className="content-cont prot-shadow">
 
@@ -141,6 +148,9 @@ const LiqPreview = (props) => {
             </Divider>
 
             <PDFViewer style={{width: '100%', height: 800}}>
+                <PDFDownloadLink fileName="asd">
+                {({ blob, url, loading, error }) => (loading ? 'Loading document...' : 'Download now!')}
+                </PDFDownloadLink>
                 <Document>
                     <Page size="A4" style={styles.page}>
                         <Image src={Logo3} style={{height: 180, alignSelf: 'center'}} cache />
@@ -294,13 +304,13 @@ const LiqPreview = (props) => {
                                             <Text style={styles.tableCell}>{a.info.Apellido.toString() + ', ' + a.info.Nombre.toString()}</Text> 
                                         </View> 
                                         <View style={styles.tableCol}> 
-                                            <Text style={styles.tableCell}>{'$ ' + a.valorHora.toString()}</Text> 
+                                            <Text style={styles.tableCell}>{'$ ' + a.valorHora.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</Text> 
                                         </View> 
                                         <View style={styles.tableCol}>
                                             <Text style={styles.tableCell}>{a.horasTotales.toString()}</Text> 
                                         </View>
                                         <View style={styles.tableCol}> 
-                                            <Text style={styles.tableCell}>{'$ ' + a.valorFinal.toString()}</Text> 
+                                            <Text style={styles.tableCell}>{'$ ' + a.valorFinal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</Text> 
                                         </View> 
                                     </View> 
                                             
@@ -321,7 +331,16 @@ const LiqPreview = (props) => {
                                     <Text style={styles.tableCell}>{info.infoCoord.Apellido.toString() + ', ' + info.infoCoord.Nombre.toString()}</Text> 
                                 </View> 
                                 <View style={styles.tableCol}> 
-                                    <Text style={styles.tableCell}>{'$ ' + info.infoCoord.ValorMes.toString()}</Text> 
+                                    <Text style={styles.tableCell}>{'$ ' + info.infoCoord.ValorMes.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</Text> 
+                                </View> 
+                            </View> 
+
+                            <View style={styles.tableRow}> 
+                                <View style={styles.tableColHeader2}> 
+                                    <Text style={styles.tableCellHeader}>TOTAL LIQUIDACIÓN</Text> 
+                                </View> 
+                                <View style={styles.tableColHeader}> 
+                                    <Text style={styles.tableCellHeader}>$ {totalLiq.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</Text> 
                                 </View> 
                             </View> 
 

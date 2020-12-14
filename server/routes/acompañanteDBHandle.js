@@ -114,7 +114,7 @@ const getAcompOnly = (req,res) =>{
 
 const delAcomp = (req,res) =>{
   let db = getConnection();
-  let sql = `DELETE FROM Coordinador WHERE id="${req.params.id}"`;
+  let sql = `DELETE FROM Acompañante WHERE id="${req.params.id}"`;
   db.run(sql, function(err) {
     if (err) {
       return console.error(err.message);

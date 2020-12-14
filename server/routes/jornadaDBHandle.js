@@ -82,11 +82,11 @@ const getJor4Liq = (req,res,next) => {
   let sql = `SELECT ${fields} FROM Jornada WHERE IdBeneficiario = "${idbenef}" 
     AND 
     (
-      FechaIngreso LIKE '%${desde}%' OR (FechaIngreso > '${desde}' AND FechaIngreso < '${hasta}')
-      AND
-      FechaEgreso LIKE '%${hasta}%' OR (FechaEgreso < '${hasta}' AND FechaEgreso > '${desde}')
-    )`;
-    console.log(sql)
+      FechaIngreso LIKE '%${desde}%' OR (FechaIngreso > '${desde}' OR FechaIngreso < '${hasta}')
+      )`;
+      // AND
+      // FechaEgreso LIKE '%${hasta}%' OR (FechaEgreso < '${hasta}' AND FechaEgreso > '${desde}')
+      console.log(sql)
   var arrayData = [];
   db.all(sql, [], (err, rows) => {
       if (err) {
