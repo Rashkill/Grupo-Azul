@@ -1,6 +1,6 @@
 import React from 'react';
 import { Divider, Row, Col, Input, Modal, AutoComplete, DatePicker, Empty, notification, Pagination } from 'antd';
-import { PlusOutlined, LoadingOutlined, CheckCircleOutlined, AlertOutlined } from '@ant-design/icons';
+import { PlusOutlined, LoadingOutlined, CheckCircleOutlined, AlertOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import esES from 'antd/lib/locale/es_ES';
 import LiqCard from './liq-card.js'
 import Axios from 'axios';
@@ -33,6 +33,25 @@ const getTitle = (ucdId, fecha) => {
     
     return t;
 }
+
+const renderItem = (title, dni) => {
+    return {
+      value: title,
+      label: (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+          }}
+        >
+          {title}
+          <span style={{color: "gray", fontSize: 12}}>
+            <InfoCircleOutlined />{dni.toString().substr(-3, 3)}
+          </span>
+        </div>
+      ),
+    };
+  };
 
 class Liquidaciones extends React.Component {
 
@@ -67,12 +86,14 @@ class Liquidaciones extends React.Component {
     
     getBenef = async () => {
         try{            
-            const resBenef = await fetch('http://localhost:4000/getBenef/' + "Nombre,Apellido,Id", {signal: this.abortController.signal});
+            const resBenef = await fetch('http://localhost:4000/getBenef/' + "Nombre,Apellido,DNI,Id", {signal: this.abortController.signal});
             const datosBenef = await resBenef.json();
             if(datosBenef)
                 ucds = (datosBenef.map(p => ({
-                    value: p.Nombre + " " + p.Apellido, 
-                    key: p.Id, id: p.Id
+                    value: p.Nombre + " " + p.Apellido,
+                    dni: p.DNI,
+                    key: p.Id, 
+                    id: p.Id
                 })));          
         }catch(e){
             ucds = [];
@@ -348,7 +369,7 @@ class Liquidaciones extends React.Component {
                                 <h4>Beneficiario</h4>
                                 <AutoComplete
                                     style={{ width: '100%' }}
-                                    options={ucds}
+                                    options={ucds.map(i => renderItem(i.value, i.dni))}
                                     placeholder="Nombre"
                                     filterOption={(inputValue, option) =>
                                     option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1

@@ -510,7 +510,9 @@ const AcompProfile = (props) =>{
                         <div className="profile-banner">
                             <img src={UserImg} style={{height: 125}}/>
                             <h1 className="profile-name">{info.Nombre + " " + info.Apellido}</h1>
-                            <p className="card-subtitle" style={{fontSize: 16}}>{info.CUIL}</p>
+                            <p className="card-subtitle" style={{fontSize: 16}}>
+                                {info.CUIL.split('-')[0] + "-" + info.DNI + "-" + info.CUIL.split('-')[1]}
+                            </p>
                         </div>
                         
                         <Divider/>

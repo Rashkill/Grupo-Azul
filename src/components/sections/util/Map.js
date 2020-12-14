@@ -80,12 +80,11 @@ class Map extends React.Component {
                 const result = await fetch('http://localhost:4000/getTable/' + fields + "/" + this.props.buscarCoords);
                 const info = await result.json();
                 this.setState({info: await info})
-                let coords = [];
-                info.map((i) => {
-                    coords.push([i.Latitud, i.Longitud])
-                })
-                group = new L.featureGroup(coords);
-                console.log(coords)
+                // let coords = info.map((i) => {
+                //     return [i.Latitud,i.Longitud]
+                // })
+                // let group = new L.featureGroup(...coords);
+                // console.log(group);
             } catch (error) {console.log(error);}
         }
 
@@ -173,7 +172,7 @@ class Map extends React.Component {
                                         </NavLink>
                                         <br/>
                                         <p style={{fontSize: 12, margin: 0}}>
-                                            {p.CUIL}
+                                            {p.CUIL.split('-')[0] + "-" + p.DNI + "-" + p.CUIL.split('-')[1]}
                                         </p>
                                     </Divider>
                                     <div style={{textAlign: "center"}}>

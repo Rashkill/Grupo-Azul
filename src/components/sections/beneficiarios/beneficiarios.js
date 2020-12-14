@@ -1,6 +1,6 @@
 import React from 'react';
 import { Divider, Row, Col, Input, Modal, Empty, Form, AutoComplete, Upload, Button, DatePicker, notification, Pagination, Spin} from 'antd';
-import { PlusOutlined, LoadingOutlined, UploadOutlined, CheckCircleOutlined, AlertOutlined } from '@ant-design/icons';
+import { PlusOutlined, LoadingOutlined, UploadOutlined, CheckCircleOutlined, AlertOutlined, InfoCircleOutlined } from '@ant-design/icons';
 
 import VisorPDF from '../util/visorPDF';
 import BenefCard from './benef-card'
@@ -20,6 +20,25 @@ var maxItems;
 const maxRows = 5;
 var rowOffset = 0;
 
+const renderItem = (title, dni) => {
+    return {
+      value: title,
+      label: (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+          }}
+        >
+          {title}
+          <span style={{color: "gray", fontSize: 12}}>
+            <InfoCircleOutlined />{dni.toString().substr(-3, 3)}
+          </span>
+        </div>
+      ),
+    };
+  };
+
 class Beneficiarios extends React.Component{
     state = {
         visible: false,
@@ -36,6 +55,7 @@ class Beneficiarios extends React.Component{
 
     //Secuencia que obtiene la informacion y luego desactiva el icono de carga
     getData = () =>{
+        infoDatos = []; infoFiltro = [];
         window.scrollTo(0,0);
         this.loadAndGetData().then(() => this.setState({isLoading: false}));
     }
@@ -55,11 +75,12 @@ class Beneficiarios extends React.Component{
                 infoDatos = datosBenef;
             infoFiltro = infoDatos;
 
-            const res = await fetch('http://localhost:4000/getCoord/Nombre,Apellido,Id', {signal: this.abortController.signal});
+            const res = await fetch('http://localhost:4000/getCoord/Nombre,Apellido,DNI,Id', {signal: this.abortController.signal});
             const datos = await res.json();
             if(datos)
                 coords = datos.map(c => ({
                     value: c.Nombre + " " + c.Apellido,
+                    dni: c.DNI,
                     id: c.Id
                 }));
 
@@ -240,17 +261,19 @@ class Beneficiarios extends React.Component{
     onDelete = (id) => {
         Modal.confirm({
             title:'¿Realmente desea eliminar este elemento?',
-            content: 'Esta acción no se puede deshacer.',
+            content: 'Esto eliminará toda información relacionada con el beneficiario\nEsta acción no se puede deshacer.',
             okText: 'Si', cancelText: 'No',
             onOk:(()=>{
+                Axios.delete('http://localhost:4000/delRecord/Jornada/IdBeneficiario=' + id).then(() =>
+                Axios.delete('http://localhost:4000/delRecord/Liquidacion/IdBeneficiario=' + id).then(() =>
                 Axios.delete('http://localhost:4000/benef/' + id).then(() => {
-                this.openNotification(
-                    "Eliminación exitosa",
-                    "El Beneficiario se borró correctamente",
-                    true
-                )
-                this.getData();
-                });
+                    this.openNotification(
+                        "Eliminación exitosa",
+                        "El Beneficiario se borró correctamente",
+                        true
+                    );
+                    this.getData();
+                })));
             })
         })
     }
@@ -421,7 +444,7 @@ class Beneficiarios extends React.Component{
                                 allowClear
                                 onChange={this.onChangeInput} 
                                 style={{ width: '100%' }}
-                                options={coords}
+                                options={coords.map(i => renderItem(i.value, i.dni))}
                                 filterOption={(inputValue, option) =>
                                     option.value.toUpperCase().indexOf(inputValue.toUpperCase()) + 1 !== 0}
                                 onChange = {(e, value, reason) => {
