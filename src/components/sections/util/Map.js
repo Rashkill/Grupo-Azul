@@ -4,6 +4,12 @@ import { NavLink, withRouter } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import { Typography, Space } from 'antd';
 import { createHashHistory } from 'history';
+import { marker } from 'leaflet';
+import markerGreen from '../../../images/marker-icon-green.png'
+import markerBlue from '../../../images/marker-icon-blue.png'
+import markerYellow from '../../../images/marker-icon-yellow.png'
+import markerGrey from '../../../images/marker-icon-grey.png'
+import markerShadow from '../../../images/marker-shadow.png'
 
 const { Text } = Typography;
 
@@ -16,7 +22,15 @@ class Map extends React.Component {
  
     state = {
         info: [],
-        linkto: ""
+        linkto: "",
+        mainMarkerIcon: new L.Icon({
+            iconUrl: markerGrey,
+            shadowUrl: markerShadow,
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        })
     }
 
     componentDidMount = async() =>{
@@ -27,8 +41,8 @@ class Map extends React.Component {
                     case "Acompañante": 
                         fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, Localidad, CodigoPostal, Email, Telefono, ValorHora, NumeroPoliza, NombreSeguros, Latitud, Longitud"
                         markerIcon = new L.Icon({
-                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
-                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                            iconUrl: markerBlue,
+                            shadowUrl: markerShadow,
                             iconSize: [25, 41],
                             iconAnchor: [12, 41],
                             popupAnchor: [1, -34],
@@ -39,8 +53,8 @@ class Map extends React.Component {
                     case "Beneficiario":
                         fields = "Id, Nombre, Apellido, DNI, CUIL, FechaNacimiento, Domicilio, Localidad, CodigoPostal, Email, Telefono, Enfermedades, IdCoordinador, Latitud, Longitud"
                         markerIcon = new L.Icon({
-                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png',
-                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                            iconUrl: markerGreen,
+                            shadowUrl: markerShadow,
                             iconSize: [25, 41],
                             iconAnchor: [12, 41],
                             popupAnchor: [1, -34],
@@ -51,8 +65,8 @@ class Map extends React.Component {
                     case "Coordinador": 
                         fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, Localidad, CodigoPostal, ValorMes, Latitud, Longitud"
                         markerIcon = new L.Icon({
-                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                            iconUrl: markerYellow,
+                            shadowUrl: markerShadow,
                             iconSize: [25, 41],
                             iconAnchor: [12, 41],
                             popupAnchor: [1, -34],
@@ -65,10 +79,52 @@ class Map extends React.Component {
                 const result = await fetch('http://localhost:4000/getTable/' + fields + "/" + this.props.buscarCoords);
                 const info = await result.json();
                 this.setState({info: await info})
-                
             } catch (error) {console.log(error);}
         }
 
+        //Color del marker principal
+        switch(this.props.markerPrincipal){
+            case "Acompañante": 
+                this.setState(
+                    {
+                        mainMarkerIcon: new L.Icon({
+                            iconUrl: markerBlue,
+                            shadowUrl: markerShadow,
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41],
+                            popupAnchor: [1, -34],
+                            shadowSize: [41, 41]
+                    })
+                })
+                break;
+            case "Beneficiario":
+                this.setState(
+                    {
+                        mainMarkerIcon: new L.Icon({
+                            iconUrl: markerGreen,
+                            shadowUrl: markerShadow,
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41],
+                            popupAnchor: [1, -34],
+                            shadowSize: [41, 41]
+                    })
+                })
+                break;
+            case "Coordinador": 
+                this.setState(
+                    {
+                        mainMarkerIcon: new L.Icon({
+                            iconUrl: markerYellow,
+                            shadowUrl: markerShadow,
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41],
+                            popupAnchor: [1, -34],
+                            shadowSize: [41, 41]
+                    })
+                })
+                break;
+        }
+        
     }
 
     render(){
@@ -80,14 +136,7 @@ class Map extends React.Component {
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
                     <Marker
-                        icon ={new L.Icon({
-                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                            iconSize: [25, 41],
-                            iconAnchor: [12, 41],
-                            popupAnchor: [1, -34],
-                            shadowSize: [41, 41]
-                        })}
+                        icon ={this.state.mainMarkerIcon}
                         position={this.props.coordPrincipal}
                     >
                     </Marker>
@@ -108,6 +157,10 @@ class Map extends React.Component {
                                         }}>
                                             {p.Nombre + " " + p.Apellido}
                                         </NavLink>
+                                        <br/>
+                                        <p style={{fontSize: 12, margin: 0}}>
+                                            {p.CUIL}
+                                        </p>
                                     </Divider>
                                     <div style={{textAlign: "center"}}>
                                         {p.Domicilio} <br/>

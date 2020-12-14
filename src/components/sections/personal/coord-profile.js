@@ -675,7 +675,9 @@ const CoordProfile = (props) =>{
                     <TabPane tab="Mapa" key="2" style={TabStyles}>
                         <div style={{height: 500}}>
                             <Map
+                                markerPrincipal={"Coordinador"}
                                 coordPrincipal={[info.Latitud, info.Longitud]}
+                                buscarCoords={"Beneficiario"}
                             />
                         </div>
                     </TabPane>

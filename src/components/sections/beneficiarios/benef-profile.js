@@ -595,6 +595,7 @@ const BenefCard = (props) =>{
                     <TabPane tab="Mapa" key="3" style={TabStyles}>
                         <div style={{height: 500}}>
                             <Map
+                                markerPrincipal={"Beneficiario"}
                                 coordPrincipal={[info.Latitud, info.Longitud]}
                                 buscarCoords={"Acompañante"}
                             />
