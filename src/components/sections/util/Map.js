@@ -10,6 +10,10 @@ import markerBlue from '../../../images/marker-icon-blue.png'
 import markerYellow from '../../../images/marker-icon-yellow.png'
 import markerGrey from '../../../images/marker-icon-grey.png'
 import markerShadow from '../../../images/marker-shadow.png'
+import imgBenef from '../../../images/image4-5.png'
+import imgAcomp from '../../../images/image3.png'
+import imgCoord from '../../../images/image3_1.png'
+
 
 const { Text } = Typography;
 
@@ -31,7 +35,8 @@ class Map extends React.Component {
             iconAnchor: [12, 41],
             popupAnchor: [1, -34],
             shadowSize: [41, 41]
-        })
+        }),
+        cardimg: imgBenef
     }
 
     componentDidMount = async() =>{
@@ -49,7 +54,7 @@ class Map extends React.Component {
                             popupAnchor: [1, -34],
                             shadowSize: [41, 41]
                         });
-                        this.setState({linkto:"/acompprofile"}); 
+                        this.setState({linkto:"/acompprofile", cardimg: imgAcomp}); 
                         break;
                     case "Beneficiario":
                         fields = "Id, Nombre, Apellido, DNI, CUIL, FechaNacimiento, Domicilio, Localidad, CodigoPostal, Email, Telefono, Enfermedades, IdCoordinador, Latitud, Longitud"
@@ -61,7 +66,7 @@ class Map extends React.Component {
                             popupAnchor: [1, -34],
                             shadowSize: [41, 41]
                         });
-                        this.setState({linkto:"/benefprofile"}); 
+                        this.setState({linkto:"/benefprofile", cardimg: imgBenef}); 
                         break;
                     case "Coordinador": 
                         fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, Localidad, CodigoPostal, ValorMes, Latitud, Longitud"
@@ -73,7 +78,7 @@ class Map extends React.Component {
                             popupAnchor: [1, -34],
                             shadowSize: [41, 41]
                         });
-                        this.setState({linkto:"/coordprofile"}); 
+                        this.setState({linkto:"/coordprofile", cardimg: imgCoord}); 
                         break;
                 }
 
@@ -162,23 +167,28 @@ class Map extends React.Component {
                                 position={[p.Latitud, p.Longitud]} 
                                 key={`Marker N°${index+1}`}
                             >
-                                <Popup>
-                                    <Divider>
-                                        <Text mark>{this.props.buscarCoords}</Text><br/>
-                                        <NavLink style={{fontWeight: "bolder"}} to={{
-                                            pathname: this.state.linkto,
-                                            state: p
-                                        }}>
-                                            {p.Nombre + " " + p.Apellido}
-                                        </NavLink>
-                                        <br/>
-                                        <p style={{fontSize: 12, margin: 0}}>
-                                            {p.CUIL}
-                                        </p>
-                                    </Divider>
-                                    <div style={{textAlign: "center"}}>
-                                        {p.Domicilio} <br/>
-                                        <div style={{fontSize: 10}}>{p.Localidad + " " + p.CodigoPostal}</div>
+                                <Popup style={{width: 'max-content'}}>
+                                    <div className="popup">
+                                        <img src={this.state.cardimg} style={{width:80, marginTop:4}}/>
+                                        <div>
+                                            <Divider>
+                                                <Text mark>{this.props.buscarCoords}</Text><br/>
+                                                <NavLink style={{fontWeight: "bolder"}} to={{
+                                                    pathname: this.state.linkto,
+                                                    state: p
+                                                }}>
+                                                    {p.Nombre + " " + p.Apellido}
+                                                </NavLink>
+                                                <br/>
+                                                <p style={{fontSize: 12, margin: 0}}>
+                                                    {p.CUIL}
+                                                </p>
+                                            </Divider>
+                                            <div style={{textAlign: "center"}}>
+                                                {p.Domicilio} <br/>
+                                                <div style={{fontSize: 10}}>{p.Localidad + " " + p.CodigoPostal}</div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </Popup>
                             </Marker>

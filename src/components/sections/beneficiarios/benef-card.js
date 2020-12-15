@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import { Row, Col, Menu, Dropdown } from 'antd';
 import { EllipsisOutlined, EditFilled, DeleteFilled } from '@ant-design/icons';
-import UserImg from '../../../images/image4.png'
+import UserImg from '../../../images/image4-5.png'
 import { createHashHistory } from 'history';
 export const history = createHashHistory();
 
@@ -56,7 +56,7 @@ const BenefCard = (props) =>{
         <div className="card">
             <div className="card-row">
                 <div className="card-left-col">
-                    <img src={UserImg} alt=""/>
+                    <img src={UserImg} alt="" style={{maxWidth:70}}/>
                 </div>
                 <div className="card-mid-col">
                     <Row>

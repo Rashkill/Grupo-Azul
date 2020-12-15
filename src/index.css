@@ -125,3 +125,10 @@ code {
   justify-content: space-between;
   width: 380px;
 }
+
+.popup{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+}

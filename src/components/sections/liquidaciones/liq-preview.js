@@ -119,6 +119,24 @@ const styles = StyleSheet.create({
     }
 });
 
+export const onRenderDocument = ({blob, filename}) => {
+    var blobUrl = URL.createObjectURL(blob);
+    saveDocument(blobUrl, filename);
+    // console.log(blobUrl)
+};
+  
+export const saveDocument = (function () {
+    var a = document.createElement("a");
+    document.body.appendChild(a);
+    a.style = "display: none";
+    return function (blob, fileName) {
+        a.href = blob;
+        a.download = fileName;
+        a.click();
+        window.URL.revokeObjectURL(blob);
+    };
+}());
+
 
 const LiqPreview = (props) => {
     
@@ -148,12 +166,9 @@ const LiqPreview = (props) => {
             </Divider>
 
             <PDFViewer style={{width: '100%', height: 800}}>
-                <PDFDownloadLink fileName="asd">
-                {({ blob, url, loading, error }) => (loading ? 'Loading document...' : 'Download now!')}
-                </PDFDownloadLink>
                 <Document>
                     <Page size="A4" style={styles.page}>
-                        <Image src={Logo3} style={{height: 180, alignSelf: 'center'}} cache />
+                        <Image src={Logo3} style={{height: 140, alignSelf: 'center'}} cache />
                         <View style={styles.subtitle}>
                             <Text>AGD / s</Text> 
                         </View>
