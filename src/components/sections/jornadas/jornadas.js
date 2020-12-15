@@ -1,6 +1,6 @@
 import React from 'react';
 import { Divider, Row, Col, Input, Modal, AutoComplete, DatePicker, notification, Empty, Pagination, Select } from 'antd';
-import { PlusOutlined, LoadingOutlined , CheckCircleOutlined, AlertOutlined } from '@ant-design/icons';
+import { PlusOutlined, LoadingOutlined , CheckCircleOutlined, AlertOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import esES from 'antd/lib/locale/es_ES';
 import JornadaCard from './jornada-card';
 import Axios from 'axios';
@@ -41,6 +41,25 @@ function getName (id, array){
 var jornadasIn = [], jornadasFilter = [];
 var lastInfo = new FormData();
 var searchTable = undefined;
+
+const renderItem = (title, dni) => {
+    return {
+      value: title,
+      label: (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+          }}
+        >
+          {title}
+          <span style={{color: "gray", fontSize: 12}}>
+            <InfoCircleOutlined />{dni.toString().substr(-3, 3)}
+          </span>
+        </div>
+      ),
+    };
+  };
 
 class Jornadas extends React.Component{
     state = { 
@@ -97,20 +116,22 @@ class Jornadas extends React.Component{
 
     getAcompBenef = async () => {
         try{            
-            const resBenef = await fetch('http://localhost:4000/getBenef/' + "Nombre,Apellido,Id", {signal: this.abortController.signal});
+            const resBenef = await fetch('http://localhost:4000/getBenef/' + "Nombre,Apellido,DNI,Id", {signal: this.abortController.signal});
             const datosBenef = await resBenef.json();
             if(datosBenef)
                 ucds = (datosBenef.map(p => ({
-                    value: p.Nombre + " " + p.Apellido, 
+                    value: p.Nombre + " " + p.Apellido,
+                    dni: p.DNI,
                     key: p.Id, 
                     id: p.Id
                 })));
-            const resAcomp = await fetch('http://localhost:4000/getAcomp/' + "Nombre,Apellido,Id", {signal: this.abortController.signal});
+            const resAcomp = await fetch('http://localhost:4000/getAcomp/' + "Nombre,Apellido,DNI,Id", {signal: this.abortController.signal});
             const datosAcomp = await resAcomp.json();
             if(datosAcomp)
                 agds = (datosAcomp.map(p => ({
-                    value: p.Nombre + " " + p.Apellido, 
-                    key: p.Id, 
+                    value: p.Nombre + " " + p.Apellido,
+                    dni: p.DNI,
+                    key: p.Id,
                     id: p.Id
             })));     
         }catch(e){
@@ -120,13 +141,8 @@ class Jornadas extends React.Component{
         }
     }
 
-    fetchMoreData = () => {
-        this.setState({isLoading:true});
-        this.getData().then(
-            () => this.setState({isLoading: false}));
-    };
-
     cargarTodo = () =>{
+        jornadasIn = []; jornadasFilter = [];
         window.scrollTo(0,0)
         this.getAcompBenef().then(
             () => this.getData().then(
@@ -379,7 +395,6 @@ class Jornadas extends React.Component{
                         
                         <div className="cards-container">
                             <Empty style={{display: this.state.isLoading ? "none" : jornadasFilter.length > 0 ? "none" : "inline"}} description={false} />
-                            
                                 {jornadasFilter.map(j => {
                                     return(
                                         <JornadaCard
@@ -438,7 +453,7 @@ class Jornadas extends React.Component{
                                 <h4>Beneficiario</h4>
                                 <AutoComplete
                                     style={{ width: '100%' }}
-                                    options={ucds}
+                                    options={ucds.map(i => renderItem(i.value, i.dni))}
                                     placeholder="Nombre"
                                     filterOption={(inputValue, option) =>
                                         option.value.toUpperCase().indexOf(inputValue.toUpperCase()) + 1 !== 0
@@ -458,7 +473,7 @@ class Jornadas extends React.Component{
                                 <h4>Acompañante</h4>
                                 <AutoComplete
                                     style={{ width: '100%' }}
-                                    options={agds}
+                                    options={agds.map(i => renderItem(i.value, i.dni))}
                                     placeholder="Nombre"
                                     filterOption={(inputValue, option) =>
                                         option.value.toUpperCase().indexOf(inputValue.toUpperCase()) + 1 !== 0

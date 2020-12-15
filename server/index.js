@@ -87,6 +87,18 @@ app.get('/getTable/:fields/:table',  (req, res) => {
    });
 })
 
+app.delete('/delRecord/:table/:wheresql', (req, res) =>{
+   let db = getConnection();
+   let sql = `DELETE FROM ${req.params.table} WHERE ${req.params.wheresql}`;
+   db.run(sql, function(err) {
+   if (err) {
+      return console.error(err.message);
+   }
+   console.log(`Se ha borrado la fila`);
+   res.json("Se ha borrado la fila");
+   });
+})
+
 /*-------------
     JORNADAS
 ---------------*/

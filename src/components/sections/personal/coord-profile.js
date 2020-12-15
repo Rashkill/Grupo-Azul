@@ -540,7 +540,9 @@ const CoordProfile = (props) =>{
                         <div className="profile-banner">
                             <img src={CoordImg} style={{height: 125}}/>
                             <h1 className="profile-name">{info.Nombre + " " + info.Apellido}</h1>
-                            <p className="card-subtitle" style={{fontSize: 16}}>27-06320624-0</p>
+                            <p className="card-subtitle" style={{fontSize: 16}}>
+                                {info.CUIL.split('-')[0] + "-" + info.DNI + "-" + info.CUIL.split('-')[1]}
+                            </p>
                         </div>
                         
                         <Divider/>
