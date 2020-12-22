@@ -23,7 +23,7 @@ var L = window.L;
 var markerIcon;
 let group;
 
-class Map extends React.Component {
+class Mapa extends React.Component {
  
     state = {
         info: [],
@@ -141,7 +141,7 @@ class Map extends React.Component {
     render(){
         return(
             <div id="mapid" style={{width: '100%', height: '100%'}}>
-                <MapContainer center={this.props.coordPrincipal} zoom={16} scrollWheelZoom={true} style={{height:'100%'}} ref={(ref) => { this.map = ref; }}>
+                <MapContainer center={this.props.coordPrincipal} zoom={16} scrollWheelZoom={true} style={{height:'100%'}}>
                     <MapConsumer>
                         {(map) => {
                         // console.log('map center:', map.fitBounds(group.getBounds()))
@@ -180,7 +180,7 @@ class Map extends React.Component {
                                                 </NavLink>
                                                 <br/>
                                                 <p style={{fontSize: 12, margin: 0}}>
-                                                    {p.CUIL}
+                                                    {p.CUIL.split('-')[0] +'-'+ p.DNI +'-'+ p.CUIL.split('-')[1]}
                                                 </p>
                                             </Divider>
                                             <div style={{textAlign: "center"}}>
@@ -201,4 +201,4 @@ class Map extends React.Component {
 }
 
 
-export default Map
+export default Mapa

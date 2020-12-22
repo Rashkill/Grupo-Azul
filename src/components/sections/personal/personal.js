@@ -12,11 +12,17 @@ const TabStyles = {
     borderBottom: '1px solid #f0f0f0',
 }
 
+let lastTab = "1";
+
 class Personal extends React.Component{
+
+    state = {
+        tab: lastTab
+    }
 
     render() {
         return(
-            <Tabs type="card">
+            <Tabs type="card" activeKey={this.state.tab} onTabClick={(activeKey)=>{this.setState({tab:activeKey}); lastTab=activeKey}}>
                 <TabPane tab="Acompañantes" key="1" style={TabStyles}>
                     <Acompañantes/>
                 </TabPane>

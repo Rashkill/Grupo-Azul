@@ -99,10 +99,7 @@ app.delete('/delRecord/:table/:wheresql', (req, res) =>{
    });
 })
 
-/*-------------
-    JORNADAS
----------------*/
-
+//#region JORNADAS
  //Agregando Jornada
  app.post('/addJornada', upload.none(), (req,res)=>{
    addJornada(req,res);
@@ -148,17 +145,13 @@ app.get('/getJor4Liq/:fields/:idbenef/:desde/:hasta',  (req, res) => {
    getJor4Liq(req,res);
 })
 
-//Buscar Jornadas para filtrar
+//#endregion
 
-
-
-/*-------------
-  ACOMPAÑANTES
----------------*/
+//#region ACOMPAÑANTES
 
 //Agregando Acompañante
-app.post('/addAcomp', upload.fields([{name: "ConstanciaAFIP", maxCount: 1}, {name: "CV", maxCount: 1}]),  (req,res)=>{
-   addAcomp(req,res);
+app.post('/addAcomp', upload.fields([{name: "ConstanciaAFIP", maxCount: 1}, {name: "CV", maxCount: 1}]),  (req,res,next)=>{
+   addAcomp(req,res,next);
 })
 
 //Get Acompañante
@@ -186,8 +179,8 @@ app.get('/getAcompOnly/:id/:fields',  (req, res, next) => {
  })
 
 //Actualizando Acompañante
-app.post('/updAcomp/:id', upload.fields([{name: "ConstanciaAFIP", maxCount: 1}, {name: "CV", maxCount: 1}]),  (req, res) => {
-  updAcomp(req,res);
+app.post('/updAcomp/:id', upload.fields([{name: "ConstanciaAFIP", maxCount: 1}, {name: "CV", maxCount: 1}]),  (req, res, next) => {
+  updAcomp(req,res,next);
 })
 
 //Borrando Acompañante
@@ -257,9 +250,9 @@ app.post('/updConAcomp/:id', upload.single("Archivo"), (req, res) => {
 app.delete('/conAcomp/:id',  (req, res) => {
    delConAcomp(req,res);
 })
-/*-   ----- -----    -
-      BENEFICIARIOS
--   ----- -----    -*/
+//#endregion
+
+//#region BENEFICIARIOS
 
  //Agregando Beneficiario
  app.post('/addBenef', upload.single("FichaInicial"),  (req,res)=>{
@@ -336,19 +329,18 @@ app.post('/updNotaBenef/:id', upload.single("Archivo"), (req, res) => {
 app.delete('/notaBenef/:id',  (req, res) => {
    delNotaBenef(req,res);
 })
+//#endregion
 
-/*-------------
-  COORDINADORES
----------------*/
+//#region COORDINADORES
 
 //Agregando Coordinador
-app.post('/addCoord', upload.fields([{name: "ConstanciaAFIP", maxCount: 1}, {name: "CV", maxCount: 1}]),  (req,res)=>{
-   addCoord(req,res);
+app.post('/addCoord', upload.fields([{name: "ConstanciaAFIP", maxCount: 1}, {name: "CV", maxCount: 1}]),  (req,res,next)=>{
+   addCoord(req,res,next);
 })
 
 //Actualizando Coordinador
-app.post('/updCoord/:id', upload.fields([{name: "ConstanciaAFIP", maxCount: 1}, {name: "CV", maxCount: 1}]),  (req,res)=>{
-   updCoord(req,res);
+app.post('/updCoord/:id', upload.fields([{name: "ConstanciaAFIP", maxCount: 1}, {name: "CV", maxCount: 1}]),  (req,res,next)=>{
+   updCoord(req,res,next);
 })
 
 //Get Coordinadores
@@ -441,9 +433,9 @@ app.post('/updConCoord/:id', upload.single("Archivo"), (req, res) => {
 app.delete('/conCoord/:id',  (req, res) => {
    delConCoord(req,res);
 })
-/*-------------
-  LIQUIDACIONES
----------------*/
+//#endregion
+
+//#region LIQUIDACIONES
 
 //Agregando Liquidacion
 app.post('/addLiq', upload.none(), (req,res)=>{
@@ -493,6 +485,7 @@ app.get('/getLiqOnly/:id/:fields',  (req, res) => {
 app.delete('/liq/:id',  (req, res)=>{
    delLiq(req,res);
 })
+//#endregion
 
 app.listen(port, () => {
   console.log(`Base de datos activa en http://localhost:${port}`)
