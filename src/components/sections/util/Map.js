@@ -1,7 +1,7 @@
 import React from 'react'
 import {Divider} from 'antd'
 import { NavLink, withRouter } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker, Popup, MapConsumer } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, MapConsumer, Tooltip } from 'react-leaflet'
 import { Typography, Space } from 'antd';
 import { createHashHistory } from 'history';
 import { marker } from 'leaflet';
@@ -156,6 +156,7 @@ class Map extends React.Component {
                         icon ={this.state.mainMarkerIcon}
                         position={this.props.coordPrincipal}
                     >
+                        <Tooltip>Perfil Actual</Tooltip>
                     </Marker>
 
                     {this.state.info.map((p,index) => {
