@@ -6,7 +6,7 @@ import axios from 'axios'
 
 const moment = require('moment');
 
-
+let abortController = new AbortController();
 class Inicio extends React.Component {  
     
     state = {
@@ -16,22 +16,22 @@ class Inicio extends React.Component {
         liqs: 0,
         liqsEsteMes: 0
     }
-
+    
     componentDidMount = async () => {
-        const benefresult = await fetch('http://localhost:4000/getBenef/');
+        const benefresult = await fetch('http://localhost:4000/getBenef/', {signal: abortController.signal});
         const benefdata = await benefresult.json();
         this.setState({ benefs: benefdata.length })
         
-        const acompresult = await fetch('http://localhost:4000/getAcomp/');
+        const acompresult = await fetch('http://localhost:4000/getAcomp/', {signal: abortController.signal});
         const acompdata = await acompresult.json();
         this.setState({ acomps: acompdata.length })
         
-        const coordresult = await fetch('http://localhost:4000/getCoord/');
+        const coordresult = await fetch('http://localhost:4000/getCoord/', {signal: abortController.signal});
         const coorddata = await coordresult.json();
         this.setState({ coords: coorddata.length })
         
 
-        const res = await fetch('http://localhost:4000/getLiq/FechaEmision');
+        const res = await fetch('http://localhost:4000/getLiq/FechaEmision', {signal: abortController.signal});
         const datos = await res.json();
         this.setState({ liqs: datos.length })
 
@@ -45,6 +45,10 @@ class Inicio extends React.Component {
                 this.setState({liqsEsteMes: this.state.liqsEsteMes + 1})
             }
         })
+    }
+    componentWillUnmount() {
+        abortController.abort();
+        abortController = new AbortController();
     }
     
     render() {
@@ -114,7 +118,9 @@ class Inicio extends React.Component {
                 <div className="cont-div" style={{height: 500}}>
                     <Map
                         coordPrincipal={[-31.63335, -60.72]}
-                        // buscarCoords={["Beneficiario", "Acompañante", "Coordinador"]}
+                        coords={["a", "b", "c"]}
+                        autoCentrar={true}
+                        distanciaMax={12}
                         zoom={12}
                     />
                 </div>

@@ -880,9 +880,10 @@ const BenefCard = (props) =>{
                     <TabPane tab="Mapa" key="3" style={TabStyles}>
                         <div style={{height: 500}}>
                             <Mapa
-                                markerPrincipal={"Beneficiario"}
+                                markerPrincipal={"b"}
                                 coordPrincipal={[info.Latitud, info.Longitud]}
-                                buscarCoords={["Acompañante"]}
+                                coords={["a"]}
+                                autoCentrar={true}
                             />
                         </div>
                     </TabPane>

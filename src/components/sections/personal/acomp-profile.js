@@ -967,9 +967,11 @@ const AcompProfile = (props) =>{
                     <TabPane tab="Mapa" key="2" style={TabStyles}>
                         <div style={{height: 500}}>
                             <Map
-                                markerPrincipal={"Acompañante"}
+                                markerPrincipal={"a"}
                                 coordPrincipal={[info.Latitud, info.Longitud]}
-                                buscarCoords={["Beneficiario", "Coordinador"]}
+                                coords={["b","c"]}
+                                autoCentrar={true}
+                                distanciaMax={4}
                             />
                         </div>
                     </TabPane>
