@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { withRouter } from 'react-router-dom';
-import { Modal, Upload, Tabs, PageHeader, Menu, Dropdown, Divider, Table, Timeline, Row, Col, Button, Typography, Input, notification, Popconfirm } from 'antd';
-import { SettingFilled, EditFilled, DeleteFilled, DeleteOutlined, CheckCircleOutlined, AlertOutlined, UploadOutlined, SaveOutlined, FileAddOutlined } from '@ant-design/icons';
+import { Spin, Modal, Upload, Tabs, PageHeader, Menu, Dropdown, Divider, Table, Timeline, Row, Col, Button, Typography, Input, notification, Popconfirm } from 'antd';
+import { SaveFilled, CloseCircleOutlined, SettingFilled, EditFilled, DeleteFilled, DeleteOutlined, CheckCircleOutlined, AlertOutlined, UploadOutlined, SaveOutlined, FileAddOutlined } from '@ant-design/icons';
 import UserImg from '../../../images/image3.png'
 import DataRow from  '../../layout/data-row'
 
@@ -23,39 +23,11 @@ const botones = {
     flexDirection: 'row'
 }
 
-
-//click dropdown
-const dropClick = ({ key }) => {
-    //Key de <Menu.Item>
-    if (key === 'edit') {
-        alert('edit')
-    } else {
-        alert('delete')
-    }
-}
-
-//dropdown
-const menu = (
-    <Menu onClick={dropClick}>
-        {/* la key es como se diferencian las opciones del drop, en la funcion dropClick*/}
-        <Menu.Item key="edit"> 
-            <div className="drop-btn" style={{color: '#fa8c16'}}>
-                <EditFilled />
-                <p>Editar</p>
-            </div>
-        </Menu.Item>
-        <Menu.Item key="delete">
-            <div className="drop-btn" style={{color: '#8c8c8c'}}>
-                <DeleteFilled />
-                <p>Eliminar</p>
-            </div>
-        </Menu.Item>
-    </Menu>
-);
-
 let maxMonoItems = 0, maxConItems = 0;
 const maxMonoRows = 5, maxConRows = 2;
 var rowMonoOffset = 0, rowConOffset = 0;
+var fileBlobAFIP, fileUrlAFIP;
+var fileBlobCV, fileUrlCV;
 
 function getFecha(){
     let f = new Date();
@@ -66,22 +38,58 @@ function getFecha(){
 }
 const AcompProfile = (props) =>{
 
-    var info = []; 
-    info = props.location.state;
+    let abortController = new AbortController();
+    const [edit, setEdit] = useState({
+        visible: false,
+        loading: true
+    });
+    const [pdf1, setPdf1] = useState({
+        visible: false,
+        fileList: []
+    })
+    const [pdf2, setPdf2] = useState({
+        visible: false,
+        fileList: []
+    })
+    const [editButton, setEditButton] = useState(true);
+    const [info, setInfo] = useState(props.location.state);
+    const [coordInfo, setCoordInfo] = useState("")
+    let lastInfo = new FormData();
 
     const [dataSourceMono, setDataSourceMono] = useState([])
     const [archivosMono, setArchivosMono] = useState([])
-
+    
     const [dataSourceCon, setDataSourceCon] = useState([])
     const [archivosCon, setArchivosCon] = useState([])
-
+    
     const [pdfViewer, setPdfViewer] = useState({
         visible: false,
         fileURL: null,
         fileName: ""
     })
+    
+    const getInfo = async () =>{
+        const fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, Localidad, CodigoPostal, Email, Telefono, ValorHora, NumeroPoliza, NombreSeguros, Latitud, Longitud"
+        const res = await fetch('http://localhost:4000/getAcompOnly/' + props.location.state.Id + "/" + fields);
+        const datos = await res.json();
+        setInfo(datos[0]);
+        setPdf1({fileList: []});
+        setPdf2({fileList: []});
+        
+    }
 
+    useEffect(() => {
+        if(info){
+            getPdfsMono();
+            getPdfsCon();
+        }
+        return () =>{
+            rowMonoOffset = 0;
+        }
+    },[info])
 
+//COLUMNAS TABLA MONOTRIBUTOS
+//#region Monotributos
     //Obtiene los archivos Monotributo
     const getPdfsMono = async() =>{
         try{
@@ -110,7 +118,7 @@ const AcompProfile = (props) =>{
     //Se asigna o elimina el archivo
     const ArchivoPDFMono = {
         onRemove: file => {
-                let fileL = archivosMono; fileL.splice(archivosMono.findIndex(x => x === file, 1));
+                let fileL = archivosMono; fileL.splice(archivosMono.findIndex(x => x === file), 1);
                 setArchivosMono([...fileL]);
                 return true;
         },
@@ -168,7 +176,6 @@ const AcompProfile = (props) =>{
     const getPDFBlob = async(id) =>{
         const res = await fetch('http://localhost:4000/getMonoAcompOnly/Archivo/' + id);
         const datos = await res.json();
-        console.log(id, datos);
         return new Blob([Buffer.from(datos[0].Archivo.data)], {type: "application/pdf"})
     }
 
@@ -209,18 +216,11 @@ const AcompProfile = (props) =>{
             getPdfsMono();
         })
     }
+//#endregion
 
-    useEffect(() => {
-        if(info){
-            getPdfsMono();
-            getPdfsCon();
-        }
-        return () =>{
-            rowMonoOffset = 0;
-        }
-    },[info])
 
-    //COLUMNAS TABLA MONOTRIBUTO
+//COLUMNAS TABLA CONTRATOS
+//#region Contratos
     const compCols = [
         {
             title: 'N°',
@@ -282,7 +282,7 @@ const AcompProfile = (props) =>{
             const conCant = await resConCant.json();
             maxConItems = conCant.length;
 
-            const resCon = await fetch('http://localhost:4000/getConAcomp/Id,Fecha,NombreArchivo/' + props.location.state.Id + '/' + maxMonoRows + '/' + rowMonoOffset);
+            const resCon = await fetch('http://localhost:4000/getConAcomp/Id,Fecha,NombreArchivo/' + props.location.state.Id + '/' + maxConRows + '/' + rowConOffset);
             const con = await resCon.json();
 
             var dataCon = [];
@@ -301,7 +301,7 @@ const AcompProfile = (props) =>{
     //Se asigna o elimina el archivo
     const ArchivoPDFCon = {
         onRemove: file => {
-                let fileL = archivosCon; fileL.splice(archivosCon.findIndex(x => x === file, 1));
+                let fileL = archivosCon; fileL.splice(archivosCon.findIndex(x => x === file), 1);
                 setArchivosCon([...fileL]);
                 return true;
         },
@@ -359,7 +359,6 @@ const AcompProfile = (props) =>{
     const getPDFBlobCon = async(id) =>{
         const res = await fetch('http://localhost:4000/getConAcompOnly/Archivo/' + id);
         const datos = await res.json();
-        console.log(id, datos);
         return new Blob([Buffer.from(datos[0].Archivo.data)], {type: "application/pdf"})
     }
 
@@ -452,10 +451,11 @@ const AcompProfile = (props) =>{
             )
         }
     ]
-
+//#endregion
+    
     //Atrás
     const goBack = () =>{
-        if(archivosMono.length<=0 && archivosCon.length<=0){
+        if((archivosMono.length<=0 && archivosCon.length<=0) && edit.visible){
             props.history.goBack()
         }else{
             Modal.confirm({
@@ -477,6 +477,306 @@ const AcompProfile = (props) =>{
             <AlertOutlined style={{ color: '#c4251a' }} />
         });
     };
+
+
+    //Obtiene los archivos
+    const getPdf = async(id) =>{
+        try{
+            const res = await fetch('http://localhost:4000/getAcompOnly/'+ id +'/ConstanciaAFIP,CV', {signal: abortController.signal});
+            const datos = await res.json();
+
+            fileBlobAFIP = new Blob([Buffer.from(datos[0].ConstanciaAFIP)], {type: "application/pdf"})
+            fileUrlAFIP = URL.createObjectURL(fileBlobAFIP)
+            
+            fileBlobCV = new Blob([Buffer.from(datos[0].CV)], {type: "application/pdf"})
+            fileUrlCV = URL.createObjectURL(fileBlobCV)
+        } 
+        catch(e){console.log(e)}
+    }
+
+    //Se asigna o elimina el archivo
+    const propsConstanciaAFIP = {
+        onRemove: file => {
+            setPdf1({fileList: []})
+            return true;
+        },
+        beforeUpload: file => {
+            let fileL = []; fileL.push(file);
+            setPdf1({fileList: fileL})
+          return false;
+        }
+    };
+
+    const propsCV = {
+        onRemove: file => {
+            setPdf2({fileList: []})
+                return true;
+        },
+        beforeUpload: file => {
+            let fileL = []; fileL.push(file);
+            setPdf2({fileList: fileL})
+          return false;
+        }
+    };
+
+    //Se llama al presionar el boton 'Eliminar'
+    const onDelete = () => {
+        Modal.confirm({
+            title:'¿Realmente desea eliminar este elemento?',
+            content: 'Esta acción no se puede deshacer.',
+            okText: 'Si', cancelText: 'No',
+            onOk:(()=>{
+                Axios.delete('http://localhost:4000/acomp/' + props.location.state.Id).then(() => {
+                    openNotification(
+                        "Eliminación exitosa",
+                        "El Acompañante se borró correctamente",
+                        true
+                    )
+                    props.history.goBack();
+                });
+            })
+        })
+    }
+
+    //Se llama al presionar el boton 'Editar'
+    const onEdit = () => {
+        setEdit({visible: true, loading: true})
+        getPdf(info.Id).then(() => {
+            setEdit({visible: true, loading: false});
+        })
+    }
+
+    const onCancelEdit = () =>{
+        getInfo().then(() =>
+            setEdit({visible: false})
+        );
+    }
+    
+    const onInfoEdit = (field, text) =>{
+        let i = [];
+        Object.keys(info).forEach(key => {
+            i[key] = info[key];
+          });
+        if(field == "CUIL1"){
+            i.CUIL = text + "-" + info.CUIL.split('-')[1];
+        }
+        else if(field == "CUIL2"){
+            i.CUIL = info.CUIL.split('-')[0] + "-" + text;
+        }
+        else
+            i[field] = text;
+        setInfo(i);
+    }
+
+    const onSaveInfo = () =>{
+        Object.keys(info).forEach(key => {
+            lastInfo.set(key, info[key]);
+        });
+        //Se comprueba que no se haya subido un archivo nuevo.
+        //De lo contrario, se utiliza el que ya estaba
+        if(pdf1.fileList.length >= 1)
+            lastInfo.set("ConstanciaAFIP", pdf1.fileList[0]);
+        else
+            lastInfo.set("ConstanciaAFIP", fileBlobAFIP)
+
+        if(pdf2.fileList.length >= 1)
+            lastInfo.set("CV", pdf2.fileList[0]);
+        else
+            lastInfo.set("CV", fileBlobCV)
+
+        Axios.post('http://localhost:4000/updAcomp/' + info.Id, lastInfo, {
+            headers: {
+                Accept: 'application/json'
+            }
+        }).then(() => {
+            getInfo();
+            //Se establecen los valores por defecto y se abre la notificacion
+            setEdit({visible: false});
+            openNotification("Datos Actualizados",
+            "El acompañante fue actualizado correctamente", true);
+        });
+        
+    }
+
+
+    //click dropdown
+    const dropClick = ({ key }) => {
+        //Key de <Menu.Item>
+        if (key === 'edit') {
+            onEdit();
+        } else {
+            onDelete();
+        }
+    }
+
+    //dropdown
+    const menu = (
+        <Menu onClick={dropClick}>
+            {/* la key es como se diferencian las opciones del drop, en la funcion dropClick*/}
+            <Menu.Item key="edit"> 
+                <div className="drop-btn" style={{color: '#fa8c16'}}>
+                    <EditFilled />
+                    <p>Editar</p>
+                </div>
+            </Menu.Item>
+            <Menu.Item key="delete">
+                <div className="drop-btn" style={{color: '#8c8c8c'}}>
+                    <DeleteFilled />
+                    <p>Eliminar</p>
+                </div>
+            </Menu.Item>
+        </Menu>
+    );
+
+    const editHTML = info&&edit.visible ? (
+        <div hidden={!edit.visible}>
+        <Spin spinning={edit.loading} tip="Cargando Archivos...">
+            <div className="buttons">
+                <Button
+                    onClick={onSaveInfo}
+                    icon={<SaveFilled/>}
+                    block type="primary" 
+                    style={{backgroundColor:'#33ACFF'}}
+                >
+                    Guardar Cambios
+                </Button>
+                <Button
+                    onClick={onCancelEdit} 
+                    icon={<CloseCircleOutlined/>}
+                    block type="primary" 
+                    style={{backgroundColor:'#FF4F33'}}
+                >
+                    Cancelar
+                </Button>
+            </div>
+            <Row gutter={[48,20]}>
+                <Col span={12}>
+                    <Divider orientation="left">Datos Principales</Divider>
+                </Col>
+                <Col span={12}>
+                    <Divider orientation="left">Datos de Contacto</Divider>
+                </Col>
+                <Col span={12}>
+                    <h1>Nombre</h1>
+                    <Input placeholder="Nombre" id="Nombre"  onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}} 
+                    value={info.Nombre} />
+                </Col>
+                <Col span={12}>
+                    <h1>Teléfono</h1>
+                    <Input placeholder="Telefono" type="number" id="Telefono" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}} 
+                    value={info.Telefono} />
+                </Col>
+                <Col span={12}>
+                    <h1>Apellido</h1>
+                    <Input placeholder="Apellido" id="Apellido" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}} 
+                    value={info.Apellido} />
+                </Col>
+                <Col span={12}>
+                    <h1>Domicilio</h1>
+                    <Input placeholder="Domicilio" id="Domicilio" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}} 
+                    value={info.Domicilio} />
+                </Col>
+                <Col span={12}>
+                    <h4>DNI/CUIL:</h4>
+                        <Row gutter={12}>
+                        <Col span={5}>
+                            <Input placeholder="00" type="number" id="CUIL1" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}}
+                            value={info.CUIL.split('-')[0]}/>
+                        </Col>
+                        -
+                        <Col span={12}>
+                            <Input placeholder="DNI" type="number" id="DNI" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}}
+                            value={info.DNI}/>
+                        </Col>
+                        -
+                        <Col span={4}>
+                            <Input placeholder="0" type="number" id="CUIL2" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}}
+                            value={info.CUIL.split('-')[1]}/>
+                        </Col>
+                        </Row>
+                    </Col>
+                <Col span={12}>
+                    <h1>Localidad</h1>
+                    <Input placeholder="Localidad" type="text" id="Localidad" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}} 
+                    value={info.Localidad} />
+                </Col>
+                <Col span={12}>
+                    <h1>E-Mail</h1>
+                    <Input placeholder="Email" type="email" id="Email" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}} 
+                    value={info.Email} />
+                </Col>
+                <Col span={12}>
+                    <h1>Codigo Postal</h1>
+                    <Input placeholder="Codigo Postal" type="number" id="CodigoPostal" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}} 
+                    value={info.CodigoPostal} />
+                </Col> 
+            </Row>
+            <Divider orientation="left">Datos de Facturación</Divider>
+            <Row gutter={[48,20]}>
+                <Col span={12}>
+                    <h1>Entidad Bancaria</h1>
+                    <Input placeholder="Entidad Bancaria" id="EntidadBancaria" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}}
+                    value={info.EntidadBancaria} />
+                </Col>
+                <Col span={12}>
+                    <h1>Numero Póliza</h1>
+                    <Input placeholder="Numero Póliza" id="NumeroPoliza" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}}
+                    value={info.NumeroPoliza} />
+                </Col>
+                <Col span={12}>
+                    <h1>Nombre Seguros</h1>
+                    <Input placeholder="Nombre Seguros" id="NombreSeguros" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}}
+                    value={info.NombreSeguros} />
+                </Col>
+                <Col span={12}>
+                    <h1>CBU/ALIAS</h1>
+                    <Input placeholder="CBU/ALIAS" id="CBU" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}}
+                    value={info.CBU} />
+                </Col>
+                <Col span={12}>
+                <Row gutter={12}>
+                    <Col span={12}>
+                        <h1>Constancia AFIP</h1>
+                        <Upload {...propsConstanciaAFIP} accept="application/pdf">
+                            <Button type="primary" disabled={pdf1.fileList.length>0} icon={<UploadOutlined />}>Subir PDF</Button>
+                        </Upload>
+                        <Button onClick={() => setPdf1({visible: true, fileList: pdf1.fileList})}
+                            hidden={!fileUrlAFIP}
+                        >Ver Actual</Button>
+                    </Col>
+                    <Col span={12}>
+                        <h1>CV</h1>
+                        <Upload {...propsCV} accept="application/pdf">
+                            <Button type="primary" disabled={pdf2.fileList.length>0} icon={<UploadOutlined />}>Subir PDF</Button>
+                        </Upload>
+                        <Button onClick={() => setPdf2({visible: true, fileList: pdf2.fileList})}
+                            hidden={!fileUrlCV}
+                        >Ver Actual</Button>
+                    </Col>
+                </Row>
+                </Col>
+                <Col span={12}>
+                    <h1>Valor por Hora</h1>
+                    <Input placeholder="Valor Hora" type="number" id="ValorHora" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}}
+                    value={info.ValorHora} />
+                </Col>   
+            </Row>
+        </Spin>
+        <VisorPDF
+            fileURL={fileUrlAFIP}
+            fileName={info.Apellido + "_ConstanciaAFIP.pdf"}
+            visible={pdf1.visible}
+            onCancel={()=> setPdf1({pdfViewer: false, fileList: pdf1.fileList})}
+        />
+        <VisorPDF
+            fileURL={fileUrlCV}
+            fileName={info.Apellido + "CV.pdf"}
+            visible={pdf2.visible}
+            onCancel={()=> setPdf2({pdfViewer: false, fileList: pdf2.fileList})}
+        />
+        </div>
+    ) : (<div></div>)
+
     if(!info){
         props.history.goBack();
         return(<div></div>)
@@ -500,13 +800,18 @@ const AcompProfile = (props) =>{
                     style={{padding: 8}}
                 />
                 <Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
-                    <SettingFilled style={{fontSize: 20, color: '#9EA2A7'}}/>
+                    <SettingFilled hidden={!editButton} style={{fontSize: 20, color: '#9EA2A7'}}/>
                 </Dropdown>
             </div>
 
             <div className="prot-shadow" style={{paddingLeft: 16, paddingRight: 16, paddingBottom: 16}}>
-                <Tabs>
+                <Tabs onTabClick={(activeKey) =>{setEditButton(activeKey == 1 ? true : false)}}>
                     <TabPane tab="Perfil" key="1" style={TabStyles}>
+
+                    {/*JSX DE EDICION*/}
+                    {editHTML}
+
+                    <div hidden={edit.visible}>
                         <div className="profile-banner">
                             <img src={UserImg} style={{height: 125}}/>
                             <h1 className="profile-name">{info.Nombre + " " + info.Apellido}</h1>
@@ -657,14 +962,14 @@ const AcompProfile = (props) =>{
                                 }}
                             />
                         </div>
-                            
+                    </div>        
                     </TabPane>
                     <TabPane tab="Mapa" key="2" style={TabStyles}>
                         <div style={{height: 500}}>
                             <Map
                                 markerPrincipal={"Acompañante"}
                                 coordPrincipal={[info.Latitud, info.Longitud]}
-                                buscarCoords={"Beneficiario"}
+                                buscarCoords={["Beneficiario", "Coordinador"]}
                             />
                         </div>
                     </TabPane>

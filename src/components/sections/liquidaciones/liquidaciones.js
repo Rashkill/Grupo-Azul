@@ -307,7 +307,7 @@ class Liquidaciones extends React.Component {
                             </h1>
                         </Divider>
                         <div className="range-wrap">
-                            <h3 className="data-attr">Filtrar por fecha: </h3>
+                            <h3 className="data-attr">Filtrar por fecha del periodo: </h3>
                             <RangePicker
                                 size="small"
                                 format="DD/MM/YYYY"
