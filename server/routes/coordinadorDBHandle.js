@@ -1,7 +1,7 @@
 const sqlite3 = require('sqlite3').verbose();
 const {getConnection} = require('../db/conn');
 
-const addCoord = (req,res) =>{
+const addCoord = (req,res,next) =>{
   // console.log(req.body.data);
   let db = getConnection();
   let sql = `INSERT INTO Coordinador(Nombre,Apellido,DNI,CUIL,EntidadBancaria,CBU,Domicilio,Localidad,CodigoPostal,ValorMes,Latitud,Longitud,ConstanciaAFIP,CV)` + 
@@ -35,7 +35,7 @@ const addCoord = (req,res) =>{
   });
 }
 
-const updCoord = (req,res) =>{
+const updCoord = (req,res,next) =>{
   let db = getConnection();
   let sql = `UPDATE Coordinador SET Nombre=?,Apellido=?,DNI=?,CUIL=?,EntidadBancaria=?,CBU=?,Domicilio=?,Localidad=?,CodigoPostal=?,ValorMes=?,Latitud=?,Longitud=?,ConstanciaAFIP=?,CV=? WHERE Id=?`;
 

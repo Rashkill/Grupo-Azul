@@ -1,7 +1,7 @@
 import React from 'react'
 import {Divider} from 'antd'
 import { NavLink, withRouter } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker, Popup, MapConsumer, Tooltip } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, MapConsumer } from 'react-leaflet'
 import { Typography, Space } from 'antd';
 import { createHashHistory } from 'history';
 import { marker } from 'leaflet';
@@ -20,14 +20,12 @@ const { Text } = Typography;
 export const history = createHashHistory();
 
 var L = window.L;
-var markerIcon;
-let group;
 
-class Map extends React.Component {
- 
+class Mapa extends React.Component {
+
+    
     state = {
         info: [],
-        linkto: "",
         mainMarkerIcon: new L.Icon({
             iconUrl: markerGrey,
             shadowUrl: markerShadow,
@@ -35,17 +33,20 @@ class Map extends React.Component {
             iconAnchor: [12, 41],
             popupAnchor: [1, -34],
             shadowSize: [41, 41]
-        }),
-        cardimg: imgBenef
+        })
     }
-
-    componentDidMount = async() =>{
-        if(this.props.buscarCoords){
-            try {
-                let fields = "*";
-                switch(this.props.buscarCoords){
-                    case "Acompañante": 
-                        fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, Localidad, CodigoPostal, Email, Telefono, ValorHora, NumeroPoliza, NombreSeguros, Latitud, Longitud"
+    componentDidMount(){
+        if (this.props.coords) {
+            this.props.coords.map(async(c) => {
+                let fields = "*", table = "", linkto = "";
+                let markerIcon, cardImg;
+                switch (c) {
+                    //ACOMPAÑANTE
+                    case "a":
+                        fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, Localidad, CodigoPostal, Email, Telefono, ValorHora, NumeroPoliza, NombreSeguros, Latitud, Longitud";
+                        table = "Acompañante";
+                        linkto = "/acompprofile";
+                        cardImg = imgAcomp;
                         markerIcon = new L.Icon({
                             iconUrl: markerBlue,
                             shadowUrl: markerShadow,
@@ -54,10 +55,13 @@ class Map extends React.Component {
                             popupAnchor: [1, -34],
                             shadowSize: [41, 41]
                         });
-                        this.setState({linkto:"/acompprofile", cardimg: imgAcomp}); 
                         break;
-                    case "Beneficiario":
-                        fields = "Id, Nombre, Apellido, DNI, CUIL, FechaNacimiento, Domicilio, Localidad, CodigoPostal, Email, Telefono, Enfermedades, IdCoordinador, Latitud, Longitud"
+                    //BENEFICIARIO
+                    case "b":
+                        fields = "Id, Nombre, Apellido, DNI, CUIL, FechaNacimiento, Domicilio, Localidad, CodigoPostal, Email, Telefono, Enfermedades, IdCoordinador, Latitud, Longitud";
+                        table = "Beneficiario";
+                        linkto = "/benefprofile";
+                        cardImg = imgBenef;
                         markerIcon = new L.Icon({
                             iconUrl: markerGreen,
                             shadowUrl: markerShadow,
@@ -66,10 +70,13 @@ class Map extends React.Component {
                             popupAnchor: [1, -34],
                             shadowSize: [41, 41]
                         });
-                        this.setState({linkto:"/benefprofile", cardimg: imgBenef}); 
                         break;
-                    case "Coordinador": 
-                        fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, Localidad, CodigoPostal, ValorMes, Latitud, Longitud"
+                    //COORDINADOR
+                    case "c":
+                        fields = "Id, Nombre, Apellido, DNI, CUIL, EntidadBancaria, CBU, Domicilio, Localidad, CodigoPostal, ValorMes, Latitud, Longitud";
+                        table = "Coordinador";
+                        linkto = "/coordprofile";
+                        cardImg = imgCoord;
                         markerIcon = new L.Icon({
                             iconUrl: markerYellow,
                             shadowUrl: markerShadow,
@@ -78,24 +85,26 @@ class Map extends React.Component {
                             popupAnchor: [1, -34],
                             shadowSize: [41, 41]
                         });
-                        this.setState({linkto:"/coordprofile", cardimg: imgCoord}); 
                         break;
                 }
-
-                const result = await fetch('http://localhost:4000/getTable/' + fields + "/" + this.props.buscarCoords);
+                const result = await fetch('http://localhost:4000/getTable/' + fields + "/" + table);
                 const info = await result.json();
-                this.setState({info: await info})
-                // let coords = info.map((i) => {
-                //     return [i.Latitud,i.Longitud]
-                // })
-                // let group = new L.featureGroup(...coords);
-                // console.log(group);
-            } catch (error) {console.log(error);}
-        }
 
+                let arr = this.state.info;
+                await info.forEach(i => {
+                    i.cardImg = cardImg;
+                    i.markerIcon = markerIcon;
+                    i.tipo = table;
+                    i.linkto = linkto;
+                    arr.push(i);
+                });
+                this.setState({ info: arr });
+
+            })
+        }
         //Color del marker principal
-        switch(this.props.markerPrincipal){
-            case "Acompañante": 
+        switch (this.props.markerPrincipal) {
+            case "a":
                 this.setState(
                     {
                         mainMarkerIcon: new L.Icon({
@@ -105,10 +114,10 @@ class Map extends React.Component {
                             iconAnchor: [12, 41],
                             popupAnchor: [1, -34],
                             shadowSize: [41, 41]
+                        })
                     })
-                })
                 break;
-            case "Beneficiario":
+            case "b":
                 this.setState(
                     {
                         mainMarkerIcon: new L.Icon({
@@ -118,10 +127,10 @@ class Map extends React.Component {
                             iconAnchor: [12, 41],
                             popupAnchor: [1, -34],
                             shadowSize: [41, 41]
+                        })
                     })
-                })
                 break;
-            case "Coordinador": 
+            case "c":
                 this.setState(
                     {
                         mainMarkerIcon: new L.Icon({
@@ -131,57 +140,69 @@ class Map extends React.Component {
                             iconAnchor: [12, 41],
                             popupAnchor: [1, -34],
                             shadowSize: [41, 41]
+                        })
                     })
-                })
                 break;
         }
-        
     }
 
     render(){
         return(
             <div id="mapid" style={{width: '100%', height: '100%'}}>
-                <MapContainer center={this.props.coordPrincipal} zoom={16} scrollWheelZoom={true} style={{height:'100%'}} ref={(ref) => { this.map = ref; }}>
+                <MapContainer center={this.props.coordPrincipal} zoom={this.props.zoom?this.props.zoom:16} scrollWheelZoom={true} style={{height:'100%'}}>
                     <MapConsumer>
                         {(map) => {
-                        // console.log('map center:', map.fitBounds(group.getBounds()))
-                        return null
+                            if (this.props.autoCentrar) {
+                                let arr = [this.props.coordPrincipal];
+                                this.state.info.forEach(p => {
+                                    let distanciaMax = this.props.distanciaMax ? this.props.distanciaMax : 3;
+                                    //Calculo de distancia
+                                    let x1 = p.Latitud, y1 = p.Longitud;
+                                    let x2 = this.props.coordPrincipal[0], y2 = this.props.coordPrincipal[1];
+                                    let d = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)) * 100;
+                                    //Comparar distancia
+                                    if (d.toFixed(3) <= distanciaMax)
+                                        arr.push(L.latLng(p.Latitud, p.Longitud));
+                                });
+                                if (arr.length > 0)
+                                    map.fitBounds(new L.latLngBounds(arr));
+                            }
+                            return null
                         }}
                     </MapConsumer>
                     <TileLayer
                         // attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
-                    <Marker
+                    {this.props.markerPrincipal ?
+                        <Marker
                         icon ={this.state.mainMarkerIcon}
                         position={this.props.coordPrincipal}
-                    >
-                        <Tooltip>Perfil Actual</Tooltip>
-                    </Marker>
+                    />:<div></div>}
 
                     {this.state.info.map((p,index) => {
                         
                         return(
                             <Marker 
-                                icon={markerIcon}
+                                icon={p.markerIcon}
                                 position={[p.Latitud, p.Longitud]} 
                                 key={`Marker N°${index+1}`}
                             >
                                 <Popup style={{width: 'max-content'}}>
                                     <div className="popup">
-                                        <img src={this.state.cardimg} style={{width:80, marginTop:4}}/>
+                                        <img src={p.cardImg} style={{width:80, marginTop:4}}/>
                                         <div>
                                             <Divider>
-                                                <Text mark>{this.props.buscarCoords}</Text><br/>
+                                                <Text mark>{p.tipo}</Text><br/>
                                                 <NavLink style={{fontWeight: "bolder"}} to={{
-                                                    pathname: this.state.linkto,
+                                                    pathname: p.linkto,
                                                     state: p
                                                 }}>
                                                     {p.Nombre + " " + p.Apellido}
                                                 </NavLink>
                                                 <br/>
                                                 <p style={{fontSize: 12, margin: 0}}>
-                                                    {p.CUIL}
+                                                    {p.CUIL.split('-')[0] +'-'+ p.DNI +'-'+ p.CUIL.split('-')[1]}
                                                 </p>
                                             </Divider>
                                             <div style={{textAlign: "center"}}>
@@ -202,4 +223,4 @@ class Map extends React.Component {
 }
 
 
-export default Map
+export default Mapa

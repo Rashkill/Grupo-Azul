@@ -37,7 +37,7 @@ const renderItem = (title, dni) => {
         </div>
       ),
     };
-  };
+};
 
 class Beneficiarios extends React.Component{
     state = {
@@ -82,7 +82,7 @@ class Beneficiarios extends React.Component{
                     value: c.Nombre + " " + c.Apellido,
                     dni: c.DNI,
                     id: c.Id
-                }));
+            }));
 
             this.setState({cantidad: infoFiltro.length, isLoading: false})
         }catch(e){}
@@ -417,7 +417,7 @@ class Beneficiarios extends React.Component{
                             <DatePicker placeholder="Fecha de Nacimiento" id="FechaNacimiento"
                                 format="DD/MM/YYYY"
                                 style={{width: '100%'}}
-                                defaultValue={this.state.id<0? moment(null) :  moment(lastInfo.get("FechaNacimiento"), "DD/MM/YYYY")}
+                                defaultValue={this.state.id<=0? "" :  moment(lastInfo.get("FechaNacimiento"), "DD/MM/YYYY")}
                                 onChange={(e) =>{e ? lastInfo.set("FechaNacimiento", e.format('DD-MM-YYYY')) : lastInfo.set("FechaNacimiento", null)}}
                             />
                         </Col>

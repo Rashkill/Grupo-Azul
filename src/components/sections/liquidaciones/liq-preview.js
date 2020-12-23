@@ -2,6 +2,7 @@ import React from 'react'
 import {Divider} from 'antd'
 import { Page, Text, Image, View, Document, StyleSheet, PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
 import Logo3 from '../../../images/Logo3.jpg'
+import FooterLogo from '../../../images/pdf-footer-img.png'
 
 const BORDER_COLOR = '#bfbfbf'
 const BORDER_STYLE = 'solid'
@@ -116,6 +117,17 @@ const styles = StyleSheet.create({
         margin: 5, 
         fontSize: 9,
         fontWeight: 300
+    },
+    footer: {
+        padding: 4,
+        height: '10%',
+        width: '100%',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexDirection: 'row',
+        bottom: '-20%',
+        color: '#005DBA',
+        fontSize: 10
     }
 });
 
@@ -358,6 +370,19 @@ const LiqPreview = (props) => {
                                     <Text style={styles.tableCellHeader}>$ {totalLiq.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</Text> 
                                 </View> 
                             </View> 
+
+                        </View>
+                        <View style={styles.footer}>
+                            
+                            <Text>
+                                grupoazul.ucd@gmail.com
+                            </Text>
+
+                            <Image src={FooterLogo} style={{width: 190, alignSelf: 'center'}} cache />
+
+                            <Text>
+                                3425112516 / 3425294423
+                            </Text>
 
                         </View>
 

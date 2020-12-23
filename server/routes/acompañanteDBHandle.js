@@ -2,13 +2,14 @@ const sqlite3 = require('sqlite3').verbose();
 const {getConnection} = require('../db/conn');
 // open the database
 
-const addAcomp = (req,res) =>{
+const addAcomp = (req,res,next) =>{
   let db = getConnection();
   let sql = `INSERT INTO Acompañante(Nombre,Apellido,DNI,CUIL,EntidadBancaria,CBU,Domicilio,Localidad,CodigoPostal,Email,Telefono,ValorHora,NumeroPoliza,NombreSeguros,Latitud,Longitud,ConstanciaAFIP,CV)` + 
   ` VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`; 
 
   let ConstanciaAFIP = req.files.ConstanciaAFIP ? req.files.ConstanciaAFIP[0].buffer : null;
-  let CV = req.files.CV > 0 ? req.files.CV[0].buffer : null;
+  let CV = req.files.CV ? req.files.CV[0].buffer : null;
+  
   // insert one row into the langs table
   db.run(sql,
     req.body.Nombre,
@@ -40,12 +41,12 @@ const addAcomp = (req,res) =>{
   });
 }
 
-const updAcomp = (req,res) =>{
+const updAcomp = (req,res,next) =>{
   let db = getConnection();
   let sql = 'UPDATE Acompañante SET Nombre=?,Apellido=?,DNI=?,CUIL=?,EntidadBancaria=?,CBU=?,Domicilio=?,Localidad=?,CodigoPostal=?,Email=?,Telefono=?,ValorHora=?,NumeroPoliza=?,NombreSeguros=?,Latitud=?,Longitud=?,ConstanciaAFIP=?,CV=? WHERE Id=?'; 
 
   let ConstanciaAFIP = req.files.ConstanciaAFIP ? req.files.ConstanciaAFIP[0].buffer : null;
-  let CV = req.files.CV > 0 ? req.files.CV[0].buffer : null;
+  let CV = req.files.CV ? req.files.CV[0].buffer : null;
 
   db.run(sql,
     req.body.Nombre,

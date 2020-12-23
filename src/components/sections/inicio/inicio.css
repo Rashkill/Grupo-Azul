@@ -1,0 +1,75 @@
+.inicio-card-group {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    padding: 16px;
+}
+
+.inicio-card {
+    box-shadow: none;
+    width: 100%;
+    /* height: 100px; */
+    padding: 16px;
+    margin: 4px;
+    /* cursor: pointer; */
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-around;
+    transition: all 0.2s;
+    border-radius: .5em;
+    text-align: center;
+    opacity: 0;
+    animation: load .3s ease-in-out;
+    animation-fill-mode: forwards;
+}
+
+.inicio-card img {
+    width: 80px;
+    filter: brightness(110%);
+    opacity: .3;
+}
+
+.inicio-card h1 {
+    /* color: #474747; */
+    cursor: none;
+    color: white;
+    font-weight: 400;
+    font-size: 18px;
+    /* margin-bottom: 8px; */
+}
+
+.inicio-card h2 {
+    cursor: none;
+    color: white;
+    font-weight: 400;
+    font-size: 16px;
+}
+
+.inicio-card h1:hover,
+.inicio-card h2:hover {
+    color: white;
+}
+
+.inicio-card:nth-child(2) {
+    animation-delay: .2s;
+}
+.inicio-card:nth-child(3) {
+    animation-delay: .3s;
+    
+}
+.inicio-card:nth-child(4) {
+    animation-delay: .4s;
+    
+}
+
+
+@keyframes load {
+    0% {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0%);
+    }
+}

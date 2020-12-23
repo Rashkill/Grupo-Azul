@@ -426,7 +426,7 @@ class Jornadas extends React.Component{
                             <Option value="Acompañante" key="1">Acompañante</Option>
                             <Option value="Beneficiario" key="2">Beneficiario</Option>
                         </Select>
-                        <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onSearch={e => this.handleSearch(e.target.value)} allowClear={true}/>
+                        <Search placeholder="Buscar..." style={{width: '95%', margin: 8, marginRight: 16}} onSearch={e => this.handleSearch(e)} allowClear={true}/>
                         <div className="right-menu">
                             <div className="right-btn" hidden={this.state.isLoading} onClick={this.showModal}>
                                 <PlusOutlined />

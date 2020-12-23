@@ -446,7 +446,7 @@ class Acompañantes extends React.Component{
                                 <Button type="primary" disabled={this.state.afipFiles.length>0} icon={<UploadOutlined />}>Subir PDF</Button>
                             </Upload>
                             <Button onClick={() => this.setState({pdfFileName: infoDatos[index].Apellido + "_ConstanciaAFIP" , pdfViewer1: true})}
-                                    hidden={this.state.editId <= 0 || !fileUrlAFIP}
+                                    hidden={this.state.id <= 0 || !fileUrlAFIP}
                             >Ver Actual</Button>
                         </Col>
                         <Col span={12}>
@@ -455,7 +455,7 @@ class Acompañantes extends React.Component{
                                 <Button type="primary" disabled={this.state.cvFiles.length>0} icon={<UploadOutlined />}>Subir PDF</Button>
                             </Upload>
                             <Button onClick={() => this.setState({pdfFileName: infoDatos[index].Apellido + "_CV", pdfViewer2: true})}
-                                    hidden={this.state.editId <= 0 || !fileUrlCV}
+                                    hidden={this.state.id <= 0 || !fileUrlCV}
                             >Ver Actual</Button>
                         </Col>
                     </Row>

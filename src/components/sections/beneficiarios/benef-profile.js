@@ -1,21 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import { withRouter } from 'react-router-dom';
-import { Modal, Upload, Tabs, PageHeader, Menu, Dropdown, Divider, Table, Timeline, Row, Col, Button, Typography, Input, notification, Popconfirm } from 'antd';
-import { SettingFilled, EditFilled, DeleteFilled, DeleteOutlined, PlusOutlined, MinusOutlined, SaveFilled, CheckCircleOutlined, AlertOutlined, UploadOutlined, SaveOutlined, FileAddOutlined } from '@ant-design/icons';
+import { AutoComplete, Spin, Modal, Upload, Tabs, PageHeader, Menu, Dropdown, Divider, Table, Timeline, Row, Col, Button, Typography, Input, notification, Popconfirm, DatePicker } from 'antd';
+import { InfoCircleOutlined, SettingFilled, EditFilled, DeleteFilled, DeleteOutlined, PlusOutlined, MinusOutlined, SaveFilled, CheckCircleOutlined, CloseCircleOutlined, AlertOutlined, UploadOutlined, SaveOutlined, FileAddOutlined } from '@ant-design/icons';
 import UserImg from '../../../images/image4-5.png'
 import DataRow from  '../../layout/data-row'
 
 import VisorPDF from '../util/visorPDF'
-import Map from '../util/Map'
+import Mapa from '../util/Map'
 
 import Axios from 'axios';
+import { DivIcon, map } from 'leaflet';
 
-const { Paragraph } = Typography;
+const { Paragraph, Text } = Typography;
 const { TextArea } = Input;
+const moment = require('moment');
 
-const alertRow = (fecha) =>{
-    alert(fecha)
-}
+var fileBlob, fileURL;
+var coords = [], coordIndex = -1;
+const renderItem = (title, dni) => {
+    return {
+      value: title,
+      label: (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+          }}
+        >
+          {title}
+          <span style={{color: "gray", fontSize: 12}}>
+            <InfoCircleOutlined />{dni.toString().substr(-3, 3)}
+          </span>
+        </div>
+      ),
+    };
+};
 
 const { TabPane } = Tabs;
 const TabStyles = {
@@ -31,32 +50,6 @@ const botones = {
     flexDirection: 'row'
 }
 
-const dropClick = ({ key }) => {
-    //Key de <Menu.Item>
-    if (key === 'edit') {
-        alert('edit')
-    } else {
-        alert('delete')
-    }
-}
-
-const menu = (
-    <Menu onClick={dropClick}>
-        {/* la key es como se diferencian las opciones del drop, en la funcion dropClick*/}
-        <Menu.Item key="edit"> 
-            <div className="drop-btn" style={{color: '#fa8c16'}}>
-                <EditFilled />
-                <p>Editar</p>
-            </div>
-        </Menu.Item>
-        <Menu.Item key="delete">
-            <div className="drop-btn" style={{color: '#8c8c8c'}}>
-                <DeleteFilled />
-                <p>Eliminar</p>
-            </div>
-        </Menu.Item>
-    </Menu>
-);
 
 var maxItems = 0;
 const maxRows = 5;
@@ -74,8 +67,19 @@ function getFecha(){
 
 const BenefCard = (props) =>{
 
-    var info = []; 
-    info = props.location.state;
+    let abortController = new AbortController();
+    const [edit, setEdit] = useState({
+        visible: false,
+        loading: true
+    });
+    const [pdf1, setPdf1] = useState({
+        visible: false,
+        fileList: []
+    })
+    const [editButton, setEditButton] = useState(true);
+    const [info, setInfo] = useState(props.location.state);
+    const [coordInfo, setCoordInfo] = useState("")
+    let lastInfo = new FormData();
 
     const [getSeguimientos, setSeguimientos] = useState([]);
     const [newInfo, setNewInfo] = useState({visible: false})
@@ -89,6 +93,15 @@ const BenefCard = (props) =>{
         fileURL: null,
         fileName: ""
     })
+
+
+    const getInfo = async () =>{
+        const fields = "Id, Nombre, Apellido, DNI, CUIL, FechaNacimiento, Domicilio, Localidad, CodigoPostal, Email, Telefono, Enfermedades, IdCoordinador, Latitud, Longitud"
+        const res = await fetch('http://localhost:4000/getBenefOnly/' + props.location.state.Id + '/' + fields);
+        const datos = await res.json();
+        setInfo(datos[0]);
+        setPdf1({fileList: []});
+    }
 
     const getDatos = async () =>{
         const res = await fetch('http://localhost:4000/getBenefOnly/' + props.location.state.Id + '/' + 'Seguimientos');
@@ -110,7 +123,6 @@ const BenefCard = (props) =>{
             setSeguimientos([...info.Seguimientos]);
         }
     }
-
 
     //Obtiene los archivos
     const getPdfs = async() =>{
@@ -402,7 +414,6 @@ const BenefCard = (props) =>{
         }
     }
 
-
     function arrayEquals(a, b) {
         return Array.isArray(a) &&
           Array.isArray(b) &&
@@ -419,11 +430,22 @@ const BenefCard = (props) =>{
         return f;
     }
 
-    
+    //Obtiene los archivos
+    const getPdf = async(id) =>{
+        try{
+            const res = await fetch('http://localhost:4000/getBenefOnly/'+ id +'/FichaInicial', {signal: abortController.signal});
+            const datos = await res.json();
+
+            fileBlob = new Blob([Buffer.from(datos[0].FichaInicial.data)], {type: "application/pdf"})
+            fileURL = URL.createObjectURL(fileBlob)
+        } 
+        catch(e){console.log(e)}
+    }
+
     //Se asigna o elimina el archivo
     const ArchivoPDF = {
         onRemove: file => {
-                let fileL = archivos; fileL.splice(archivos.findIndex(x => x=== file, 1));
+                let fileL = archivos; fileL.splice(archivos.findIndex(x => x=== file), 1);
                 setArchivos([...fileL]);
                 return true;
         },
@@ -434,7 +456,271 @@ const BenefCard = (props) =>{
         }
     };
 
+    //Se asigna o elimina el archivo
+    const FichaInicial = {
+        onRemove: file => {
+            setPdf1({fileList: []})
+            return true;
+        },
+        beforeUpload: file => {
+            let fileL = []; fileL.push(file);
+            setPdf1({fileList: fileL})
+          return false;
+        }
+    };
+
+    //Se llama al presionar el boton 'Eliminar'
+    const onDelete = () => {
+        Modal.confirm({
+            title:'¿Realmente desea eliminar este elemento?',
+            content: 'Esta acción no se puede deshacer.',
+            okText: 'Si', cancelText: 'No',
+            onOk:(()=>{
+                Axios.delete('http://localhost:4000/benef/' + props.location.state.Id).then(() => {
+                    openNotification(
+                        "Eliminación exitosa",
+                        "El Beneficiario se borró correctamente",
+                        true
+                    )
+                    props.history.goBack();
+                });
+            })
+        })
+    }
+
+    //Se llama al presionar el boton 'Editar'
+    const onEdit = () => {
+        setEdit({visible: true, loading: true})
+        getPdf(info.Id).then(async() => {
+            const res = await fetch('http://localhost:4000/getCoord/Nombre,Apellido,DNI,Id', {signal: abortController.signal});
+            const datos = await res.json();
+            if(datos)
+                coords = datos.map(c => ({
+                    value: c.Nombre + " " + c.Apellido,
+                    dni: c.DNI,
+                    id: c.Id
+            }));
+            coordIndex = coords.findIndex(x => x.id == info.IdCoordinador);
+            setCoordInfo(coords[coordIndex] ? coords[coordIndex].value : "");
+            setEdit({visible: true, loading: false});
+        })
+    }
+
+    const onCancelEdit = () =>{
+        getInfo().then(() =>
+            setEdit({visible: false})
+        );
+    }
     
+    const onInfoEdit = (field, text) =>{
+        let i = [];
+        Object.keys(info).forEach(key => {
+            i[key] = info[key];
+          });
+        if(field == "CUIL1"){
+            i.CUIL = text + "-" + info.CUIL.split('-')[1];
+        }
+        else if(field == "CUIL2"){
+            i.CUIL = info.CUIL.split('-')[0] + "-" + text;
+        }
+        else
+            i[field] = text;
+        setInfo(i);
+    }
+
+    const onSaveInfo = () =>{
+        Object.keys(info).forEach(key => {
+            lastInfo.set(key, info[key]);
+        });
+        //Se comprueba que no se haya subido un archivo nuevo.
+        //De lo contrario, se utiliza el que ya estaba
+        if(pdf1.fileList.length >= 1)
+            lastInfo.set("FichaInicial", pdf1.fileList[0]);
+        else
+            lastInfo.set("FichaInicial", fileBlob)
+
+        Axios.post('http://localhost:4000/updBenef/' + info.Id, lastInfo, {
+            headers: {
+                Accept: 'application/json'
+            }
+        }).then(() => {
+            getInfo();
+            //Se establecen los valores por defecto y se abre la notificacion
+            setEdit({visible: false});
+            openNotification("Datos Actualizados",
+            "El beneficiario fue actualizado correctamente", true);
+        });
+        
+    }
+
+
+    const dropClick = ({ key }) => {
+        //Key de <Menu.Item>
+        if (key === 'edit') {
+            onEdit();
+        } else {
+            onDelete();
+        }
+    }
+    
+    const menu = (
+        <Menu onClick={dropClick}>
+            {/* la key es como se diferencian las opciones del drop, en la funcion dropClick*/}
+            <Menu.Item key="edit"> 
+                <div className="drop-btn" style={{color: '#fa8c16'}}>
+                    <EditFilled />
+                    <p>Editar</p>
+                </div>
+            </Menu.Item>
+            <Menu.Item key="delete">
+                <div className="drop-btn" style={{color: '#8c8c8c'}}>
+                    <DeleteFilled />
+                    <p>Eliminar</p>
+                </div>
+            </Menu.Item>
+        </Menu>
+    );
+
+    const editHTML = info&&edit.visible ? (
+        <div hidden={!edit.visible}>
+            <Spin spinning={edit.loading} tip="Cargando Archivos...">
+            <div className="buttons">
+                <Button
+                    onClick={onSaveInfo}
+                    icon={<SaveFilled/>}
+                    block type="primary" 
+                    style={{backgroundColor:'#33ACFF'}}
+                >
+                    Guardar Cambios
+                </Button>
+                <Button
+                    onClick={onCancelEdit} 
+                    icon={<CloseCircleOutlined/>}
+                    block type="primary" 
+                    style={{backgroundColor:'#FF4F33'}}
+                >
+                    Cancelar
+                </Button>
+            </div>
+            <Row gutter={[48,20]}>
+                <Col span={12}>
+                    <Divider orientation="left">Datos Principales</Divider>
+                </Col>
+                <Col span={12}>
+                    <Divider orientation="left">Datos de Contacto</Divider>
+                </Col>
+                <Col span={12}>
+                <h4>Nombre:</h4>
+                    <Input placeholder="Nombre" id="Nombre" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}}
+                    value={info.Nombre} />
+                </Col>
+                <Col span={12}>
+                    <h4>Telefono:</h4>
+                    <Input placeholder="Telefono" type="number" id="Telefono" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}}
+                    value={info.Telefono}/>
+                </Col>
+                <Col span={12}>
+                    <h4>Apellido:</h4>
+                    <Input placeholder="Apellido" id="Apellido" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}}
+                    value={info.Apellido}/>
+                </Col>
+                <Col span={12}>
+                    <h4>Domicilio:</h4>
+                    <Input placeholder="Domicilio" id="Domicilio" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}}
+                    value={info.Domicilio}/>
+                </Col>
+                <Col span={12}>
+                    <h4>DNI/CUIL:</h4>
+                    <Row gutter={12}>
+                    <Col span={6}>
+                        <Input placeholder="00" type="number" id="CUIL1" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}}
+                        value={info.CUIL.split('-')[0]}/>
+                    </Col>
+                    -
+                    <Col span={10}>
+                        <Input placeholder="DNI" type="number" id="DNI" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}}
+                        value={info.DNI}/>
+                    </Col>
+                    -
+                    <Col span={5}>
+                        <Input placeholder="0" type="number" id="CUIL2" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}}
+                        value={info.CUIL.split('-')[1]}/>
+                    </Col>
+                    </Row>
+                </Col>
+                <Col span={12}>
+                    <h4>Localidad:</h4>
+                    <Input placeholder="Localidad" id="Localidad" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}}
+                    value={info.Localidad}/>
+                </Col>
+                <Col span={12}>
+                    <h4>Fecha de Nacimiento:</h4>
+                    <DatePicker placeholder="Fecha de Nacimiento" id="FechaNacimiento"
+                        format="DD/MM/YYYY"
+                        style={{width: '100%'}}
+                        value={info.FechaNacimiento ? moment(info.FechaNacimiento, "DD/MM/YYYY") : ""}
+                        onChange={(e) =>{e ? onInfoEdit("FechaNacimiento", e.format('DD-MM-YYYY')):onInfoEdit("FechaNacimiento", null)}}
+                    />
+                </Col>
+                <Col span={12}>
+                    <h4>Codigo Postal:</h4>
+                    <Input placeholder="Codigo Postal" id="CodigoPostal" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}}
+                    value={info.CodigoPostal}/>
+                </Col>
+                <Col span={12}>
+                    <h4>Email:</h4>
+                    <Input placeholder="Email" id="Email" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}}
+                    value={info.Email}/>
+                </Col>
+                <Col span={12}>
+                    <h4>Enfermedades:</h4>
+                    <Input placeholder="Enfermedades" id="Enfermedades" onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}}
+                    value={info.Enfermedades}/>
+                </Col>
+                <Col span={12}>
+                    <h4>Coordinador:</h4>
+                    <AutoComplete 
+                        placeholder="Coordinador" 
+                        id="IdCoordinador"
+                        allowClear
+                        onChange={(e)=>{onInfoEdit(e.target.id, e.target.value);}} 
+                        style={{ width: '100%' }}
+                        options={coords.map(i => renderItem(i.value, i.dni))}
+                        filterOption={(inputValue, option) =>
+                            option.value.toUpperCase().indexOf(inputValue.toUpperCase()) + 1 !== 0}
+                        onChange = {(e, value, reason) => {
+                            setCoordInfo(e);
+                            var prop = coords.find(v => v.value == e);
+                            if(prop)
+                                onInfoEdit("IdCoordinador", prop.id);
+                            else
+                                onInfoEdit("IdCoordinador", -1);
+                        }}
+                        value={coordInfo}
+                    />
+                </Col>
+                <Col span={12}>
+                    <h4>Ficha Inicial:</h4>
+                    <Upload {...FichaInicial} id="FichaInicial" 
+                            accept="application/pdf">
+                        <Button type="primary" disabled={pdf1.fileList.length>0} icon={<UploadOutlined />}>Subir PDF</Button>
+                    </Upload>
+                    
+                    <Button onClick={() => setPdf1({visible: true, fileList: pdf1.fileList})}
+                        hidden={!fileURL}
+                    >Ver PDF Actual</Button>
+                </Col>
+            </Row>
+            </Spin>
+            <VisorPDF
+                fileURL={fileURL}
+                fileName={info.Apellido + "_FichaInicial.pdf"}
+                visible={pdf1.visible}
+                onCancel={()=> setPdf1({pdfViewer: false, fileList: pdf1.fileList})}
+            />
+        </div>
+    ):(<div></div>);
+
     if(!info){
         props.history.goBack();
         return(<div></div>)
@@ -458,14 +744,19 @@ const BenefCard = (props) =>{
                     style={{padding: 8}}
                 />
                 <Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
-                    <SettingFilled style={{fontSize: 20, color: '#9EA2A7'}}/>
+                    <SettingFilled hidden={!editButton} style={{fontSize: 20, color: '#9EA2A7'}}/>
                 </Dropdown>
             </div>
 
             <div className="prot-shadow" style={{paddingLeft: 16, paddingRight: 16, paddingBottom: 16}}>
-                <Tabs>
+                <Tabs onTabClick={(activeKey) =>{setEditButton(activeKey == 1 ? true : false)}}>
                     <TabPane tab="Perfil" key="1" style={TabStyles}>
-                        <div className="profile-banner">
+                    
+                    {/*JSX DE EDICION*/}
+                    {editHTML}
+
+                    <div hidden={edit.visible}>
+                        <div className="profile-banner" >
                             <img src={UserImg} style={{height: 125}}/>
                             <h1 className="profile-name">{info.Nombre + " " + info.Apellido}</h1>
                             <p className="card-subtitle" style={{fontSize: 16}}>
@@ -483,10 +774,9 @@ const BenefCard = (props) =>{
 
                         <div className="data">
                             <div className="data-col-wrap">
-
                                 <DataRow
                                     title="DNI / CUIL"
-                                    value={info.CUIL}
+                                    value={info.CUIL.split('-')[0] + "-" + info.DNI + "-" + info.CUIL.split('-')[1]}
                                 />
                                 <DataRow
                                     title="Domicilio"
@@ -497,10 +787,6 @@ const BenefCard = (props) =>{
                                     value={info.FechaNacimiento}
                                 />
                                 <DataRow
-                                    title="Edad"
-                                    value=""
-                                />
-                                <DataRow
                                     title="Teléfono"
                                     value={info.Telefono}
                                 />
@@ -508,11 +794,9 @@ const BenefCard = (props) =>{
                                     title="E-mail"
                                     value={info.Email}
                                 />
-
                             </div>
 
                             <div className="data-col-wrap">
-
                                 <DataRow
                                     title="Localidad"
                                     value={info.Localidad}
@@ -525,7 +809,6 @@ const BenefCard = (props) =>{
                                     title="Enfermedades y comorbilidades"
                                     value={info.Enfermedades}
                                 />
-
                             </div>
                         </div>
 
@@ -569,7 +852,7 @@ const BenefCard = (props) =>{
                                 }}
                             />
                         </div>
-                            
+                    </div>
                     </TabPane>
                     <TabPane tab="Seguimientos" key="2" style={TabStyles}>
                         <div className="buttons">
@@ -596,10 +879,11 @@ const BenefCard = (props) =>{
                     </TabPane>
                     <TabPane tab="Mapa" key="3" style={TabStyles}>
                         <div style={{height: 500}}>
-                            <Map
-                                markerPrincipal={"Beneficiario"}
+                            <Mapa
+                                markerPrincipal={"b"}
                                 coordPrincipal={[info.Latitud, info.Longitud]}
-                                buscarCoords={"Acompañante"}
+                                coords={["a"]}
+                                autoCentrar={true}
                             />
                         </div>
                     </TabPane>
