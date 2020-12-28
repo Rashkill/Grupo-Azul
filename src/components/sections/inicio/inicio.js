@@ -55,25 +55,14 @@ class Inicio extends React.Component {
     render() {
         
         return(
-            <div className="content-cont prot-shadow">
-                <Divider orientation="left">
-                    <h1 className="big-title">
-                        Grupo Azul
+            <div className="inicio">
+                <div className="inicio-banner" style={{padding: '0px 0px'}}>
+                    <h1 className="banner-title">
+                        Grupo Azul <span style={{fontWeight: 200}}>Administración</span>
                     </h1>
-                </Divider>
-                <div className="cont-div" style={{height: 500}}>
-                    <Map
-                        coordPrincipal={[-31.63335, -60.72]}
-                        coords={["a", "b", "c"]}
-                        autoCentrar={true}
-                        distanciaMax={12}
-                        zoom={12}
-                    />
                 </div>
+
                 <div className="inicio-card-group">
-
-                    {/* <h1>{this.state.benefs}</h1> */}
-
                     <div className="inicio-card" style={{ background: 'linear-gradient(45deg,#2ed8b6,#59e0c5)' }}>
                         <div>
                             <h1 className="name-title">
@@ -123,14 +112,33 @@ class Inicio extends React.Component {
                         </div>
                     </div>
 
-                    
+                            
                 </div>
-                <div className="cont-div" style={{width: '50%'}}>
+
+                <div className="content-cont prot-shadow inicio-map" style={{width: '100%', padding: 0}}>
+                    <div className="cont-div" style={{height: '100%', padding: 8}}>
+                        <Map
+                            coordPrincipal={[-31.63335, -60.72]}
+                            coords={["a", "b", "c"]}
+                            autoCentrar={true}
+                            distanciaMax={12}
+                            zoom={12}
+                        />
+                    </div>
+                </div>
+
+                <div className="content-cont prot-shadow inicio-chart" style={{padding: 12}}>
                     <Chart
-                        // data={[this.state.liqsEsteMes, this.state.benefs]}
-                        data={[3, 6]}
+                        data={[this.state.liqsEsteMes, this.state.benefs]}
+                        height="100%"
                     />
                 </div>
+                        
+
+
+
+
+
             </div>
         )
     }

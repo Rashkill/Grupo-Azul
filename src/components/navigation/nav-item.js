@@ -4,7 +4,7 @@ import './sidenav.css'
 
 const NavItem = (props) => {
     
-    if(window.location.href.includes(props.to)){
+    if(window.location.href.includes(props.to) || window.location.href.includes(props.or) || window.location.href.includes(props.or2)){
         return(
             <NavLink to={props.to}>
                 <div className='nav-btn active-nav-btn'>

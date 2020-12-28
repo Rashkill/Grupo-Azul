@@ -15,10 +15,10 @@ const Sidenav = (props) => {
                 <img src={Logo} className="sidenav-img" alt=""/>
             </div>
             <NavItem title="Inicio" to="/inicio" icon={Home}/>
-            <NavItem title="Personal" to="/personal" icon={UserGroup}/>
-            <NavItem title="Beneficiarios" to="/beneficiarios" icon={UserWithHouse}/>
+            <NavItem title="Personal" to="/personal" or="acompprofile" or2="coordprofile" icon={UserGroup}/>
+            <NavItem title="Beneficiarios" to="/beneficiarios" or="benefprofile" icon={UserWithHouse}/>
             <NavItem title="Jornadas" to="/jornadas" icon={Clock}/>
-            <NavItem title="Liquidaciones" to="/liquidaciones" icon={Document}/>
+            <NavItem title="Liquidaciones" to="/liquidaciones" or="liq-preview" icon={Document}/>
         </nav>
     )
 }
