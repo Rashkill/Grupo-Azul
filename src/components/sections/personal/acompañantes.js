@@ -354,22 +354,13 @@ class Acompañantes extends React.Component{
                 
                 <Spin spinning={this.state.loadingModal} tip="Cargando Archivos...">
                 <Form>
+                <Divider orientation="left">Datos Principales</Divider>
                 <Row gutter={[48,20]}>
-                    <Col span={12}>
-                        <Divider orientation="left">Datos Principales</Divider>
-                    </Col>
-                    <Col span={12}>
-                        <Divider orientation="left">Datos de Contacto</Divider>
-                    </Col>
+
                     <Col span={12}>
                         <h1>Nombre</h1>
                         <Input placeholder="Nombre" id="Nombre"  onChange={this.onChangeInput} 
                         defaultValue={this.state.id === 0 ? undefined : lastInfo.get("Nombre")} />
-                    </Col>
-                    <Col span={12}>
-                        <h1>Teléfono</h1>
-                        <Input placeholder="Telefono" type="number" id="Telefono" onChange={this.onChangeInput} 
-                        defaultValue={this.state.id === 0 ? undefined : lastInfo.get("Telefono")} />
                     </Col>
                     <Col span={12}>
                         <h1>Apellido</h1>
@@ -377,44 +368,49 @@ class Acompañantes extends React.Component{
                         defaultValue={this.state.id === 0 ? undefined : lastInfo.get("Apellido")} />
                     </Col>
                     <Col span={12}>
+                        <h4>DNI/CUIL:</h4>
+                        <Row gutter={12}>
+                        <Col span={5}>
+                            <Input placeholder="00" type="number" id="CUIL1" onChange={this.onChangeInput}
+                            defaultValue={this.state.id <=0 ? this.value : lastInfo.get("CUIL1")}/>
+                        </Col>
+                        -
+                        <Col span={12}>
+                            <Input placeholder="DNI" type="number" id="DNI" onChange={this.onChangeInput}
+                            defaultValue={this.state.id <=0 ? this.value : lastInfo.get("DNI")}/>
+                        </Col>
+                        -
+                        <Col span={4}>
+                            <Input placeholder="0" type="number" id="CUIL2" onChange={this.onChangeInput}
+                            defaultValue={this.state.id <=0 ? this.value : lastInfo.get("CUIL2")}/>
+                        </Col>
+                        </Row>
+                    </Col>
+                    <Col span={12}>
                         <h1>Domicilio</h1>
                         <Input placeholder="Domicilio" id="Domicilio" onChange={this.onChangeInput} 
                         defaultValue={this.state.id === 0 ? undefined : lastInfo.get("Domicilio")} />
                     </Col>
-                    <Col span={12}>
-                        <h4>DNI/CUIL:</h4>
-                            <Row gutter={12}>
-                            <Col span={5}>
-                                <Input placeholder="00" type="number" id="CUIL1" onChange={this.onChangeInput}
-                                defaultValue={this.state.id <=0 ? this.value : lastInfo.get("CUIL1")}/>
-                            </Col>
-                            -
-                            <Col span={12}>
-                                <Input placeholder="DNI" type="number" id="DNI" onChange={this.onChangeInput}
-                                defaultValue={this.state.id <=0 ? this.value : lastInfo.get("DNI")}/>
-                            </Col>
-                            -
-                            <Col span={4}>
-                                <Input placeholder="0" type="number" id="CUIL2" onChange={this.onChangeInput}
-                                defaultValue={this.state.id <=0 ? this.value : lastInfo.get("CUIL2")}/>
-                            </Col>
-                            </Row>
-                        </Col>
                     <Col span={12}>
                         <h1>Localidad</h1>
                         <Input placeholder="Localidad" type="text" id="Localidad" onChange={this.onChangeInput} 
                         defaultValue={this.state.id === 0 ? undefined : lastInfo.get("Localidad")} />
                     </Col>
                     <Col span={12}>
-                        <h1>E-Mail</h1>
-                        <Input placeholder="Email" type="email" id="Email" onChange={this.onChangeInput} 
-                        defaultValue={this.state.id === 0 ? undefined : lastInfo.get("Email")} />
-                    </Col>
-                    <Col span={12}>
                         <h1>Codigo Postal</h1>
                         <Input placeholder="Codigo Postal" type="number" id="CodigoPostal" onChange={this.onChangeInput} 
                         defaultValue={this.state.id === 0 ? undefined : lastInfo.get("CodigoPostal")} />
                     </Col> 
+                    <Col span={12}>
+                        <h1>Teléfono</h1>
+                        <Input placeholder="Telefono" type="number" id="Telefono" onChange={this.onChangeInput} 
+                        defaultValue={this.state.id === 0 ? undefined : lastInfo.get("Telefono")} />
+                    </Col>
+                    <Col span={12}>
+                        <h1>E-Mail</h1>
+                        <Input placeholder="Email" type="email" id="Email" onChange={this.onChangeInput} 
+                        defaultValue={this.state.id === 0 ? undefined : lastInfo.get("Email")} />
+                    </Col>
                 </Row>
                 <Divider orientation="left">Datos de Facturación</Divider>
                 <Row gutter={[48,20]}>
@@ -424,9 +420,9 @@ class Acompañantes extends React.Component{
                         defaultValue={this.state.id === 0 ? undefined : lastInfo.get("EntidadBancaria")} />
                     </Col>
                     <Col span={12}>
-                        <h1>Numero Póliza</h1>
-                        <Input placeholder="Numero Póliza" id="NumeroPoliza" onChange={this.onChangeInput}
-                        defaultValue={this.state.id === 0 ? undefined : lastInfo.get("NumeroPoliza")} />
+                        <h1>CBU/ALIAS</h1>
+                        <Input placeholder="CBU/ALIAS" id="CBU" onChange={this.onChangeInput}
+                        defaultValue={this.state.id === 0 ? undefined : lastInfo.get("CBU")} />
                     </Col>
                     <Col span={12}>
                         <h1>Nombre Seguros</h1>
@@ -434,9 +430,9 @@ class Acompañantes extends React.Component{
                         defaultValue={this.state.id === 0 ? undefined : lastInfo.get("NombreSeguros")} />
                     </Col>
                     <Col span={12}>
-                        <h1>CBU/ALIAS</h1>
-                        <Input placeholder="CBU/ALIAS" id="CBU" onChange={this.onChangeInput}
-                        defaultValue={this.state.id === 0 ? undefined : lastInfo.get("CBU")} />
+                        <h1>Numero Póliza</h1>
+                        <Input placeholder="Numero Póliza" id="NumeroPoliza" onChange={this.onChangeInput}
+                        defaultValue={this.state.id === 0 ? undefined : lastInfo.get("NumeroPoliza")} />
                     </Col>
                     <Col span={12}>
                     <Row gutter={12}>

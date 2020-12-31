@@ -353,22 +353,14 @@ class Coordinadores extends React.Component{
                 
                 <Spin spinning={this.state.loadingModal} tip="Cargando Archivos...">
                 <Form>
+                <Divider orientation="left">Datos Principales</Divider>
                 <Row gutter={[48,20]}>
-                    <Col span={12}>
-                        <Divider orientation="left">Datos Principales</Divider>
-                    </Col>
-                    <Col span={12}>
-                        <Divider orientation="left">Datos de Contacto</Divider>
-                    </Col>
+                    
+                    
                     <Col span={12}>
                         <h1>Nombre</h1>
                         <Input placeholder="Nombre" id="Nombre"  onChange={this.onChangeInput} 
                         defaultValue={this.state.id === 0 ? undefined : lastInfo.get("Nombre")} />
-                    </Col>
-                    <Col span={12}>
-                        <h1>Domicilio</h1>
-                        <Input placeholder="Domicilio" id="Domicilio" onChange={this.onChangeInput} 
-                        defaultValue={this.state.id === 0 ? undefined : lastInfo.get("Domicilio")} />
                     </Col>
                     <Col span={12}>
                         <h1>Apellido</h1>
@@ -376,9 +368,9 @@ class Coordinadores extends React.Component{
                         defaultValue={this.state.id === 0 ? undefined : lastInfo.get("Apellido")} />
                     </Col>
                     <Col span={12}>
-                        <h1>Localidad</h1>
-                        <Input placeholder="Localidad" type="text" id="Localidad" onChange={this.onChangeInput} 
-                        defaultValue={this.state.id <=0 ? this.value : lastInfo.get("Localidad")} />
+                        <h1>Domicilio</h1>
+                        <Input placeholder="Domicilio" id="Domicilio" onChange={this.onChangeInput} 
+                        defaultValue={this.state.id === 0 ? undefined : lastInfo.get("Domicilio")} />
                     </Col>
                     <Col span={12}>
                         <h4>DNI/CUIL:</h4>
@@ -398,6 +390,11 @@ class Coordinadores extends React.Component{
                                 defaultValue={this.state.id <=0 ? this.value : lastInfo.get("CUIL2")}/>
                             </Col>
                             </Row>
+                    </Col>
+                    <Col span={12}>
+                        <h1>Localidad</h1>
+                        <Input placeholder="Localidad" type="text" id="Localidad" onChange={this.onChangeInput} 
+                        defaultValue={this.state.id <=0 ? this.value : lastInfo.get("Localidad")} />
                     </Col>
                     <Col span={12}>
                         <h1>Codigo Postal</h1>

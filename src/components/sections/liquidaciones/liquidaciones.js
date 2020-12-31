@@ -303,7 +303,7 @@ class Liquidaciones extends React.Component {
                     <Col span={18}>
                         <Divider orientation="left" plain>
                             <h1 className="big-title">
-                                Liquidaciónes
+                                Liquidaciones
                             </h1>
                         </Divider>
                         <div className="range-wrap">

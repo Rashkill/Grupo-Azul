@@ -3,6 +3,8 @@ import {Divider} from 'antd'
 import { Page, Text, Image, View, Document, StyleSheet, PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
 import Logo3 from '../../../images/Logo3.jpg'
 import FooterLogo from '../../../images/pdf-footer-img.png'
+import PhoneIcon from '../../../images/llamada-telefonica.png'
+import MailIcon from '../../../images/email.png'
 
 const BORDER_COLOR = '#bfbfbf'
 const BORDER_STYLE = 'solid'
@@ -14,6 +16,7 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         backgroundColor: '#FFFFFF',
         padding: 16,
+        paddingTop: 8,
         fontSize: 12
     },
     section: {
@@ -23,8 +26,9 @@ const styles = StyleSheet.create({
     },
     subtitle: {
         width: '100%',
-        marginTop: 4,
-        padding: 16
+        marginLeft: 8,
+        marginTop: 16,
+        marginBottom: 8
     },
     table: { 
         display: "table", 
@@ -167,12 +171,14 @@ const LiqPreview = (props) => {
         totalLiq = totalLiq + a.valorFinal
     })
 
+    console.log(info)
+
     return (
         <div className="content-cont prot-shadow">
 
             <Divider orientation="left" plain>
                 <h1 className="big-title">
-                    Liquidación N°
+                    Liquidación N° {props.location.state.id}
                 </h1>
                 
             </Divider>
@@ -180,89 +186,15 @@ const LiqPreview = (props) => {
             <PDFViewer style={{width: '100%', height: 800}}>
                 <Document>
                     <Page size="A4" style={styles.page}>
+                        <View style={{fontSize: 8, display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
+                            <Text>Liquidación N° {props.location.state.id}</Text>
+                            <Text>Emisión: {props.location.state.fecha}</Text>
+                        </View>
+                        
                         <Image src={Logo3} style={{height: 140, alignSelf: 'center'}} cache />
-                        <View style={styles.subtitle}>
-                            <Text>AGD / s</Text> 
-                        </View>
-                            <View style={styles.table}>
-                                
-                                <View style={styles.tableRow}> 
-                                    <View style={[styles.tableColHeader, {width: '10%'}]}> 
-                                        <Text style={styles.tableCellHeader}>N°</Text> 
-                                    </View> 
-                                    <View style={styles.tableColHeader}> 
-                                        <Text style={styles.tableCellHeader}>Apellido y Nombre</Text> 
-                                    </View> 
-                                    <View style={styles.tableColHeader}> 
-                                        <Text style={styles.tableCellHeader}>CUIL</Text> 
-                                    </View> 
-                                    <View style={styles.tableColHeader}> 
-                                        <Text style={styles.tableCellHeader}>Banco</Text> 
-                                    </View> 
-                                    <View style={[styles.tableColHeader, {width: '30%'}]}> 
-                                        <Text style={styles.tableCellHeader}>CBU</Text> 
-                                    </View> 
-                                </View>
-
-                                {info.infoPorAcomp.map((a) => {
-                                    return(
-                                        <View style={styles.tableRow}> 
-                                            <View style={[styles.tableCol, {width: '10%'}]}> 
-                                                <Text style={styles.tableCell}>{a.IdAcompañante.toString()}</Text> 
-                                            </View> 
-                                            <View style={styles.tableCol}> 
-                                                <Text style={styles.tableCell}>{a.info.Apellido.toString() + ', ' + a.info.Nombre.toString()}</Text> 
-                                            </View> 
-                                            <View style={styles.tableCol}>
-                                                <Text style={styles.tableCell}>{a.info.CUIL.toString()}</Text> 
-                                            </View>
-                                            <View style={styles.tableCol}> 
-                                                <Text style={styles.tableCell}>{a.info.EntidadBancaria.toString()}</Text> 
-                                            </View> 
-                                            <View style={[styles.tableCol, {width: '30%'}]}> 
-                                                <Text style={styles.tableCell}>{a.info.CBU.toString()}</Text> 
-                                            </View> 
-                                        </View> 
-                                             
-                                    )
-                                })}
-                            </View>
-
-                        <View style={styles.subtitle}>
-                            <Text>Coordinador Domiciliario</Text> 
-                        </View>
-
-                        <View style={styles.table}>
-                                
-                            <View style={styles.tableRow}> 
-                                <View style={styles.tableColHeader}> 
-                                    <Text style={styles.tableCellHeader}>Apellido y Nombre</Text> 
-                                </View> 
-                                <View style={styles.tableColHeader}> 
-                                    <Text style={styles.tableCellHeader}>CUIL</Text> 
-                                </View> 
-                                <View style={styles.tableColHeader}> 
-                                    <Text style={styles.tableCellHeader}>Banco</Text> 
-                                </View> 
-                                <View style={styles.tableCol1Header}> 
-                                    <Text style={styles.tableCellHeader}>CBU</Text> 
-                                </View> 
-                            </View>
-
-                            <View style={styles.tableRow}> 
-                                <View style={styles.tableCol}> 
-                                    <Text style={styles.tableCell}>{info.infoCoord.Apellido.toString() + ', ' + info.infoCoord.Nombre.toString()}</Text> 
-                                </View> 
-                                <View style={styles.tableCol}>
-                                    <Text style={styles.tableCell}>{info.infoCoord.CUIL.toString()}</Text> 
-                                </View>
-                                <View style={styles.tableCol}> 
-                                    <Text style={styles.tableCell}>{info.infoCoord.EntidadBancaria.toString()}</Text> 
-                                </View> 
-                                <View style={styles.tableCol1}> 
-                                    <Text style={styles.tableCell}>{info.infoCoord.CBU.toString()}</Text> 
-                                </View> 
-                            </View> 
+                        
+                        <View style={{fontSize: 10, width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 12}}>
+                            <Text>Período {props.location.state.desde} al {props.location.state.hasta}</Text>
                         </View>
 
                         <View style={styles.subtitle}>
@@ -302,6 +234,90 @@ const LiqPreview = (props) => {
                             </View> 
                         </View>
 
+                        <View style={styles.subtitle}>
+                            <Text>AGD / s</Text> 
+                        </View>
+
+                        <View style={styles.table}>
+                            
+                            <View style={styles.tableRow}> 
+                                <View style={[styles.tableColHeader, {width: '10%'}]}> 
+                                    <Text style={styles.tableCellHeader}>N°</Text> 
+                                </View> 
+                                <View style={styles.tableColHeader}> 
+                                    <Text style={styles.tableCellHeader}>Apellido y Nombre</Text> 
+                                </View> 
+                                <View style={styles.tableColHeader}> 
+                                    <Text style={styles.tableCellHeader}>CUIL</Text> 
+                                </View> 
+                                <View style={styles.tableColHeader}> 
+                                    <Text style={styles.tableCellHeader}>Banco</Text> 
+                                </View> 
+                                <View style={[styles.tableColHeader, {width: '30%'}]}> 
+                                    <Text style={styles.tableCellHeader}>CBU</Text> 
+                                </View> 
+                            </View>
+
+                            {info.infoPorAcomp.map((a) => {
+                                return(
+                                    <View style={styles.tableRow}> 
+                                        <View style={[styles.tableCol, {width: '10%'}]}> 
+                                            <Text style={styles.tableCell}>{a.IdAcompañante.toString()}</Text> 
+                                        </View> 
+                                        <View style={styles.tableCol}> 
+                                            <Text style={styles.tableCell}>{a.info.Apellido.toString() + ', ' + a.info.Nombre.toString()}</Text> 
+                                        </View> 
+                                        <View style={styles.tableCol}>
+                                            <Text style={styles.tableCell}>{a.info.CUIL.toString()}</Text> 
+                                        </View>
+                                        <View style={styles.tableCol}> 
+                                            <Text style={styles.tableCell}>{a.info.EntidadBancaria.toString()}</Text> 
+                                        </View> 
+                                        <View style={[styles.tableCol, {width: '30%'}]}> 
+                                            <Text style={styles.tableCell}>{a.info.CBU.toString()}</Text> 
+                                        </View> 
+                                    </View> 
+                                            
+                                )
+                            })}
+                        </View>
+
+                        <View style={styles.subtitle}>
+                            <Text>Coordinador Domiciliario</Text> 
+                        </View>
+
+                        <View style={styles.table}>
+                                
+                            <View style={styles.tableRow}> 
+                                <View style={styles.tableColHeader}> 
+                                    <Text style={styles.tableCellHeader}>Apellido y Nombre</Text> 
+                                </View> 
+                                <View style={styles.tableColHeader}> 
+                                    <Text style={styles.tableCellHeader}>CUIL</Text> 
+                                </View> 
+                                <View style={styles.tableColHeader}> 
+                                    <Text style={styles.tableCellHeader}>Banco</Text> 
+                                </View> 
+                                <View style={styles.tableCol1Header}> 
+                                    <Text style={styles.tableCellHeader}>CBU</Text> 
+                                </View> 
+                            </View>
+
+                            <View style={styles.tableRow}> 
+                                <View style={styles.tableCol}> 
+                                    <Text style={styles.tableCell}>{info.infoCoord.Apellido.toString() + ', ' + info.infoCoord.Nombre.toString()}</Text> 
+                                </View> 
+                                <View style={styles.tableCol}>
+                                    <Text style={styles.tableCell}>{info.infoCoord.CUIL.toString()}</Text> 
+                                </View>
+                                <View style={styles.tableCol}> 
+                                    <Text style={styles.tableCell}>{info.infoCoord.EntidadBancaria.toString()}</Text> 
+                                </View> 
+                                <View style={styles.tableCol1}> 
+                                    <Text style={styles.tableCell}>{info.infoCoord.CBU.toString()}</Text> 
+                                </View> 
+                            </View> 
+                        </View>
 
                         <View style={styles.subtitle}>
                             <Text>Datos del periodo</Text> 
@@ -374,15 +390,21 @@ const LiqPreview = (props) => {
                         </View>
                         <View style={styles.footer}>
                             
-                            <Text>
-                                grupoazul.ucd@gmail.com
-                            </Text>
+                            <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
+                                <Image src={MailIcon} style={{width: '14px', marginRight: 4}}/>
+                                <Text>
+                                    grupoazul.ucd@gmail.com
+                                </Text>
+                            </View>
 
                             <Image src={FooterLogo} style={{width: 190, alignSelf: 'center'}} cache />
 
-                            <Text>
-                                3425112516 / 3425294423
-                            </Text>
+                            <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
+                                <Image src={PhoneIcon} style={{width: '14px', marginRight: 4}}/>
+                                <Text>
+                                    3425112516 / 3425294423
+                                </Text>
+                            </View>
 
                         </View>
 

@@ -58,7 +58,7 @@ class Inicio extends React.Component {
             <div className="inicio">
                 <div className="inicio-banner" style={{padding: '0px 0px'}}>
                     <h1 className="banner-title">
-                        Grupo Azul <span style={{fontWeight: 200}}>Administración</span>
+                        Grupo Azul <span style={{fontWeight: 200}}>Gestión</span>
                     </h1>
                 </div>
 
@@ -115,7 +115,7 @@ class Inicio extends React.Component {
                             
                 </div>
 
-                <div className="content-cont prot-shadow inicio-map" style={{width: '100%', padding: 0}}>
+                <div className="content-cont inicio-map" style={{width: '100%', padding: 0}}>
                     <div className="cont-div" style={{height: '100%', padding: 8}}>
                         <Map
                             coordPrincipal={[-31.63335, -60.72]}
@@ -127,18 +127,11 @@ class Inicio extends React.Component {
                     </div>
                 </div>
 
-                <div className="content-cont prot-shadow inicio-chart" style={{padding: 12}}>
+                <div className="content-cont inicio-chart" style={{padding: 36}}>
                     <Chart
                         data={[this.state.liqsEsteMes, this.state.benefs]}
-                        height="100%"
                     />
                 </div>
-                        
-
-
-
-
-
             </div>
         )
     }

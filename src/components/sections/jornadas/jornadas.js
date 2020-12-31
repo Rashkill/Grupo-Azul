@@ -85,7 +85,7 @@ class Jornadas extends React.Component{
             if(datos.length > 0)
             {
                 // Array.prototype.push.apply(jornadasIn, datos);
-
+    
                 var d = [];
                 datos.map(v => {
                     if(!jornadasIn.find(x =>x === v))

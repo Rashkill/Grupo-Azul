@@ -361,32 +361,17 @@ class Beneficiarios extends React.Component{
                 
                 <Spin spinning={this.state.loadingModal} tip="Cargando Archivos...">
                 <Form>
+                    <Divider orientation="left">Datos Principales</Divider>
                     <Row gutter={[48,20]}>
                         <Col span={12}>
-                            <Divider orientation="left">Datos Principales</Divider>
-                        </Col>
-                        <Col span={12}>
-                            <Divider orientation="left">Datos de Contacto</Divider>
-                        </Col>
-                        <Col span={12}>
-                        <h4>Nombre:</h4>
+                            <h4>Nombre:</h4>
                             <Input placeholder="Nombre" id="Nombre" onChange={this.onChangeInput}
                             defaultValue={this.state.id <=0 ? this.value : lastInfo.get("Nombre")} />
-                        </Col>
-                        <Col span={12}>
-                            <h4>Telefono:</h4>
-                            <Input placeholder="Telefono" type="number" id="Telefono" onChange={this.onChangeInput}
-                            defaultValue={this.state.id <=0 ? this.value : lastInfo.get("Telefono")}/>
                         </Col>
                         <Col span={12}>
                             <h4>Apellido:</h4>
                             <Input placeholder="Apellido" id="Apellido" onChange={this.onChangeInput}
                             defaultValue={this.state.id <=0 ? this.value : lastInfo.get("Apellido")}/>
-                        </Col>
-                        <Col span={12}>
-                            <h4>Domicilio:</h4>
-                            <Input placeholder="Domicilio" id="Domicilio" onChange={this.onChangeInput}
-                            defaultValue={this.state.id <=0 ? this.value : lastInfo.get("Domicilio")}/>
                         </Col>
                         <Col span={12}>
                             <h4>DNI/CUIL:</h4>
@@ -408,11 +393,6 @@ class Beneficiarios extends React.Component{
                             </Row>
                         </Col>
                         <Col span={12}>
-                            <h4>Localidad:</h4>
-                            <Input placeholder="Localidad" id="Localidad" onChange={this.onChangeInput}
-                            defaultValue={this.state.id <=0 ? this.value : lastInfo.get("Localidad")}/>
-                        </Col>
-                        <Col span={12}>
                             <h4>Fecha de Nacimiento:</h4>
                             <DatePicker placeholder="Fecha de Nacimiento" id="FechaNacimiento"
                                 format="DD/MM/YYYY"
@@ -422,9 +402,24 @@ class Beneficiarios extends React.Component{
                             />
                         </Col>
                         <Col span={12}>
+                            <h4>Domicilio:</h4>
+                            <Input placeholder="Domicilio" id="Domicilio" onChange={this.onChangeInput}
+                            defaultValue={this.state.id <=0 ? this.value : lastInfo.get("Domicilio")}/>
+                        </Col>
+                        <Col span={12}>
+                            <h4>Localidad:</h4>
+                            <Input placeholder="Localidad" id="Localidad" onChange={this.onChangeInput}
+                            defaultValue={this.state.id <=0 ? this.value : lastInfo.get("Localidad")}/>
+                        </Col>
+                        <Col span={12}>
                             <h4>Codigo Postal:</h4>
                             <Input placeholder="Codigo Postal" id="CodigoPostal" onChange={this.onChangeInput}
                             defaultValue={this.state.id <=0 ? this.value : lastInfo.get("CodigoPostal")}/>
+                        </Col>
+                        <Col span={12}>
+                            <h4>Telefono:</h4>
+                            <Input placeholder="Telefono" type="number" id="Telefono" onChange={this.onChangeInput}
+                            defaultValue={this.state.id <=0 ? this.value : lastInfo.get("Telefono")}/>
                         </Col>
                         <Col span={12}>
                             <h4>Email:</h4>

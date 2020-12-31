@@ -1,7 +1,7 @@
 import React from 'react'
-import { Bar, defaults } from 'react-chartjs-2'
+import { Doughnut, defaults } from 'react-chartjs-2'
 
-// defaults.global.legend.position = 'bottom'
+defaults.global.legend.position = 'right'
 // const green = 'rgba(82, 196, 26)'
 // const red = 'rgba(255, 84, 113)'
 const green = 'rgba(87, 224, 196)'
@@ -10,10 +10,10 @@ const red = 'rgba(255, 132, 152)'
 const Chart = (props) => {
     
     return (
-        <Bar
+        <Doughnut
             data={{
                 // labels: ['Beneficiarios', 'Acompañantes', 'Coordinadores'],
-                labels: ['Liquidaciones Mes Actual', 'Beneficiarios'],
+                labels: ['Liquidaciones Este Mes', 'Beneficiarios'],
                 datasets: [
                     {
                         label: '',
@@ -27,21 +27,23 @@ const Chart = (props) => {
                     }
                 ]
             }}
-            width={200}
-            height={400}
+            width={'100%'}
+            height={350}
             options={{
                 legend: {
-                    display: false
+                    display: true
                 },
                 maintainAspectRatio: false,
                 scales: {
                     xAxes: [{
+                        display: false,
                         gridLines: {
                             offsetGridLines: true,
                             color: "rgba(0, 0, 0, 0.0)",
                         }
                     }],
                     yAxes: [{
+                        display: false,
                         gridLines: {
                             color: "rgba(0, 0, 0, 0.0)",
                         },
