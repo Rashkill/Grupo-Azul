@@ -38,7 +38,6 @@ class Inicio extends React.Component {
                 this.setState({ [_state]: this.state[_state] + 1 })
             }
         });
-
     }
     
     componentDidMount = async () => {

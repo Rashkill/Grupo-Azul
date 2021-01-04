@@ -252,7 +252,7 @@ class Coordinadores extends React.Component{
             content: 'Esta acción no se puede deshacer.',
             okText: 'Si', cancelText: 'No',
             onOk:(()=>{
-                Axios.delete('http://localhost:4000/acomp/' + id).then(() => {
+                Axios.delete('http://localhost:4000/coord/' + id).then(() => {
                 this.openNotification(
                     "Eliminación exitosa",
                     "El Coordinador se borró correctamente",
