@@ -138,6 +138,13 @@ class Beneficiarios extends React.Component{
     
     //Se llama al presionar el boton OK
     handleOk = e => {
+        let f = new Date();
+        let d = String(f.getDate()).padStart(2,0);
+        let m = String(f.getMonth() + 1).padStart(2,0);
+        let a = f.getFullYear();
+        let fecha = `${d}/${m}/${a}`;
+        lastInfo.set("FechaEmision", fecha)
+
         //Se obtiene la Latitud y la Longitud
         Axios(`http://dev.virtualearth.net/REST/v1/Locations?q=${lastInfo.get("Domicilio")}%20${lastInfo.get("CodigoPostal")}%20${lastInfo.get("Localidad")}%20argentina&maxResults=1&key=Arn6kit_Moqpx-2p7jWVKy1h-TlLyYESkqc1cHzP1JkEAm1A_86T8o3FtDcKqnVV`)
             .then(response => {
@@ -365,7 +372,7 @@ class Beneficiarios extends React.Component{
                     <Row gutter={[48,20]}>
                         <Col span={12}>
                             <h4>Nombre:</h4>
-                            <Input placeholder="Nombre" id="Nombre" onChange={this.onChangeInput}
+                            <Input autoFocus placeholder="Nombre" id="Nombre" onChange={this.onChangeInput}
                             defaultValue={this.state.id <=0 ? this.value : lastInfo.get("Nombre")} />
                         </Col>
                         <Col span={12}>
@@ -377,17 +384,17 @@ class Beneficiarios extends React.Component{
                             <h4>DNI/CUIL:</h4>
                             <Row gutter={12}>
                             <Col span={5}>
-                                <Input placeholder="00" type="number" id="CUIL1" onChange={this.onChangeInput}
+                                <Input placeholder="00" type="number" id="CUIL1" maxLength="2" onChange={this.onChangeInput}
                                 defaultValue={this.state.id <=0 ? this.value : lastInfo.get("CUIL1")}/>
                             </Col>
                             -
                             <Col span={12}>
-                                <Input placeholder="DNI" type="number" id="DNI" onChange={this.onChangeInput}
+                                <Input placeholder="DNI" type="number" id="DNI" maxLength="8" onChange={this.onChangeInput}
                                 defaultValue={this.state.id <=0 ? this.value : lastInfo.get("DNI")}/>
                             </Col>
                             -
                             <Col span={4}>
-                                <Input placeholder="0" type="number" id="CUIL2" onChange={this.onChangeInput}
+                                <Input placeholder="0" type="number" id="CUIL2" maxLength="1" onChange={this.onChangeInput}
                                 defaultValue={this.state.id <=0 ? this.value : lastInfo.get("CUIL2")}/>
                             </Col>
                             </Row>
