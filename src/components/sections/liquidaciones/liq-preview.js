@@ -223,7 +223,7 @@ const LiqPreview = (props) => {
                                     <Text style={styles.tableCell}>{info.infoBenef.Apellido.toString() + ', ' + info.infoBenef.Nombre.toString()}</Text> 
                                 </View> 
                                 <View style={styles.tableCol}>
-                                    <Text style={styles.tableCell}>{info.infoBenef.CUIL.toString()}</Text> 
+                                    <Text style={styles.tableCell}>{info.infoBenef.CUIL.split('-')[0]}-{info.infoBenef.DNI}-{info.infoBenef.CUIL.split('-')[1]}</Text> 
                                 </View>
                                 <View style={styles.tableCol}> 
                                     <Text style={styles.tableCell}>{info.infoBenef.FechaNacimiento.toString()}</Text> 
@@ -268,7 +268,7 @@ const LiqPreview = (props) => {
                                             <Text style={styles.tableCell}>{a.info.Apellido.toString() + ', ' + a.info.Nombre.toString()}</Text> 
                                         </View> 
                                         <View style={styles.tableCol}>
-                                            <Text style={styles.tableCell}>{a.info.CUIL.toString()}</Text> 
+                                            <Text style={styles.tableCell}>{a.info.CUIL.split('-')[0]}-{a.info.DNI}-{a.info.CUIL.split('-')[1]}</Text> 
                                         </View>
                                         <View style={styles.tableCol}> 
                                             <Text style={styles.tableCell}>{a.info.EntidadBancaria.toString()}</Text> 
@@ -308,7 +308,7 @@ const LiqPreview = (props) => {
                                     <Text style={styles.tableCell}>{info.infoCoord.Apellido.toString() + ', ' + info.infoCoord.Nombre.toString()}</Text> 
                                 </View> 
                                 <View style={styles.tableCol}>
-                                    <Text style={styles.tableCell}>{info.infoCoord.CUIL.toString()}</Text> 
+                                    <Text style={styles.tableCell}>{info.infoCoord.CUIL.split('-')[0]}-{info.infoCoord.DNI}-{info.infoCoord.CUIL.split('-')[1]}</Text> 
                                 </View>
                                 <View style={styles.tableCol}> 
                                     <Text style={styles.tableCell}>{info.infoCoord.EntidadBancaria.toString()}</Text> 

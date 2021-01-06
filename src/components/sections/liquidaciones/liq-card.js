@@ -63,7 +63,7 @@ function LiqCard(props) {
                 //Caso contrario, se agrega un nuevo elemento con los datos del actual
                 //A su vez, se obtiene el valor por hora del acompañante
                 try{
-                    const res = await fetch('http://localhost:4000/getAcompOnly/'+ jorElem.IdAcompañante +'/ValorHora,Nombre,Apellido,CUIL,EntidadBancaria,CBU');
+                    const res = await fetch('http://localhost:4000/getAcompOnly/'+ jorElem.IdAcompañante +'/ValorHora,Nombre,Apellido,CUIL,DNI,EntidadBancaria,CBU');
                     const datos = await res.json();
                     
                     infoPorAcomp.push({
@@ -78,12 +78,12 @@ function LiqCard(props) {
         }
 
         //Se obtiene el Id del Coordinador desde la base de datos
-        const resBenef = await fetch('http://localhost:4000/getBenefOnly/'+ props.idbenef +'/Apellido,Nombre,CUIL,FechaNacimiento,Domicilio,Localidad,IdCoordinador');
+        const resBenef = await fetch('http://localhost:4000/getBenefOnly/'+ props.idbenef +'/Apellido,Nombre,CUIL,DNI,FechaNacimiento,Domicilio,Localidad,IdCoordinador');
         const datosBenef = await resBenef.json();
         state.infoBenef = datosBenef[0];
 
         //Se obtienen los datos del Coordinador 
-        const resCoord = await fetch('http://localhost:4000/getCoordOnly/'+ state.infoBenef.IdCoordinador +'/Nombre,Apellido,CUIL,EntidadBancaria,CBU,ValorMes');
+        const resCoord = await fetch('http://localhost:4000/getCoordOnly/'+ state.infoBenef.IdCoordinador +'/Nombre,Apellido,CUIL,DNI,EntidadBancaria,CBU,ValorMes');
         const datosCoord = await resCoord.json();
         state.infoCoord = datosCoord[0];
 
