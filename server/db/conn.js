@@ -1,8 +1,11 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path')
-const dbPath = path.resolve(__dirname, 'Base_de_Datos.db')
+const {app} = require('electron');
+const dbPath = path.resolve(app.getPath('userData'), 'Base_de_Datos.db')
 
-const getConnection = () =>{
+
+
+const getConnection = () => {
   // open database in memory
   let db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
@@ -10,6 +13,7 @@ const getConnection = () =>{
     }
     console.log('Connected to the in-memory SQlite database.');
   });
+  
   return db;
 }
 const closeConnection = () =>{

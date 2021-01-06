@@ -75,7 +75,7 @@ const rangoLiq = (req,res,next) =>{
 const getLiqOnly = (req,res,next) =>{
   let fields = req.params.fields ? req.params.fields : "*";
   let db = getConnection();
-  let sql = `SELECT ${fields} FROM Liquidacion WHERE Id=`+id;
+  let sql = `SELECT ${fields} FROM Liquidacion WHERE Id=`+req.params.id;
   db.all(sql, [], (err, row) => {
       if (err) {
           res.status(400).json({"error":err.message});
