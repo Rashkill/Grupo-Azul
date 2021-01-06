@@ -3,8 +3,6 @@ const path = require('path')
 const {app} = require('electron');
 const dbPath = path.resolve(app.getPath('userData'), 'Base_de_Datos.db')
 
-
-
 const getConnection = () => {
   // open database in memory
   let db = new sqlite3.Database(dbPath, (err) => {

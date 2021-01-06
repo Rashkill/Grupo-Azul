@@ -100,6 +100,10 @@ app.delete('/delRecord/:table/:wheresql', (req, res) =>{
    });
 })
 
+/*-------------
+    JORNADAS
+---------------*/
+
 //#region JORNADAS
  //Agregando Jornada
  app.post('/addJornada', upload.none(), (req,res)=>{
