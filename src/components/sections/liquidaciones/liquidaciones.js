@@ -73,9 +73,12 @@ class Liquidaciones extends React.Component {
 
             const res = await fetch('http://localhost:4000/getLiq/*' + '/' + maxRows + '/' + rowOffset, {signal: this.abortController.signal});
             const datos = await res.json();
-            if(datos)
+            if (datos) {
                 liq = datos;
+            }
+            
             liqFilter = liq;
+
 
             this.setState({cantidad: liqFilter.length})
         }catch(e){
@@ -303,7 +306,7 @@ class Liquidaciones extends React.Component {
                     <Col span={18}>
                         <Divider orientation="left" plain>
                             <h1 className="big-title">
-                                Liquidaciónes
+                                Liquidaciones
                             </h1>
                         </Divider>
                         <div className="range-wrap">
@@ -320,18 +323,18 @@ class Liquidaciones extends React.Component {
                         <div className="cards-container">
                             <Empty style={{display: this.state.isLoading ? "none" : liq.length > 0 ? "none" : "inline"}} description={false} />
                             {liqFilter.map(v =>
-                            <LiqCard
-                                OnEdit={this.onEdit}
-                                OnDelete={this.onDelete}
-                                title={getTitle(v.IdBeneficiario, v.Desde)}
-                                idbenef={v.IdBeneficiario}
-                                desde={moment(v.Desde, dateFormat).format("DD/MM/YYYY")}
-                                hasta={moment(v.Hasta, dateFormat).format("DD/MM/YYYY")}
-                                fecha={v.FechaEmision}
-                                key={v.Id}
-                                id={v.Id}
-                                linkto="/liq-preview"
-                            />
+                                <LiqCard
+                                    OnEdit={this.onEdit}
+                                    OnDelete={this.onDelete}
+                                    title={getTitle(v.IdBeneficiario, v.Desde)}
+                                    idbenef={v.IdBeneficiario}
+                                    desde={moment(v.Desde, dateFormat).format("DD/MM/YYYY")}
+                                    hasta={moment(v.Hasta, dateFormat).format("DD/MM/YYYY")}
+                                    fecha={v.FechaEmision}
+                                    key={v.Id}
+                                    id={v.Id}
+                                    linkto="/liq-preview"
+                                />
                             )}
                             <LoadingOutlined style={{ padding: 16, fontSize: 24, display: this.state.isLoading ? "inline" : "none" }} spin />
                         </div>
@@ -372,14 +375,13 @@ class Liquidaciones extends React.Component {
                                     options={ucds.map(i => renderItem(i.value, i.dni))}
                                     placeholder="Nombre"
                                     filterOption={(inputValue, option) =>
-                                    option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
+                                        option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
                                     }
                                     onChange = {(e, value, reason) => {
                                         if(e === undefined) return;
                                         var prop = ucds.find(v => v.value == e);
                                         if(prop)
                                             lastInfo.set("IdBeneficiario",prop.id);
-                                        console.log(prop.id);
                                     }}
                                     defaultValue={this.state.id <=0 ? this.value : this.state.benefIndex > -1 ? ucds[this.state.benefIndex].value : "[Beneficiario Borrado]"}
                                     allowClear
@@ -394,7 +396,8 @@ class Liquidaciones extends React.Component {
                                     style={{width: '100%'}} 
                                     format={"DD/MM/YYYY"}
                                     onChange={(e) => lastInfo.set("Desde", e.format(dateFormat))}
-                                    defaultValue={this.state.id <=0 ? this.value : moment(lastInfo.get("Desde"), "DD/MM/YYYY")}
+                                    defaultValue={this.state.id <= 0 ? this.value : moment(lastInfo.get("Desde"), "DD/MM/YYYY")}
+                                    allowClear={false}
                                 />
                             </Col>
                             <Col span={11}>
@@ -405,7 +408,8 @@ class Liquidaciones extends React.Component {
                                     format={"DD/MM/YYYY"}
                                     onChange={(e) => lastInfo.set("Hasta", e.format(dateFormat))}
                                     defaultValue={this.state.id <=0 ? this.value : moment(lastInfo.get("Hasta"), "DD/MM/YYYY")}
-                                    />
+                                    allowClear={false}
+                                />
                             </Col>
                         </Row>
                     </div>

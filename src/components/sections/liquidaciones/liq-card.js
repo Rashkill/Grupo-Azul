@@ -14,6 +14,10 @@ const moment = require('moment');
 function LiqCard(props) {
     
     let state = {
+        id: props.id,
+        desde: props.desde,
+        hasta: props.hasta,
+        fecha: props.fecha,
         valorTotalHoras: 0
     }
 

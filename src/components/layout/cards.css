@@ -1,4 +1,4 @@
-.cards-container{
+.cards-container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -6,7 +6,7 @@
     padding: 8px;
 }
 
-.card{
+.card {
     width: 100%;
     padding: 16px;
     margin-bottom: 18px;
@@ -14,22 +14,34 @@
     border-radius: 4px;
     transition: box-shadow 0.3s;
     /* cursor: pointer; */
+    animation: cardFade .2s ease-out;
+    animation-fill-mode: forwards;
+}
+
+@keyframes cardFade {
+    0% {
+        opacity: 0
+    }
+
+    100% {
+        opacity: 1
+    }
 }
 
 
-.card-title-container{
+.card-title-container {
     display: flex;
     align-items: baseline;
 }
 
-.name-title-hoverless{
+.name-title-hoverless {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     font-size: 20px;
     margin-right: 12px;
     margin-bottom: 4px;
 }
 
-.name-title{
+.name-title {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     font-size: 22px;
     margin-right: 12px;
@@ -38,28 +50,28 @@
     transition: all 0.22s;
 }
 
-.name-title:hover{
+.name-title:hover {
     color: #18ACFF;
     transition: all 0.10s;
 
 }
 
-.card-contents{
+.card-contents {
     margin-bottom: 8px;
 }
 
-.cols{
+.cols {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     max-width: max-content;
 }
 
-.card-content-col{
+.card-content-col {
     padding-right: 24px;
 }
 
-.card-subtitle{
+.card-subtitle {
     color: #888888;
     /* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; */
     font-family: 'Inter';
@@ -68,7 +80,7 @@
     margin-top: 4px;
 }
 
-.drop-btn{
+.drop-btn {
     display: flex;
     align-items: center;
     justify-content: space-around;
@@ -76,20 +88,20 @@
 
 }
 
-.drop-btn > p {
+.drop-btn>p {
     margin: 0;
     margin-left: 8px;
     width: 60px;
 }
 
-.card-row{
+.card-row {
     height: 100%;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
 }
 
-.card-left-col{
+.card-left-col {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -98,11 +110,11 @@
     max-width: max-content;
 }
 
-.card-mid-col{
+.card-mid-col {
     width: 100%;
 }
 
-.card-right-col{
+.card-right-col {
     height: auto;
     display: flex;
     flex-direction: column;

@@ -4,8 +4,8 @@ const {getConnection} = require('../db/conn');
 
 const addAcomp = (req,res,next) =>{
   let db = getConnection();
-  let sql = `INSERT INTO Acompañante(Nombre,Apellido,DNI,CUIL,EntidadBancaria,CBU,Domicilio,Localidad,CodigoPostal,Email,Telefono,ValorHora,NumeroPoliza,NombreSeguros,Latitud,Longitud,ConstanciaAFIP,CV)` + 
-  ` VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`; 
+  let sql = `INSERT INTO Acompañante(Nombre,Apellido,DNI,CUIL,EntidadBancaria,CBU,Domicilio,Localidad,CodigoPostal,Email,Telefono,ValorHora,NumeroPoliza,NombreSeguros,Latitud,Longitud,ConstanciaAFIP,CV,FechaEmision)` + 
+  ` VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`; 
 
   let ConstanciaAFIP = req.files.ConstanciaAFIP ? req.files.ConstanciaAFIP[0].buffer : null;
   let CV = req.files.CV ? req.files.CV[0].buffer : null;
@@ -30,6 +30,7 @@ const addAcomp = (req,res,next) =>{
     req.body.Longitud,
     ConstanciaAFIP,
     CV,
+    req.body.FechaEmision,
     function(err) {
     if (err) {
       res.status(400).json({"error":err.message});

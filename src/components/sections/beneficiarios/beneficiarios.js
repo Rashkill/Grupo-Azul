@@ -138,6 +138,13 @@ class Beneficiarios extends React.Component{
     
     //Se llama al presionar el boton OK
     handleOk = e => {
+        let f = new Date();
+        let d = String(f.getDate()).padStart(2,0);
+        let m = String(f.getMonth() + 1).padStart(2,0);
+        let a = f.getFullYear();
+        let fecha = `${d}/${m}/${a}`;
+        lastInfo.set("FechaEmision", fecha)
+
         //Se obtiene la Latitud y la Longitud
         Axios(`http://dev.virtualearth.net/REST/v1/Locations?q=${lastInfo.get("Domicilio")}%20${lastInfo.get("CodigoPostal")}%20${lastInfo.get("Localidad")}%20argentina&maxResults=1&key=Arn6kit_Moqpx-2p7jWVKy1h-TlLyYESkqc1cHzP1JkEAm1A_86T8o3FtDcKqnVV`)
             .then(response => {
@@ -361,22 +368,12 @@ class Beneficiarios extends React.Component{
                 
                 <Spin spinning={this.state.loadingModal} tip="Cargando Archivos...">
                 <Form>
+                    <Divider orientation="left">Datos Principales</Divider>
                     <Row gutter={[48,20]}>
                         <Col span={12}>
-                            <Divider orientation="left">Datos Principales</Divider>
-                        </Col>
-                        <Col span={12}>
-                            <Divider orientation="left">Datos de Contacto</Divider>
-                        </Col>
-                        <Col span={12}>
-                        <h4>Nombre:</h4>
-                            <Input placeholder="Nombre" id="Nombre" onChange={this.onChangeInput}
+                            <h4>Nombre:</h4>
+                            <Input autoFocus placeholder="Nombre" id="Nombre" onChange={this.onChangeInput}
                             defaultValue={this.state.id <=0 ? this.value : lastInfo.get("Nombre")} />
-                        </Col>
-                        <Col span={12}>
-                            <h4>Telefono:</h4>
-                            <Input placeholder="Telefono" type="number" id="Telefono" onChange={this.onChangeInput}
-                            defaultValue={this.state.id <=0 ? this.value : lastInfo.get("Telefono")}/>
                         </Col>
                         <Col span={12}>
                             <h4>Apellido:</h4>
@@ -384,33 +381,23 @@ class Beneficiarios extends React.Component{
                             defaultValue={this.state.id <=0 ? this.value : lastInfo.get("Apellido")}/>
                         </Col>
                         <Col span={12}>
-                            <h4>Domicilio:</h4>
-                            <Input placeholder="Domicilio" id="Domicilio" onChange={this.onChangeInput}
-                            defaultValue={this.state.id <=0 ? this.value : lastInfo.get("Domicilio")}/>
-                        </Col>
-                        <Col span={12}>
                             <h4>DNI/CUIL:</h4>
                             <Row gutter={12}>
                             <Col span={5}>
-                                <Input placeholder="00" type="number" id="CUIL1" onChange={this.onChangeInput}
+                                <Input placeholder="00" type="number" id="CUIL1" maxLength="2" onChange={this.onChangeInput}
                                 defaultValue={this.state.id <=0 ? this.value : lastInfo.get("CUIL1")}/>
                             </Col>
                             -
                             <Col span={12}>
-                                <Input placeholder="DNI" type="number" id="DNI" onChange={this.onChangeInput}
+                                <Input placeholder="DNI" type="number" id="DNI" maxLength="8" onChange={this.onChangeInput}
                                 defaultValue={this.state.id <=0 ? this.value : lastInfo.get("DNI")}/>
                             </Col>
                             -
                             <Col span={4}>
-                                <Input placeholder="0" type="number" id="CUIL2" onChange={this.onChangeInput}
+                                <Input placeholder="0" type="number" id="CUIL2" maxLength="1" onChange={this.onChangeInput}
                                 defaultValue={this.state.id <=0 ? this.value : lastInfo.get("CUIL2")}/>
                             </Col>
                             </Row>
-                        </Col>
-                        <Col span={12}>
-                            <h4>Localidad:</h4>
-                            <Input placeholder="Localidad" id="Localidad" onChange={this.onChangeInput}
-                            defaultValue={this.state.id <=0 ? this.value : lastInfo.get("Localidad")}/>
                         </Col>
                         <Col span={12}>
                             <h4>Fecha de Nacimiento:</h4>
@@ -422,9 +409,24 @@ class Beneficiarios extends React.Component{
                             />
                         </Col>
                         <Col span={12}>
+                            <h4>Domicilio:</h4>
+                            <Input placeholder="Domicilio" id="Domicilio" onChange={this.onChangeInput}
+                            defaultValue={this.state.id <=0 ? this.value : lastInfo.get("Domicilio")}/>
+                        </Col>
+                        <Col span={12}>
+                            <h4>Localidad:</h4>
+                            <Input placeholder="Localidad" id="Localidad" onChange={this.onChangeInput}
+                            defaultValue={this.state.id <=0 ? this.value : lastInfo.get("Localidad")}/>
+                        </Col>
+                        <Col span={12}>
                             <h4>Codigo Postal:</h4>
                             <Input placeholder="Codigo Postal" id="CodigoPostal" onChange={this.onChangeInput}
                             defaultValue={this.state.id <=0 ? this.value : lastInfo.get("CodigoPostal")}/>
+                        </Col>
+                        <Col span={12}>
+                            <h4>Telefono:</h4>
+                            <Input placeholder="Telefono" type="number" id="Telefono" onChange={this.onChangeInput}
+                            defaultValue={this.state.id <=0 ? this.value : lastInfo.get("Telefono")}/>
                         </Col>
                         <Col span={12}>
                             <h4>Email:</h4>

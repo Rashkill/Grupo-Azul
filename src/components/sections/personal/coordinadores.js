@@ -112,6 +112,14 @@ class Coordinadores extends React.Component{
     
     //Se llama al presionar el boton OK
     handleOk = e => {
+
+        let f = new Date();
+        let d = String(f.getDate()).padStart(2,0);
+        let m = String(f.getMonth() + 1).padStart(2,0);
+        let a = f.getFullYear();
+        let fecha = `${d}/${m}/${a}`;
+        lastInfo.set("FechaEmision", fecha)
+        
         //Se obtiene la Latitud y la Longitud
         Axios(`http://dev.virtualearth.net/REST/v1/Locations?q=${lastInfo.get("Domicilio")}%20${lastInfo.get("CodigoPostal")}%20${lastInfo.get("Localidad")}%20argentina&maxResults=1&key=Arn6kit_Moqpx-2p7jWVKy1h-TlLyYESkqc1cHzP1JkEAm1A_86T8o3FtDcKqnVV`)
         // Axios(`http://dev.virtualearth.net/REST/v1/Locations?q=Alberdi%202334%203000%20Santa%20Fe%20argentina&maxResults=1&key=Arn6kit_Moqpx-2p7jWVKy1h-TlLyYESkqc1cHzP1JkEAm1A_86T8o3FtDcKqnVV`)
@@ -244,7 +252,7 @@ class Coordinadores extends React.Component{
             content: 'Esta acción no se puede deshacer.',
             okText: 'Si', cancelText: 'No',
             onOk:(()=>{
-                Axios.delete('http://localhost:4000/acomp/' + id).then(() => {
+                Axios.delete('http://localhost:4000/coord/' + id).then(() => {
                 this.openNotification(
                     "Eliminación exitosa",
                     "El Coordinador se borró correctamente",
@@ -353,22 +361,14 @@ class Coordinadores extends React.Component{
                 
                 <Spin spinning={this.state.loadingModal} tip="Cargando Archivos...">
                 <Form>
+                <Divider orientation="left">Datos Principales</Divider>
                 <Row gutter={[48,20]}>
-                    <Col span={12}>
-                        <Divider orientation="left">Datos Principales</Divider>
-                    </Col>
-                    <Col span={12}>
-                        <Divider orientation="left">Datos de Contacto</Divider>
-                    </Col>
+                    
+                    
                     <Col span={12}>
                         <h1>Nombre</h1>
-                        <Input placeholder="Nombre" id="Nombre"  onChange={this.onChangeInput} 
+                        <Input autoFocus placeholder="Nombre" id="Nombre"  onChange={this.onChangeInput} 
                         defaultValue={this.state.id === 0 ? undefined : lastInfo.get("Nombre")} />
-                    </Col>
-                    <Col span={12}>
-                        <h1>Domicilio</h1>
-                        <Input placeholder="Domicilio" id="Domicilio" onChange={this.onChangeInput} 
-                        defaultValue={this.state.id === 0 ? undefined : lastInfo.get("Domicilio")} />
                     </Col>
                     <Col span={12}>
                         <h1>Apellido</h1>
@@ -376,9 +376,9 @@ class Coordinadores extends React.Component{
                         defaultValue={this.state.id === 0 ? undefined : lastInfo.get("Apellido")} />
                     </Col>
                     <Col span={12}>
-                        <h1>Localidad</h1>
-                        <Input placeholder="Localidad" type="text" id="Localidad" onChange={this.onChangeInput} 
-                        defaultValue={this.state.id <=0 ? this.value : lastInfo.get("Localidad")} />
+                        <h1>Domicilio</h1>
+                        <Input placeholder="Domicilio" id="Domicilio" onChange={this.onChangeInput} 
+                        defaultValue={this.state.id === 0 ? undefined : lastInfo.get("Domicilio")} />
                     </Col>
                     <Col span={12}>
                         <h4>DNI/CUIL:</h4>
@@ -398,6 +398,11 @@ class Coordinadores extends React.Component{
                                 defaultValue={this.state.id <=0 ? this.value : lastInfo.get("CUIL2")}/>
                             </Col>
                             </Row>
+                    </Col>
+                    <Col span={12}>
+                        <h1>Localidad</h1>
+                        <Input placeholder="Localidad" type="text" id="Localidad" onChange={this.onChangeInput} 
+                        defaultValue={this.state.id <=0 ? this.value : lastInfo.get("Localidad")} />
                     </Col>
                     <Col span={12}>
                         <h1>Codigo Postal</h1>
