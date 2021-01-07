@@ -61,7 +61,7 @@ class Mapa extends React.Component {
                         fields = "Id, Nombre, Apellido, DNI, CUIL, FechaNacimiento, Domicilio, Localidad, CodigoPostal, Email, Telefono, Enfermedades, IdCoordinador, Latitud, Longitud";
                         table = "Beneficiario";
                         linkto = "/benefprofile";
-                        cardImg = "https://github.com/Rashkill/Grupo-Azul-React/blob/master/src/images/image4-5.png?raw=true";
+                        cardImg = {imgBenef};
                         markerIcon = new L.Icon({
                             iconUrl: markerGreen,
                             shadowUrl: markerShadow,

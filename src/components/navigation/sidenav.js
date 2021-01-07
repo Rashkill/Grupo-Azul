@@ -12,7 +12,7 @@ const Sidenav = (props) => {
     return(
         <nav className="sidenav">
             <div className="sidenav-imgwrap">
-                <img src="https://github.com/Rashkill/Grupo-Azul-React/blob/master/src/images/Logo1.png?raw=true" className="sidenav-img" alt=""/>
+                <img src={Logo} className="sidenav-img" alt=""/>
             </div>
             <NavItem title="Inicio" to="/inicio" icon={Home}/>
             <NavItem title="Personal" to="/personal" or="acompprofile" or2="coordprofile" icon={UserGroup}/>

@@ -56,7 +56,7 @@ const BenefCard = (props) =>{
         <div className="card">
             <div className="card-row">
                 <div className="card-left-col">
-                    <img src="https://github.com/Rashkill/Grupo-Azul-React/blob/master/src/images/image4-5.png?raw=true" alt="" style={{maxWidth:70}}/>
+                    <img src={UserImg} alt="" style={{maxWidth:70}}/>
                 </div>
                 <div className="card-mid-col">
                     <Row>

@@ -1,7 +1,7 @@
 import React from 'react';
 import "antd/dist/antd.css";
 import './App.css';
-import { BrowserRouter, Route, Redirect } from 'react-router-dom'
+import { HashRouter, Route, Redirect } from 'react-router-dom'
 import Sidenav from '../navigation/sidenav.js'
 import Inicio from '../sections/inicio/inicio.js'
 import Personal from '../sections/personal/personal.js'
@@ -15,7 +15,7 @@ import LiqPreview from '../sections/liquidaciones/liq-preview.js'
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <React.Fragment>
         <div className="layout">
           <div className="nav-col">
@@ -35,7 +35,7 @@ function App() {
           </div>
         </div>
       </React.Fragment>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 

@@ -757,7 +757,7 @@ const BenefCard = (props) =>{
 
                     <div hidden={edit.visible}>
                         <div className="profile-banner" >
-                            <img src="https://github.com/Rashkill/Grupo-Azul-React/blob/master/src/images/image4-5.png?raw=true" style={{height: 125}}/>
+                            <img src={UserImg} style={{height: 125}}/>
                             <h1 className="profile-name">{info.Nombre + " " + info.Apellido}</h1>
                             <p className="card-subtitle" style={{fontSize: 16}}>
                                 {info.CUIL.split('-')[0] + "-" + info.DNI + "-" + info.CUIL.split('-')[1]}
