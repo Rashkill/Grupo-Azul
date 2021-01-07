@@ -191,7 +191,7 @@ const LiqPreview = (props) => {
                             <Text>Emisión: {props.location.state.fecha}</Text>
                         </View>
                         
-                        <Image src={Logo3} style={{height: 140, alignSelf: 'center'}} cache />
+                        <Image src="https://github.com/Rashkill/Grupo-Azul-React/blob/master/src/images/Logo3.jpg?raw=true" style={{height: 140, alignSelf: 'center'}} cache />
                         
                         <View style={{fontSize: 10, width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 12}}>
                             <Text>Período {props.location.state.desde} al {props.location.state.hasta}</Text>
@@ -397,7 +397,7 @@ const LiqPreview = (props) => {
                                 </Text>
                             </View>
 
-                            <Image src={FooterLogo} style={{width: 190, alignSelf: 'center'}} cache />
+                            <Image src="https://github.com/Rashkill/Grupo-Azul-React/blob/master/src/images/pdf-footer-img.png?raw=true" style={{width: 190, alignSelf: 'center'}} cache />
 
                             <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
                                 <Image src={PhoneIcon} style={{width: '14px', marginRight: 4}}/>

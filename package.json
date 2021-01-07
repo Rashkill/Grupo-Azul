@@ -1,5 +1,6 @@
 {
   "name": "grupo-azul-react",
+  "productName": "Grupo Azul Gestión",
   "version": "0.1.0",
   "main": "public/electron.js",
   "homepage": "./",
@@ -35,9 +36,22 @@
   },
   "build": {
     "appId": "<com.grupoazul_app>",
+    "productName": "Grupo Azul Gestión",
     "win": {
       "target": "nsis",
-      "icon": "build/icon.ico"
+      "icon": "public/icon.ico",
+      "publisherName": [
+        "Facundo Midvetkin",
+        "Juan Becchio"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "language": "0x2C0A",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Grupo Azul Gestión"
     }
   },
   "scripts": {

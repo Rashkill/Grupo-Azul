@@ -4,7 +4,7 @@ const isDev = require("electron-is-dev");
 
 const sqlite3 = require('sqlite3').verbose();
 const dbPath = path.resolve(app.getPath('userData'), 'Base_de_Datos.db')
-const server = require("../server/index");
+const server = require("./server/index");
 
 function createWindow () {
   // Create the browser window.

@@ -1,5 +1,4 @@
-
-.sidenav{
+.sidenav {
     height: 100vh;
     /* width: 260px; */
     width: auto;
@@ -9,15 +8,16 @@
     box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.1);
 }
 
-.sidenav-imgwrap{
+.sidenav-imgwrap {
     height: 220px;
     width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 16px;
 }
 
-.sidenav-img{
+.sidenav-img {
     height: 130px;
 }
 
@@ -38,24 +38,24 @@
     align-items: center;
 }
 
-.nav-btn:hover{
+.nav-btn:hover {
     background: #E6F7FF;
     color: #18ACFF;
 }
 
-.nav-btn:hover .nav-item-img{
+.nav-btn:hover .nav-item-img {
     filter: brightness(0%);
     filter: invert(54%) sepia(96%) saturate(2558%) hue-rotate(177deg) brightness(103%) contrast(101%);
 }
 
-.nav-btn > p {
+.nav-btn>p {
     margin: 0;
 }
 
-.active-nav-btn{
+.active-nav-btn {
     background: #F4F4F4;
 }
 
-.nav-imgwrap{
+.nav-imgwrap {
     margin-right: 4px;
 }
