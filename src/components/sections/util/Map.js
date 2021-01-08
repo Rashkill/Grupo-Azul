@@ -61,7 +61,7 @@ class Mapa extends React.Component {
                         fields = "Id, Nombre, Apellido, DNI, CUIL, FechaNacimiento, Domicilio, Localidad, CodigoPostal, Email, Telefono, Enfermedades, IdCoordinador, Latitud, Longitud";
                         table = "Beneficiario";
                         linkto = "/benefprofile";
-                        cardImg = {imgBenef};
+                        cardImg = imgBenef;
                         markerIcon = new L.Icon({
                             iconUrl: markerGreen,
                             shadowUrl: markerShadow,
