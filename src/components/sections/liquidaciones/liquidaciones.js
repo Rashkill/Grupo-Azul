@@ -153,7 +153,8 @@ class Liquidaciones extends React.Component {
                         "La Liquidación fue creada correctamente",
                         true
                     )
-            });
+            }, () => {this.openNotification("Error",
+            "Hay campos sin rellenar", false)});
         }
         else{
             console.log(lastInfo.get("IdBeneficiario"))
@@ -170,7 +171,8 @@ class Liquidaciones extends React.Component {
                         "La Liquidación fue modificada correctamente",
                         true
                     )
-            });
+            }, () => {this.openNotification("Error",
+            "Hay campos sin rellenar", false)});
         }
     };
 

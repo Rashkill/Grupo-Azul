@@ -188,7 +188,8 @@ class Jornadas extends React.Component{
                         "La Jornada fue creada correctamente",
                         true
                     )
-            });
+            }, () => {this.openNotification("Error",
+            "Hay campos sin rellenar", false)});
         }
         else{
             Axios.post('http://localhost:4000/updJornada/' + this.state.id, lastInfo, {
@@ -204,7 +205,8 @@ class Jornadas extends React.Component{
                         "La Jornada fue modificada correctamente",
                         true
                     )
-            });
+            }, () => {this.openNotification("Error",
+            "Hay campos sin rellenar", false)});
         }
     };
 

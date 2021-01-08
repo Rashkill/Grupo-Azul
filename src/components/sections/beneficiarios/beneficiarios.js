@@ -171,7 +171,8 @@ class Beneficiarios extends React.Component{
                     this.openNotification("Datos Agregados",
                     "El beneficiario " + lastInfo.get("Apellido") + " ahora se encuentra en la lista", true);
                     this.getData();
-                });
+                }, () => {this.openNotification("Error",
+                "Hay campos sin rellenar", false)});
             }
             else    //Parte de la actualizacion
             {   
@@ -197,7 +198,8 @@ class Beneficiarios extends React.Component{
                     this.openNotification("Datos Actualizados",
                     "El beneficiario fue actualizado correctamente", true);
                     this.getData();
-                });
+                }, () => {this.openNotification("Error",
+                "Hay campos sin rellenar", false)});
             }
         })
     };

@@ -148,7 +148,8 @@ class Coordinadores extends React.Component{
                     this.openNotification("Datos Agregados",
                     "El coordinador " + lastInfo.get("Apellido") + " ahora se encuentra en la lista", true);
                     this.getData();
-                });
+                }, () => {this.openNotification("Error",
+                "Hay campos sin rellenar", false)});
             }
             else    //Parte de la actualizacion
             {   
@@ -179,7 +180,8 @@ class Coordinadores extends React.Component{
                     this.openNotification("Datos Actualizados",
                     "El coordinador fue actualizado correctamente", true);
                     this.getData();
-                });
+                }, () => {this.openNotification("Error",
+                "Hay campos sin rellenar", false)});
             }
         })
     };

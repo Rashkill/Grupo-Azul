@@ -13,6 +13,7 @@ import markerShadow from '../../../images/marker-shadow.png'
 import imgBenef from '../../../images/image4-5.png'
 import imgAcomp from '../../../images/image3.png'
 import imgCoord from '../../../images/image3_1.png'
+import axios from 'axios';
 
 
 const { Text } = Typography;
@@ -35,7 +36,7 @@ class Mapa extends React.Component {
             shadowSize: [41, 41]
         })
     }
-    componentDidMount(){
+    componentDidMount = async() =>{
         if (this.props.coords) {
             this.props.coords.map(async(c) => {
                 let fields = "*", table = "", linkto = "";
@@ -102,9 +103,11 @@ class Mapa extends React.Component {
 
             })
         }
+        let table = "";
         //Color del marker principal
         switch (this.props.markerPrincipal) {
             case "a":
+                table = "Acompañante";
                 this.setState(
                     {
                         mainMarkerIcon: new L.Icon({
@@ -118,6 +121,7 @@ class Mapa extends React.Component {
                     })
                 break;
             case "b":
+                table = "Beneficiario";
                 this.setState(
                     {
                         mainMarkerIcon: new L.Icon({
@@ -131,6 +135,7 @@ class Mapa extends React.Component {
                     })
                 break;
             case "c":
+                table = "Coordinador";
                 this.setState(
                     {
                         mainMarkerIcon: new L.Icon({
@@ -144,6 +149,13 @@ class Mapa extends React.Component {
                     })
                 break;
         }
+        // if (this.props.cambiarCoords == true) {
+        //     let fields = "Domicilio, Localidad, CodigoPostal";
+        //     const result = await fetch('http://localhost:4000/getTable/' + fields + "/" + table);
+        //     const info = await result.json();
+        //     const coordenadas = await fetch(`http://dev.virtualearth.net/REST/v1/Locations?q=${info[0].Domicilio}%20${info[0].CodigoPostal}%20${info[0].Localidad}%20argentina&maxResults=4&key=Arn6kit_Moqpx-2p7jWVKy1h-TlLyYESkqc1cHzP1JkEAm1A_86T8o3FtDcKqnVV`);
+        //     console.log(await coordenadas.json());
+        // }
     }
 
     render(){

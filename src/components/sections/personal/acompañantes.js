@@ -146,7 +146,8 @@ class Acompañantes extends React.Component{
                     this.openNotification("Datos Agregados",
                     "El acompañante " + lastInfo.get("Apellido") + " ahora se encuentra en la lista", true);
                     this.getData();
-                });
+                }, () => {this.openNotification("Error",
+                "Hay campos sin rellenar", false)});
             }
             else    //Parte de la actualizacion
             {   
@@ -177,7 +178,8 @@ class Acompañantes extends React.Component{
                     this.openNotification("Datos Actualizados",
                     "El acompañante fue actualizado correctamente", true);
                     this.getData();
-                });
+                }, () => {this.openNotification("Error",
+                "Hay campos sin rellenar", false)});
             }
         })
     };

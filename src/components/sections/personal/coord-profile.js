@@ -9,6 +9,7 @@ import VisorPDF from '../util/visorPDF'
 import Map from '../util/Map'
 
 import Axios from 'axios';
+import { isNull } from 'util';
 
 const { TabPane } = Tabs;
 const TabStyles = {
@@ -516,7 +517,7 @@ const CoordProfile = (props) =>{
             const datos = await res.json();
 
             fileBlobAFIP = new Blob([Buffer.from(datos[0].ConstanciaAFIP)], {type: "application/pdf"})
-            fileUrlAFIP = URL.createObjectURL(fileBlobAFIP)
+                fileUrlAFIP = URL.createObjectURL(fileBlobAFIP)
             
             fileBlobCV = new Blob([Buffer.from(datos[0].CV)], {type: "application/pdf"})
             fileUrlCV = URL.createObjectURL(fileBlobCV)
@@ -585,7 +586,8 @@ const CoordProfile = (props) =>{
     const onInfoEdit = (field, text) =>{
         let i = [];
         Object.keys(info).forEach(key => {
-            i[key] = info[key];
+            if (info[key])
+                i[key] = info[key];
           });
         if(field == "CUIL1"){
             i.CUIL = text + "-" + info.CUIL.split('-')[1];
@@ -598,34 +600,42 @@ const CoordProfile = (props) =>{
         setInfo(i);
     }
 
-    const onSaveInfo = () =>{
+    const onSaveInfo = () => {
         Object.keys(info).forEach(key => {
-            lastInfo.set(key, info[key]);
+            if (info[key])
+                lastInfo.set(key, info[key]);
         });
-        //Se comprueba que no se haya subido un archivo nuevo.
-        //De lo contrario, se utiliza el que ya estaba
-        if(pdf1.fileList.length >= 1)
-            lastInfo.set("ConstanciaAFIP", pdf1.fileList[0]);
-        else
-            lastInfo.set("ConstanciaAFIP", fileBlobAFIP)
+        //Se obtiene la Latitud y la Longitud
+        Axios(`http://dev.virtualearth.net/REST/v1/Locations?q=${lastInfo.get("Domicilio")}%20${lastInfo.get("CodigoPostal")}%20${lastInfo.get("Localidad")}%20argentina&maxResults=1&key=Arn6kit_Moqpx-2p7jWVKy1h-TlLyYESkqc1cHzP1JkEAm1A_86T8o3FtDcKqnVV`)
+            .then(response => {     
+                let coords = (response.data.resourceSets[0].resources[0].geocodePoints[0].coordinates);
+                lastInfo.set("Latitud", coords[0]); lastInfo.set("Longitud", coords[1]);
+            }).then(() => {              
+                //Se comprueba que no se haya subido un archivo nuevo.
+                //De lo contrario, se utiliza el que ya estaba
+                if (pdf1.fileList.length >= 1)
+                    lastInfo.set("ConstanciaAFIP", pdf1.fileList[0]);
+                else
+                    lastInfo.set("ConstanciaAFIP", fileBlobAFIP)
 
-        if(pdf2.fileList.length >= 1)
-            lastInfo.set("CV", pdf2.fileList[0]);
-        else
-            lastInfo.set("CV", fileBlobCV)
+                if (pdf2.fileList.length >= 1)
+                    lastInfo.set("CV", pdf2.fileList[0]);
+                else
+                    lastInfo.set("CV", fileBlobCV)
 
-        Axios.post('http://localhost:4000/updCoord/' + info.Id, lastInfo, {
-            headers: {
-                Accept: 'application/json'
-            }
-        }).then(() => {
-            getInfo();
-            //Se establecen los valores por defecto y se abre la notificacion
-            setEdit({visible: false});
-            openNotification("Datos Actualizados",
-            "El coordinador fue actualizado correctamente", true);
-        });
-        
+                Axios.post('http://localhost:4000/updCoord/' + info.Id, lastInfo, {
+                    headers: {
+                        Accept: 'application/json'
+                    }
+                }).then(() => {
+                    getInfo();
+                    //Se establecen los valores por defecto y se abre la notificacion
+                    setEdit({ visible: false });
+                    openNotification("Datos Actualizados",
+                        "El coordinador fue actualizado correctamente", true);
+                }, () => {openNotification("Error",
+                "Hay campos sin rellenar", false)});
+            })
     }
 
 
@@ -964,6 +974,7 @@ const CoordProfile = (props) =>{
                     <TabPane tab="Mapa" key="2" style={TabStyles}>
                         <div style={{height: 500}}>
                             <Map
+                                cambiarCoords={true}
                                 markerPrincipal={"c"}
                                 coordPrincipal={[info.Latitud, info.Longitud]}
                                 coords={["a","b"]}
